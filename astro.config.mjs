@@ -9,10 +9,20 @@ import node from '@astrojs/node';
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [react()],
+  output: 'server',
+  integrations: [
+    react()
+  ],
 
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    resolve: {
+      alias: {
+        '@': './src',
+        '@shared': './src/shared',
+        '@assets': './src/assets',
+      }
+    }
   },
 
   adapter: node({
