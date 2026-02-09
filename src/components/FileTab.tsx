@@ -15,7 +15,7 @@ export function FileTab({ id, name, isActive, isUnsaved, onClick, onClose }: Fil
     <div
       onClick={onClick}
       className={cn(
-        "group relative flex items-center h-full px-4 min-w-[120px] max-w-[200px] border-r border-border cursor-pointer select-none transition-colors text-sm font-medium",
+        "group relative flex items-center h-full px-4 min-w-30 max-w-50 border-r border-border cursor-pointer select-none transition-colors text-sm font-medium",
         isActive 
           ? "bg-background text-primary border-t-2 border-t-primary" 
           : "bg-muted/30 text-muted-foreground hover:bg-muted/50 border-t-2 border-t-transparent"
