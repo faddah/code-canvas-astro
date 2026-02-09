@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { DatabaseStorage } from '../../../lib/db/storage';
+import { DatabaseStorage } from '@/lib/db/storage';
 
 export const GET: APIRoute = async ({ params }) => {
     const storage = new DatabaseStorage();
