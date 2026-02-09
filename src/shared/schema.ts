@@ -29,7 +29,7 @@ export const api = {
     },
     create: {
       method: 'POST' as const,
-      path: '/api/files',
+      path: '/api/files/create',
       input: insertFileSchema,
       responses: {
         201: z.custom<File>(),
