@@ -18,5 +18,8 @@
         "titleBar.inactiveBackground": "#6929bb99",
         "titleBar.inactiveForeground": "#e7e7e799"
     },
-    "peacock.color": "#6929BB"
+    "peacock.color": "#6929BB",
+    "cSpell.words": [
+        "Pyodide"
+    ]
 }
