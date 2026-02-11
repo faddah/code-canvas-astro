@@ -3,11 +3,11 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "astro": "astro",
-    "dev": "astro dev",
+    "astro": "astro --host",
+    "dev": "astro dev --host",
     "build": "astro build",
-    "preview": "astro preview",
-    "start": "node ./dist/server/entry.mjs"
+    "preview": "astro preview --host",
+    "start": "node ./dist/server/entry.mjs --host"
   },
   "dependencies": {
     "@astrojs/node": "^9.5.2",
@@ -21,6 +21,7 @@
     "@types/react": "^19.2.13",
     "@types/react-dom": "^19.2.3",
     "astro": "^5.17.1",
+    "autoprefixer": "^10.4.24",
     "better-sqlite3": "^12.6.2",
     "class-variance-authority": "^0.7.1",
     "drizzle-orm": "^0.45.1",
