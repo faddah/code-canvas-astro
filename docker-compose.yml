@@ -1,0 +1,36 @@
+services:
+  # Astro application container
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: code-canvas-astro-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/taskManagement.db
+      - PORT=3000
+    volumes:
+      # Named volume for database persistence (private to this container)
+      - db-data:/app/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+# Named volumes for data persistence
+volumes:
+  db-data:
+    driver: local
+    # This volume is private and only accessible by the app container
+
+# Private network for the application
+networks:
+  app-network:
+    driver: bridge
