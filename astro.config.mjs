@@ -11,10 +11,13 @@ import node from '@astrojs/node';
 export default defineConfig({
   output: 'server',
   integrations: [
-    react()
+    react({
+      experimentalReactChildren: true
+    })
   ],
 
   vite: {
+    // @ts-ignore - Vite plugin version mismatch between Astro and @tailwindcss/vite
     plugins: [tailwindcss()],
     resolve: {
       alias: {
