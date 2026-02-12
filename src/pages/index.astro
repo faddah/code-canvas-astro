@@ -1,12 +1,9 @@
 ---
 // This is the server-side section
 import Layout from '@/layouts/Layout.astro';
-import { QueryProvider } from '@/components/QueryProvider.tsx';
-import IDE from '@/components/IDE.tsx';
+import App from '@/components/App.tsx';
 ---
 
 <Layout title="Python REPL IDE">
-	<QueryProvider client:only="react">
-		<IDE />
-	</QueryProvider>
+	<App client:only="react" />
 </Layout>
