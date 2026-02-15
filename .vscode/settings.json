@@ -20,9 +20,13 @@
     },
     "peacock.color": "#6929BB",
     "cSpell.words": [
+        "boto",
+        "botocore",
+        "cmdk",
         "Frontmatter",
         "healthcheck",
         "lucide",
-        "Pyodide"
+        "Pyodide",
+        "vaul"
     ]
 }
