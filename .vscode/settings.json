@@ -20,6 +20,7 @@
     },
     "peacock.color": "#6929BB",
     "json.schemaDownload.enable": true,
+    "pgsql.connections": [],
     "cSpell.words": [
         "boto",
         "botocore",
