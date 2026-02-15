@@ -25,7 +25,8 @@ IMAGE_TAG = "v1.0"
 DOCKER_CONTEXT = "/Users/faddah/Documents/code/code - projects/code-canvas-astro"
 
 
-class PythonReplLambdaStack(Stack):
+class PythonReplLambdaStack(Stack):  # pylint: disable=too-few-public-methods
+    """CDK Stack for Python REPL Lambda deployment with ECR container image."""
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -115,7 +116,7 @@ def build_and_push_docker_image(account_id: str, region: str):
 
     try:
         # Login to ECR
-        print(f"📝 Logging into ECR...")
+        print("📝 Logging into ECR...")
         subprocess.run(
             f"aws ecr get-login-password --region {region} | "
             f"docker login --username AWS --password-stdin {ecr_uri}",
@@ -124,7 +125,7 @@ def build_and_push_docker_image(account_id: str, region: str):
         )
 
         # Build Docker image
-        print(f"🔨 Building Docker image...")
+        print("🔨 Building Docker image...")
         subprocess.run(
             [
                 "docker",
@@ -139,14 +140,14 @@ def build_and_push_docker_image(account_id: str, region: str):
         )
 
         # Tag image for ECR
-        print(f"🏷️  Tagging image for ECR...")
+        print("🏷️  Tagging image for ECR...")
         subprocess.run(
             ["docker", "tag", f"{ECR_REPO_NAME}:{IMAGE_TAG}", full_image_name],
             check=True,
         )
 
         # Push to ECR
-        print(f"⬆️  Pushing image to ECR...")
+        print("⬆️  Pushing image to ECR...")
         subprocess.run(["docker", "push", full_image_name], check=True)
 
         print(f"✅ Docker image pushed successfully: {full_image_name}")
