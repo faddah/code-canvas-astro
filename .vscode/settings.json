@@ -27,6 +27,7 @@
         "healthcheck",
         "lucide",
         "Pyodide",
-        "vaul"
+        "vaul",
+        "vite"
     ]
 }
