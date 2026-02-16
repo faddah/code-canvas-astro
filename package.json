@@ -5,6 +5,7 @@
   "scripts": {
     "astro": "astro --host",
     "dev": "astro dev --host",
+    "lint": "eslint .",
     "build": "astro build",
     "preview": "astro preview --host",
     "start": "node ./dist/server/entry.mjs --host",
@@ -61,6 +62,7 @@
     "drizzle-orm": "^0.45.1",
     "drizzle-zod": "^0.8.3",
     "embla-carousel-react": "^8.6.0",
+    "eslint": "^10.0.0",
     "framer-motion": "^12.34.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.563.0",
@@ -78,6 +80,6 @@
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
-    "drizzle-kit": "^0.31.9"
+    "drizzle-kit": "^0.18.1"
   }
 }
