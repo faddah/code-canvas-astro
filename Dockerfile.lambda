@@ -1,5 +1,12 @@
-# Lambda-compatible Dockerfile
-FROM public.ecr.aws/lambda/nodejs:20
+# Lambda Container Dockerfile for Code Canvas Astro with S3 Database Persistence
+# This Dockerfile creates a container image that runs on AWS Lambda
+
+# Multi-stage build for optimized production image
+# Stage 1: Build stage
+FROM node:20-alpine AS builder
+
+# Set working directory
+WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
