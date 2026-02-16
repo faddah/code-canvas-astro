@@ -58,9 +58,11 @@ volumes:
   db-data:
     driver: local
     name: code-canvas-astro-db-volume
-    # This volume is private and only accessible by the app container
+    # This volume persists database data across container restarts
+    # The data survives even when containers are stopped/removed
+    # To completely reset: docker-compose down -v
 
-# Private network for the application
+# Private network for inter-container communication
 networks:
   app-network:
     driver: bridge
