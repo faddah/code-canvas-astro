@@ -20,6 +20,8 @@ from botocore.exceptions import ClientError
 
 
 class PyReplDevStack(Stack):
+    """CDK Stack for pyrepl.dev with Route53, CloudFront, and ACM certificate."""
+    
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
         
