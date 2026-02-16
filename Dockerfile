@@ -37,7 +37,7 @@ COPY --from=builder /app/dist ./dist
 # Copy package.json for runtime info (optional but good practice)
 COPY --from=builder /app/package.json ./package.json
 
-# Copy initialization scripts
+# Copy initialization and seeding scripts
 COPY --from=builder /app/scripts ./scripts
 
 # Make entrypoint script executable
