@@ -1,0 +1,215 @@
+{
+ "Description": "CloudFront distribution with Route 53 for pyrepl.dev Lambda function",
+ "Resources": {
+  "PyReplDevHostedZone19EE623F": {
+   "Type": "AWS::Route53::HostedZone",
+   "Properties": {
+    "HostedZoneConfig": {
+     "Comment": "Hosted zone for Python REPL IDE"
+    },
+    "Name": "pyrepl.dev."
+   },
+   "Metadata": {
+    "aws:cdk:path": "PyReplDevStack/PyReplDevHostedZone/Resource"
+   }
+  },
+  "PyReplDevCertificateD78879DD": {
+   "Type": "AWS::CertificateManager::Certificate",
+   "Properties": {
+    "DomainName": "pyrepl.dev",
+    "DomainValidationOptions": [
+     {
+      "DomainName": "pyrepl.dev",
+      "HostedZoneId": {
+       "Ref": "PyReplDevHostedZone19EE623F"
+      }
+     }
+    ],
+    "SubjectAlternativeNames": [
+     "*.pyrepl.dev"
+    ],
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "PyReplDevStack/PyReplDevCertificate"
+     }
+    ],
+    "ValidationMethod": "DNS"
+   },
+   "Metadata": {
+    "aws:cdk:path": "PyReplDevStack/PyReplDevCertificate/Resource"
+   }
+  },
+  "PyReplDevDistributionAA432679": {
+   "Type": "AWS::CloudFront::Distribution",
+   "Properties": {
+    "DistributionConfig": {
+     "Aliases": [
+      "pyrepl.dev",
+      "www.pyrepl.dev"
+     ],
+     "DefaultCacheBehavior": {
+      "AllowedMethods": [
+       "GET",
+       "HEAD",
+       "OPTIONS",
+       "PUT",
+       "PATCH",
+       "POST",
+       "DELETE"
+      ],
+      "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+      "Compress": true,
+      "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+      "TargetOriginId": "PyReplDevStackPyReplDevDistributionOrigin1E7EBD4AA",
+      "ViewerProtocolPolicy": "redirect-to-https"
+     },
+     "Enabled": true,
+     "HttpVersion": "http2and3",
+     "IPV6Enabled": true,
+     "Origins": [
+      {
+       "CustomOriginConfig": {
+        "OriginProtocolPolicy": "https-only",
+        "OriginSSLProtocols": [
+         "TLSv1.2"
+        ]
+       },
+       "DomainName": "jb6uzlmmok5wxyr2nzdci3wdfi0rcush.lambda-url.us-west-2.on.aws",
+       "Id": "PyReplDevStackPyReplDevDistributionOrigin1E7EBD4AA",
+       "OriginCustomHeaders": [
+        {
+         "HeaderName": "X-Forwarded-Host",
+         "HeaderValue": "pyrepl.dev"
+        }
+       ]
+      }
+     ],
+     "ViewerCertificate": {
+      "AcmCertificateArn": {
+       "Ref": "PyReplDevCertificateD78879DD"
+      },
+      "MinimumProtocolVersion": "TLSv1.2_2021",
+      "SslSupportMethod": "sni-only"
+     }
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "PyReplDevStack/PyReplDevDistribution/Resource"
+   }
+  },
+  "PyReplDevARecord1F217BC4": {
+   "Type": "AWS::Route53::RecordSet",
+   "Properties": {
+    "AliasTarget": {
+     "DNSName": {
+      "Fn::GetAtt": [
+       "PyReplDevDistributionAA432679",
+       "DomainName"
+      ]
+     },
+     "HostedZoneId": {
+      "Fn::FindInMap": [
+       "AWSCloudFrontPartitionHostedZoneIdMap",
+       {
+        "Ref": "AWS::Partition"
+       },
+       "zoneId"
+      ]
+     }
+    },
+    "HostedZoneId": {
+     "Ref": "PyReplDevHostedZone19EE623F"
+    },
+    "Name": "pyrepl.dev.",
+    "Type": "A"
+   },
+   "Metadata": {
+    "aws:cdk:path": "PyReplDevStack/PyReplDevARecord/Resource"
+   }
+  },
+  "PyReplDevWwwARecord308F9A16": {
+   "Type": "AWS::Route53::RecordSet",
+   "Properties": {
+    "AliasTarget": {
+     "DNSName": {
+      "Fn::GetAtt": [
+       "PyReplDevDistributionAA432679",
+       "DomainName"
+      ]
+     },
+     "HostedZoneId": {
+      "Fn::FindInMap": [
+       "AWSCloudFrontPartitionHostedZoneIdMap",
+       {
+        "Ref": "AWS::Partition"
+       },
+       "zoneId"
+      ]
+     }
+    },
+    "HostedZoneId": {
+     "Ref": "PyReplDevHostedZone19EE623F"
+    },
+    "Name": "www.pyrepl.dev.",
+    "Type": "A"
+   },
+   "Metadata": {
+    "aws:cdk:path": "PyReplDevStack/PyReplDevWwwARecord/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02KsQ6CMBRFv4W9PBU0cTU4uJgQ2FxMKQ99Ai1pX0NM0383hEGme8/JySDLz7BP5OxS1fbpQA2EmqXqhZzdM1jjGU85hNI3A6mbcYztw2gURac3dKlQGdsudn01chQKLVNHSjKOUssXWgjF3y31BqNQg/FtZ41mCFdybKnxTEYv4ZZjXMxdThPpVxTll99G73I4HGGffBxRar1mGhGqdX+I1GXk5wAAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "PyReplDevStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Mappings": {
+  "AWSCloudFrontPartitionHostedZoneIdMap": {
+   "aws": {
+    "zoneId": "Z2FDTNDATAQYW2"
+   },
+   "aws-cn": {
+    "zoneId": "Z3RFFRIM2A3IF5"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

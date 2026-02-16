@@ -1,0 +1,21 @@
+{
+  "version": "48.0.0",
+  "files": {
+    "305a153f84ae013660d12f4301376356161ea5589b8ec4612ef54b15e21f5974": {
+      "displayName": "PyReplDevStack Template",
+      "source": {
+        "path": "PyReplDevStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "415740581749-us-east-1-2eed26f9": {
+          "bucketName": "cdk-hnb659fds-assets-415740581749-us-east-1",
+          "objectKey": "305a153f84ae013660d12f4301376356161ea5589b8ec4612ef54b15e21f5974.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::415740581749:role/cdk-hnb659fds-file-publishing-role-415740581749-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}
