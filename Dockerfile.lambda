@@ -15,9 +15,7 @@ COPY package*.json ./
 RUN npm install
 
 # Copy source code
-COPY client ./client
-COPY server ./server
-COPY shared ./shared
+COPY . .
 
 # Build the application
 RUN npm run build
