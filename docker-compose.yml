@@ -32,6 +32,27 @@ services:
       retries: 3
       start_period: 10s
 
+  # Database initialization container (PRIVATE - runs once and exits)
+  # This container is responsible for setting up the database file
+  # and ensuring it's available in the shared volume before the app starts
+  db-init:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+      platforms:
+        - linux/amd64
+    container_name: code-canvas-astro-db-init
+    environment:
+      - DATABASE_URL=file:/data/taskManagement.db
+    volumes:
+      # Mount the same volume to initialize the database
+      - db-data:/data
+    networks:
+      - app-network
+    # This container runs once to set up the database and then exits
+    # The app container will start after this completes successfully
+
 # Named volumes for data persistence
 volumes:
   db-data:
