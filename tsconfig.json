@@ -22,11 +22,11 @@
     "lib": ["esnext", "dom", "dom.iterable"],
     "jsx": "react-jsx",
     "jsxImportSource": "react",
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
-    "types": ["node", "vite/client"],
     "paths": {
       "*": ["./*"],
       "@/*": ["./src/*"],
