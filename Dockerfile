@@ -1,7 +1,7 @@
 # Multi-stage build for optimized production image
 
 # Stage 1: Build stage
-FROM node:20-alpine AS builder
+FROM --platform=linux/amd64 node:20-alpine AS builder
 
 # Set working directory
 WORKDIR /app
