@@ -18,7 +18,7 @@ services:
       - DATABASE_URL=file:/app/data/taskManagement.db
       - PORT=3000
     volumes:
-      # Named volume for database persistence (private to this container)
+      # Mount the shared volume for database access
       - db-data:/app/data
     networks:
       - app-network
