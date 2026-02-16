@@ -3,9 +3,12 @@ version: '3.8'
 services:
   # Main Astro application container (PUBLIC)
   app:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
     container_name: code-canvas-astro-app
     restart: unless-stopped
     ports:
