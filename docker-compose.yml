@@ -57,6 +57,7 @@ services:
 volumes:
   db-data:
     driver: local
+    name: code-canvas-astro-db-volume
     # This volume is private and only accessible by the app container
 
 # Private network for the application
