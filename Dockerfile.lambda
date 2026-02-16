@@ -41,8 +41,17 @@ COPY --from=builder /app/dist ./dist
 # Copy Lambda handler (using .cjs for CommonJS compatibility)
 COPY lambda-handler.cjs ./
 
-# Copy scripts if needed
-COPY scripts ./scripts
+# Copy database scripts
+COPY --from=builder /app/scripts ./scripts
+
+# Create directory for database in /tmp (Lambda's writable directory)
+RUN mkdir -p /tmp/data
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=8080
+ENV DATABASE_URL=file:/tmp/taskManagement.db
 
 # Set the CMD to your handler
 CMD [ "dist/server/lambda.handler" ]
