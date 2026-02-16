@@ -20,7 +20,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Production stage
-FROM node:20-alpine AS runtime
+FROM --platform=linux/amd64 node:20-alpine AS runtime
 
 # Set working directory
 WORKDIR /app
