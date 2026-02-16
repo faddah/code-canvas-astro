@@ -7,7 +7,7 @@ import sys
 import time
 import requests
 from aws_cdk import (
-    App, Stack, Environment, Duration,
+    App, Stack, Environment,
     aws_route53 as route53,
     aws_route53_targets as targets,
     aws_certificatemanager as acm,
