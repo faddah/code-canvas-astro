@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useFiles, useCreateFile, useUpdateFile, useDeleteFile } from "@/hooks/use-files";
 import { usePyodide } from "@/hooks/use-pyodide";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { Loader2, Play, Plus, Save, FileCode, Code2 } from "lucide-react";
+import { Loader2, Play, Plus, Save, FileCode, Code2, Trash2, X } from "lucide-react";
 import Editor from "@monaco-editor/react";
 import { FileTab } from "@/components/FileTab";
 import { ConsolePanel } from "@/components/ConsolePanel";
@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { version } from "../../package.json"
 
 export default function IDE() {
   const { data: files, isLoading: isLoadingFiles } = useFiles();
@@ -172,7 +173,7 @@ export default function IDE() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full border border-white/5">
               <span className={`w-2 h-2 rounded-full ${isReady ? "bg-green-500" : "bg-yellow-500 animate-pulse"}`} />
-              {isReady ? "Environment Ready" : "Loading Python..."}
+              {isReady ? `Environment Ready          Version ${version}` : "Loading Python..."}
           </div>
         </div>
       </header>
@@ -364,4 +365,3 @@ function Trash2Btn({ onConfirm, disabled }: { onConfirm: () => void, disabled: b
     </button>
   );
 }
-import { Trash2, X } from "lucide-react";
