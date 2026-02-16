@@ -35,8 +35,11 @@ RUN npm install --omit=dev
 # Install AWS SDK v3 for S3 operations
 RUN npm install @aws-sdk/client-s3
 
-# Copy lambda handler
-COPY server/lambda.mjs ./dist/server/
+# Copy built application from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Copy Lambda handler (using .cjs for CommonJS compatibility)
+COPY lambda-handler.cjs ./
 
 # Copy scripts if needed
 COPY scripts ./scripts
