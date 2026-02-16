@@ -17,6 +17,7 @@
     "postversion": "git push && git push --tags"
   },
   "dependencies": {
+    "-": "^0.0.1",
     "@astrojs/node": "^9.5.3",
     "@astrojs/react": "^4.4.2",
     "@hookform/resolvers": "^5.2.2",
@@ -54,6 +55,7 @@
     "@types/react-dom": "^19.2.3",
     "astro": "^5.17.1",
     "autoprefixer": "^10.4.24",
+    "aws-cdk": "^2.1106.0",
     "better-sqlite3": "^12.6.2",
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
