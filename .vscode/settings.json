@@ -20,6 +20,8 @@
     },
     "peacock.color": "#6929BB",
     "json.schemaDownload.enable": true,
+    "json.maxItemsComputed": 5000,
+    "json.validate.enable": true,
     "cSpell.words": [
         "BAGKYYM",
         "boto",
