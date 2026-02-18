@@ -13,7 +13,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "version": "npm run build && git add -A dist",
+    "version": "npm run build && git add -Af dist",
     "postversion": "git push && git push --tags"
   },
   "dependencies": {
