@@ -66,7 +66,7 @@
     "eslint": "^10.0.0",
     "framer-motion": "^12.34.2",
     "input-otp": "^1.4.2",
-    "lucide-react": "^0.574.0",
+    "lucide-react": "^0.575.0",
     "next-themes": "^0.4.6",
     "react": "^19.2.4",
     "react-day-picker": "^9.13.2",
@@ -75,12 +75,12 @@
     "react-resizable-panels": "^4.6.4",
     "recharts": "^3.7.0",
     "serverless-http": "^4.0.0",
-    "tailwind-merge": "^3.4.1",
+    "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.0",
     "vaul": "^1.1.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^10.0.1",
     "@types/better-sqlite3": "^7.6.13",
     "drizzle-kit": "^0.31.9"
   }
