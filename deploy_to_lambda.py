@@ -28,7 +28,6 @@ Usage:
 import subprocess
 import sys
 import time
-import os
 import json
 from typing import Dict, Optional
 
