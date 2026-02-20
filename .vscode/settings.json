@@ -19,7 +19,7 @@
         "titleBar.inactiveForeground": "#e7e7e799"
     },
     "peacock.color": "#6929BB",
-    "json.schemaDownload.enable": true,
+    "json.schemaDownload.enable": false,
     "json.maxItemsComputed": 5000,
     "json.validate.enable": true,
     "cSpell.words": [
