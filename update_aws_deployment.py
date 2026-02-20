@@ -274,6 +274,58 @@ class UpdateDeployer:
             return False
         print(f"   {C.GREEN}✓{C.ENDC} Docker Hub username: {DOCKERHUB_USERNAME}")
 
+        # Docker Hub credentials check
+        docker_password = os.environ.get("DOCKER_PASSWORD", "")
+        if docker_password:
+            print(
+                f"   {C.GREEN}✓{C.ENDC} DOCKER_PASSWORD env var is set "
+                "(will use --password-stdin for non-interactive login)"
+            )
+        else:
+            # Check whether credentials are already cached in ~/.docker/config.json
+            docker_config_path = os.path.expanduser("~/.docker/config.json")
+            cached = False
+            if os.path.isfile(docker_config_path):
+                try:
+                    with open(docker_config_path, "r", encoding="utf-8") as fh:
+                        cfg = json.load(fh)
+                    auths       = cfg.get("auths", {})
+                    creds_store = cfg.get("credsStore", "")
+                    cred_helpers = cfg.get("credHelpers", {})
+                    hub_key     = "https://index.docker.io/v1/"
+                    if hub_key in auths or creds_store or cred_helpers:
+                        cached = True
+                except (OSError, json.JSONDecodeError):
+                    pass
+            if cached:
+                print(
+                    f"   {C.GREEN}✓{C.ENDC} Docker Hub cached credentials found "
+                    f"in {docker_config_path}"
+                )
+            else:
+                print(
+                    f"   {C.WARNING}⚠  No DOCKER_PASSWORD env var and no cached "
+                    "Docker Hub credentials detected.{C.ENDC}"
+                )
+                print(
+                    f"   {C.WARNING}   The script will time out at Stage 4 unless "
+                    "you do one of the following BEFORE running:{C.ENDC}"
+                )
+                print(
+                    f"   {C.WARNING}   Option A (recommended): pre-login in this "
+                    f"terminal:  docker login --username {DOCKERHUB_USERNAME}{C.ENDC}"
+                )
+                print(
+                    f"   {C.WARNING}   Option B: export DOCKER_PASSWORD='your-token' "
+                    "then re-run this script.{C.ENDC}"
+                )
+                # Non-fatal warning — allow the user to continue if they know
+                # credentials are cached somewhere the config check missed.
+                print(
+                    f"   {C.WARNING}   Continuing anyway — Stage 4 will fail "
+                    "clearly if login cannot complete.{C.ENDC}"
+                )
+
         # package.json exists?
         if not os.path.isfile(PACKAGE_JSON_PATH):
             print(f"   {C.FAIL}✗ package.json not found at {PACKAGE_JSON_PATH}{C.ENDC}")
