@@ -29,6 +29,7 @@
         "buildx",
         "certificatemanager",
         "cmdk",
+        "creds",
         "distconv",
         "dockerhub",
         "ENDC",
