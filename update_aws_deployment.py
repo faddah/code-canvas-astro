@@ -53,7 +53,7 @@ PACKAGE_JSON_PATH = os.path.join(PROJECT_ROOT, "package.json")
 # Set your Docker Hub username here.  The images will be pushed as:
 #   {DOCKERHUB_USERNAME}/code-canvas-astro-app:v{VERSION}
 #   {DOCKERHUB_USERNAME}/code-canvas-astro-db-init:v{VERSION}
-DOCKERHUB_USERNAME = "your-dockerhub-username"   # <── UPDATE THIS
+DOCKERHUB_USERNAME = "faddah"   # <── UPDATE THIS
 
 DOCKER_APP_IMAGE     = "code-canvas-astro-app"
 DOCKER_DB_INIT_IMAGE = "code-canvas-astro-db-init"
