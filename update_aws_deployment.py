@@ -551,18 +551,10 @@ class UpdateDeployer:
             f"and {DOCKERHUB_USERNAME}/{DOCKER_DB_INIT_IMAGE}:{self.image_tag}"
         )
 
-        # Log in to Docker Hub
-        self.reporter.progress("Authenticating with Docker Hub (docker login)…")
-        login_ok, _, login_err = run(
-            ["docker", "login", "--username", DOCKERHUB_USERNAME],
-            description="docker login (interactive — enter password/token when prompted)",
-        )
-        # docker login requires a password; if it fails due to missing stdin in
-        # a non-interactive shell, users should log in beforehand or set
-        # DOCKER_PASSWORD and use --password-stdin:
-        #   echo "$DOCKER_PASSWORD" | docker login --username $USER --password-stdin
-        # We attempt it; if already logged in, the cached credentials are reused.
-        # If it fails, we warn but continue (the push will fail and report clearly).
+        # Log in to Docker Hub (non-interactive, never hangs)
+        self.reporter.progress("Authenticating with Docker Hub…")
+        if not self._docker_hub_login():
+            return False
 
         images_to_push = [
             (
