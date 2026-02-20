@@ -216,9 +216,10 @@ class UpdateDeployer:
         self.ecr_image_uri: str = ""
 
         # Boto3 clients
-        self.ecr_client    = boto3.client("ecr",          region_name=AWS_REGION)
-        self.lambda_client = boto3.client("lambda",       region_name=AWS_REGION)
+        self.ecr_client    = boto3.client("ecr",           region_name=AWS_REGION)
+        self.lambda_client = boto3.client("lambda",        region_name=AWS_REGION)
         self.apigw_client  = boto3.client("apigateway",   region_name=AWS_REGION)
+        self.apigwv2_client = boto3.client("apigatewayv2", region_name=AWS_REGION)
         self.cf_client     = boto3.client("cloudfront")
         self.r53_client    = boto3.client("route53")
         self.sts_client    = boto3.client("sts")
