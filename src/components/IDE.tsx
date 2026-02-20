@@ -247,9 +247,9 @@ export default function IDE() {
                 {unsavedChanges[file.id] && (
                   <div className="w-2 h-2 rounded-full bg-yellow-500" />
                 )}
-                <Trash2Btn 
-                  onConfirm={() => deleteFile.mutate(file.id)} 
-                  disabled={files.length <= 1} 
+                <Trash2Btn
+                  onConfirm={() => handleDeleteFile(file.id)}
+                  disabled={files.length <= 1}
                 />
               </div>
             ))}
@@ -360,8 +360,8 @@ function Trash2Btn({ onConfirm, disabled }: { onConfirm: () => void, disabled: b
   if (showConfirm) {
     return (
       <div className="flex items-center gap-1 animate-in slide-in-from-right-2">
-        <button 
-          onClick={(e) => { e.stopPropagation(); onConfirm(); }}
+        <button
+          onClick={(e) => { e.stopPropagation(); setShowConfirm(false); onConfirm(); }}
           className="text-xs bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded hover:bg-red-500/40"
         >
           Confirm
