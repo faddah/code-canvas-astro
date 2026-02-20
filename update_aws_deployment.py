@@ -268,7 +268,7 @@ class UpdateDeployer:
                 f"   {C.FAIL}✗ DOCKERHUB_USERNAME is not set in this script.{C.ENDC}"
             )
             print(
-                f"   {C.WARNING}Fix: open update-aws-deployment.py and set "
+                f"   {C.WARNING}Fix: open update_aws_deployment.py and set "
                 "DOCKERHUB_USERNAME to your Docker Hub account name.{C.ENDC}"
             )
             return False
