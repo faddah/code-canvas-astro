@@ -446,6 +446,104 @@ class UpdateDeployer:
     # STAGE 4 — Log in to Docker Hub & push both containers
     # ────────────────────────────────────────────────────────────────────────
 
+    # ────────────────────────────────────────────────────────────────────────
+    # Docker Hub login helper (non-interactive, never hangs)
+    # ────────────────────────────────────────────────────────────────────────
+
+    def _docker_hub_login(self) -> bool:
+        """
+        Log in to Docker Hub without ever blocking on interactive input.
+
+        Strategy (in order):
+          1. If DOCKER_PASSWORD env var is set → use --password-stdin (safest).
+          2. Otherwise try docker login without a password flag with a short
+             timeout — succeeds immediately when credentials are already cached
+             in the OS credential store / ~/.docker/config.json.
+          3. If that also times out → fail with a clear fix message.
+        """
+        password = os.environ.get("DOCKER_PASSWORD", "")
+
+        if password:
+            self.reporter.progress(
+                "DOCKER_PASSWORD env var detected — logging in via --password-stdin…"
+            )
+            try:
+                proc = subprocess.run(
+                    [
+                        "docker", "login",
+                        "--username", DOCKERHUB_USERNAME,
+                        "--password-stdin",
+                    ],
+                    input=password,
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                )
+                if proc.returncode == 0:
+                    self.reporter.info("Docker Hub login successful (--password-stdin)")
+                    return True
+                stderr = proc.stderr.strip()
+                self.reporter.fail(
+                    "Docker Hub login rejected the supplied DOCKER_PASSWORD.",
+                    fix_hint=(
+                        f"docker login error: {stderr}\n"
+                        "   Ensure DOCKER_PASSWORD is a valid Docker Hub password "
+                        "or Personal Access Token (PAT) for the account "
+                        f"'{DOCKERHUB_USERNAME}'."
+                    ),
+                )
+                return False
+            except subprocess.TimeoutExpired:
+                self.reporter.fail(
+                    "docker login timed out even with --password-stdin.",
+                    fix_hint="Check your network connection and Docker daemon status.",
+                )
+                return False
+
+        # No env var — try with cached credentials (must complete instantly)
+        self.reporter.progress(
+            "No DOCKER_PASSWORD env var — trying cached credentials "
+            f"for '{DOCKERHUB_USERNAME}'…"
+        )
+        try:
+            proc = subprocess.run(
+                ["docker", "login", "--username", DOCKERHUB_USERNAME],
+                capture_output=True,
+                text=True,
+                timeout=15,   # cached login completes in <1 s; hang = no creds
+            )
+            if proc.returncode == 0:
+                self.reporter.info(
+                    "Docker Hub login successful (cached credentials)"
+                )
+                return True
+            stderr = proc.stderr.strip()
+            self.reporter.fail(
+                "Docker Hub login failed — credentials rejected.",
+                fix_hint=(
+                    f"docker login error: {stderr}\n"
+                    f"   Fix Option A: export DOCKER_PASSWORD='your-pat-token' "
+                    "then re-run.\n"
+                    f"   Fix Option B: pre-login in your terminal: "
+                    f"docker login --username {DOCKERHUB_USERNAME}"
+                ),
+            )
+            return False
+        except subprocess.TimeoutExpired:
+            self.reporter.fail(
+                "docker login timed out — no cached credentials found and "
+                "DOCKER_PASSWORD env var is not set.",
+                fix_hint=(
+                    "Choose one of these options, then re-run the script:\n"
+                    f"   Option A (env var):  export DOCKER_PASSWORD='your-pat-token'\n"
+                    f"   Option B (pre-login): docker login --username {DOCKERHUB_USERNAME}\n"
+                    "   A Docker Hub Personal Access Token (PAT) is recommended over "
+                    "your account password. Generate one at:\n"
+                    "   https://app.docker.com/settings/personal-access-tokens"
+                ),
+            )
+            return False
+
     def stage_04_push_to_dockerhub(self) -> bool:
         self.reporter.start(
             f"Push Docker containers to Docker Hub as "
