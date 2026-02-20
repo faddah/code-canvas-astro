@@ -30,3 +30,6 @@ pnpm-debug.log*
 *.db
 *.db-shm
 *.db-wal
+
+# other
+distance.py
