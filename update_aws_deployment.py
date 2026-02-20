@@ -20,7 +20,7 @@ Pipeline:
   12. Final health check          (https://pyrepl.dev)
 
 Usage:
-    python3 update-aws-deployment.py
+    python3 update_aws_deployment.py
 
 Requirements:
     pip install boto3 botocore
