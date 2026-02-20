@@ -868,18 +868,23 @@ class UpdateDeployer:
             "is operational"
         )
         try:
+            # pyrepl-api is an HTTP API (Gateway v2) — use apigatewayv2 client
             self.reporter.progress(
-                f"Calling apigateway:GetRestApi for ID={API_GATEWAY_ID}…"
+                f"Calling apigatewayv2:GetApi for ID={API_GATEWAY_ID}…"
             )
-            response = self.apigw_client.get_rest_api(restApiId=API_GATEWAY_ID)
+            response = self.apigwv2_client.get_api(ApiId=API_GATEWAY_ID)
 
-            api_name = response.get("name", "(unknown)")
-            api_id   = response.get("id", API_GATEWAY_ID)
-            created  = response.get("createdDate", "")
+            api_name     = response.get("Name", "(unknown)")
+            api_id       = response.get("ApiId", API_GATEWAY_ID)
+            protocol     = response.get("ProtocolType", "")
+            created      = response.get("CreatedDate", "")
+            api_endpoint = response.get("ApiEndpoint", "")
 
-            self.reporter.info(f"API Name   : {api_name}")
-            self.reporter.info(f"API ID     : {api_id}")
-            self.reporter.info(f"Created At : {created}")
+            self.reporter.info(f"API Name     : {api_name}")
+            self.reporter.info(f"API ID       : {api_id}")
+            self.reporter.info(f"Protocol     : {protocol}")
+            self.reporter.info(f"Created At   : {created}")
+            self.reporter.info(f"API Endpoint : {api_endpoint}")
 
             # Verify stages exist
             stages = self.apigw_client.get_stages(restApiId=API_GATEWAY_ID)
@@ -899,7 +904,8 @@ class UpdateDeployer:
                     error=exc,
                     fix_hint=(
                         f"Verify in AWS Console → API Gateway → APIs. "
-                        f"Expected ID: {API_GATEWAY_ID}"
+                        f"Expected ID: {API_GATEWAY_ID}. "
+                        f"Also confirm the API is in region {AWS_REGION}."
                     ),
                 )
             else:
