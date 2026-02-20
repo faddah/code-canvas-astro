@@ -110,5 +110,13 @@ export function useDeleteFile() {
         description: "The file has been permanently removed.",
       });
     },
+    onError: (error) => {
+      console.error("Delete file error:", error);
+      toast({
+        variant: "destructive",
+        title: "Delete Failed",
+        description: "Could not delete the file. Check the browser console (F12 → Network tab) for details.",
+      });
+    },
   });
 }
