@@ -119,6 +119,26 @@ export default function IDE() {
     setActiveFileId(id);
   };
 
+  const handleDeleteFile = (id: number) => {
+    deleteFile.mutate(id, {
+      onSuccess: () => {
+        // Close the tab if it was open
+        setOpenFileIds(prev => prev.filter(fid => fid !== id));
+        // Switch to another tab if this was the active file
+        if (activeFileId === id) {
+          const remaining = openFileIds.filter(fid => fid !== id);
+          setActiveFileId(remaining.length > 0 ? remaining[remaining.length - 1] : null);
+        }
+        // Discard any unsaved changes for the deleted file
+        setUnsavedChanges(prev => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+      },
+    });
+  };
+
   if (isLoadingFiles) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-background text-primary">
