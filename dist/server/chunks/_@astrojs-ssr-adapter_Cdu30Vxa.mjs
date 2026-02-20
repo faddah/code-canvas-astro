@@ -1,7 +1,7 @@
-import { p as decryptString, q as createSlotValueFromString, v as isAstroComponentFactory, k as renderComponent, r as renderTemplate, R as ROUTE_TYPE_HEADER, w as REROUTE_DIRECTIVE_HEADER, A as AstroError, x as i18nNoLocaleFoundInPath, y as ResponseSentError, z as ActionNotFoundError, B as MiddlewareNoDataOrNextCalled, C as MiddlewareNotAResponse, D as originPathnameSymbol, G as RewriteWithBodyUsed, H as GetStaticPathsRequired, J as InvalidGetStaticPathsReturn, K as InvalidGetStaticPathsEntry, O as GetStaticPathsExpectedParams, P as GetStaticPathsInvalidRouteParam, Q as PageNumberParamNotFound, S as DEFAULT_404_COMPONENT, T as NoMatchingStaticPathFound, V as PrerenderDynamicEndpointPathCollide, W as ReservedSlotName, X as renderSlotToString, Y as renderJSX, Z as chunkToString, _ as isRenderInstruction, $ as ForbiddenRewrite, a0 as SessionStorageInitError, a1 as SessionStorageSaveError, a2 as ASTRO_VERSION, a3 as CspNotEnabled, a4 as LocalsReassigned, a5 as generateCspDigest, a6 as PrerenderClientAddressNotAvailable, a7 as clientAddressSymbol, a8 as ClientAddressNotAvailable, a9 as StaticClientAddressNotAvailable, aa as AstroResponseHeadersReassigned, ab as responseSentSymbol$1, ac as renderPage, ad as REWRITE_DIRECTIVE_HEADER_KEY, ae as REWRITE_DIRECTIVE_HEADER_VALUE, af as renderEndpoint, ag as LocalsNotAnObject, ah as FailedToFindPageMapSSR, ai as REROUTABLE_STATUS_CODES, aj as nodeRequestAbortControllerCleanupSymbol } from './astro/server_0IadgrTN.mjs';
+import { p as decryptString, q as createSlotValueFromString, v as isAstroComponentFactory, k as renderComponent, r as renderTemplate, w as ROUTE_TYPE_HEADER, x as REROUTE_DIRECTIVE_HEADER, A as AstroError, y as i18nNoLocaleFoundInPath, z as ResponseSentError, B as ActionNotFoundError, C as MiddlewareNoDataOrNextCalled, D as MiddlewareNotAResponse, G as originPathnameSymbol, H as RewriteWithBodyUsed, J as GetStaticPathsRequired, K as InvalidGetStaticPathsReturn, O as InvalidGetStaticPathsEntry, P as GetStaticPathsExpectedParams, Q as GetStaticPathsInvalidRouteParam, S as PageNumberParamNotFound, T as DEFAULT_404_COMPONENT, V as NoMatchingStaticPathFound, W as PrerenderDynamicEndpointPathCollide, X as ReservedSlotName, Y as renderSlotToString, Z as renderJSX, _ as chunkToString, $ as isRenderInstruction, a0 as ForbiddenRewrite, a1 as SessionStorageInitError, a2 as SessionStorageSaveError, a3 as ASTRO_VERSION, a4 as CspNotEnabled, a5 as LocalsReassigned, a6 as generateCspDigest, a7 as PrerenderClientAddressNotAvailable, a8 as clientAddressSymbol, a9 as ClientAddressNotAvailable, aa as StaticClientAddressNotAvailable, ab as AstroResponseHeadersReassigned, ac as responseSentSymbol$1, ad as renderPage, ae as REWRITE_DIRECTIVE_HEADER_KEY, af as REWRITE_DIRECTIVE_HEADER_VALUE, ag as renderEndpoint, ah as LocalsNotAnObject, ai as FailedToFindPageMapSSR, aj as REROUTABLE_STATUS_CODES, ak as nodeRequestAbortControllerCleanupSymbol } from './astro/server_DIFig9Wl.mjs';
 import colors from 'piccolore';
 import 'clsx';
-import { A as ActionError, d as deserializeActionResult, s as serializeActionResult, a as ACTION_RPC_ROUTE_PATTERN, b as ACTION_QUERY_PARAMS, g as getActionQueryString, D as DEFAULT_404_ROUTE, c as default404Instance, N as NOOP_MIDDLEWARE_FN, e as ensure404Route } from './astro-designed-error-pages_ClSvYyOc.mjs';
+import { A as ActionError, d as deserializeActionResult, s as serializeActionResult, a as ACTION_RPC_ROUTE_PATTERN, b as ACTION_QUERY_PARAMS, g as getActionQueryString, D as DEFAULT_404_ROUTE, c as default404Instance, N as NOOP_MIDDLEWARE_FN, e as ensure404Route } from './astro-designed-error-pages_DFBq8yIs.mjs';
 import 'es-module-lexer';
 import buffer from 'node:buffer';
 import crypto$1 from 'node:crypto';
@@ -966,6 +966,9 @@ function getActionContext(context) {
         try {
           input = await parseRequestBody(context.request);
         } catch (e) {
+          if (e instanceof ActionError) {
+            return { data: void 0, error: e };
+          }
           if (e instanceof TypeError) {
             return { data: void 0, error: new ActionError({ code: "UNSUPPORTED_MEDIA_TYPE" }) };
           }
@@ -1009,17 +1012,73 @@ function getCallerInfo(ctx) {
   }
   return void 0;
 }
+const DEFAULT_ACTION_BODY_SIZE_LIMIT = 1024 * 1024;
 async function parseRequestBody(request) {
   const contentType = request.headers.get("content-type");
-  const contentLength = request.headers.get("Content-Length");
+  const contentLengthHeader = request.headers.get("content-length");
+  const contentLength = contentLengthHeader ? Number.parseInt(contentLengthHeader, 10) : void 0;
+  const hasContentLength = typeof contentLength === "number" && Number.isFinite(contentLength);
   if (!contentType) return void 0;
+  if (hasContentLength && contentLength > DEFAULT_ACTION_BODY_SIZE_LIMIT) {
+    throw new ActionError({
+      code: "CONTENT_TOO_LARGE",
+      message: `Request body exceeds ${DEFAULT_ACTION_BODY_SIZE_LIMIT} bytes`
+    });
+  }
   if (hasContentType(contentType, formContentTypes)) {
+    if (!hasContentLength) {
+      const body = await readRequestBodyWithLimit(request.clone(), DEFAULT_ACTION_BODY_SIZE_LIMIT);
+      const formRequest = new Request(request.url, {
+        method: request.method,
+        headers: request.headers,
+        body: toArrayBuffer(body)
+      });
+      return await formRequest.formData();
+    }
     return await request.clone().formData();
   }
   if (hasContentType(contentType, ["application/json"])) {
-    return contentLength === "0" ? void 0 : await request.clone().json();
+    if (contentLength === 0) return void 0;
+    if (!hasContentLength) {
+      const body = await readRequestBodyWithLimit(request.clone(), DEFAULT_ACTION_BODY_SIZE_LIMIT);
+      if (body.byteLength === 0) return void 0;
+      return JSON.parse(new TextDecoder().decode(body));
+    }
+    return await request.clone().json();
   }
   throw new TypeError("Unsupported content type");
+}
+async function readRequestBodyWithLimit(request, limit) {
+  if (!request.body) return new Uint8Array();
+  const reader = request.body.getReader();
+  const chunks = [];
+  let received = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) {
+      received += value.byteLength;
+      if (received > limit) {
+        throw new ActionError({
+          code: "CONTENT_TOO_LARGE",
+          message: `Request body exceeds ${limit} bytes`
+        });
+      }
+      chunks.push(value);
+    }
+  }
+  const buffer = new Uint8Array(received);
+  let offset = 0;
+  for (const chunk of chunks) {
+    buffer.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return buffer;
+}
+function toArrayBuffer(buffer) {
+  const copy = new Uint8Array(buffer.byteLength);
+  copy.set(buffer);
+  return copy.buffer;
 }
 
 function hasActionPayload(locals) {

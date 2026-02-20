@@ -1,4 +1,4 @@
-import { e as createComponent, m as maybeRenderHead, k as renderComponent, r as renderTemplate } from '../chunks/astro/server_0IadgrTN.mjs';
+import { e as createComponent, m as maybeRenderHead, k as renderComponent, r as renderTemplate } from '../chunks/astro/server_DIFig9Wl.mjs';
 import 'piccolore';
 import { jsx } from 'react/jsx-runtime';
 import * as React from 'react';
