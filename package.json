@@ -17,7 +17,6 @@
     "postversion": "git push && git push --tags"
   },
   "dependencies": {
-    "-": "^0.0.1",
     "@astrojs/node": "^9.5.4",
     "@astrojs/react": "^4.4.2",
     "@hookform/resolvers": "^5.2.2",
