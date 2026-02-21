@@ -9,7 +9,7 @@ interface FileTabProps {
   onClose: (e: React.MouseEvent) => void;
 }
 
-export function FileTab({ id, name, isActive, isUnsaved, onClick, onClose }: FileTabProps) {
+export function FileTab({ name, isActive, isUnsaved, onClick, onClose }: FileTabProps) {
   return (
     <div
       onClick={onClick}
