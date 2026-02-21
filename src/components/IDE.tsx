@@ -398,7 +398,7 @@ function Trash2Btn({ onConfirm, disabled }: { onConfirm: () => void, disabled: b
       onClick={(e: React.MouseEvent) => { e.stopPropagation(); setShowConfirm(true); }}
       className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded transition-opacity"
     >
-      <Trash2 className="w-3 h-3 text-muted-foreground hover:text-red-400" />
+      {Trash2({ className: "w-3 h-3 text-muted-foreground hover:text-red-400" })}
     </button>
   );
 }
