@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, buildUrl, type InsertFile, type File } from "@shared/schema";
+import { api, buildUrl, type InsertFile } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
 // Fetch all files
