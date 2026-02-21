@@ -213,7 +213,7 @@ export default function IDE() {
               </DialogTrigger>
               <DialogContent className="bg-white text-black min-h-[220px] sm:rounded-xl">
                 <DialogHeader>
-                  <DialogTitle>Create New File</DialogTitle>
+                  <DialogTitle className="text-black font-bold text-xl">Create New File</DialogTitle>
                 </DialogHeader>
                 <div className="py-4">
                   <Input 
