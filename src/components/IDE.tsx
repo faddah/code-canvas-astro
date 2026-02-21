@@ -49,6 +49,8 @@ export default function IDE() {
   const handleSave = async () => {
     if (!activeFileId || unsavedChanges[activeFileId] === undefined) return;
     
+    const content = unsavedChanges[activeFileId];
+    
     try {
       await updateFile.mutateAsync({
         id: activeFileId,
