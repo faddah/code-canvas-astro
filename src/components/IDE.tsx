@@ -387,7 +387,7 @@ function Trash2Btn({ onConfirm, disabled }: { onConfirm: () => void, disabled: b
           onClick={(e: React.MouseEvent) => { e.stopPropagation(); setShowConfirm(false); }}
           className="p-0.5 hover:bg-white/10 rounded"
         >
-          <X className="w-3 h-3" />
+          {X({ className: "w-3 h-3" })}
         </button>
       </div>
     );
