@@ -123,7 +123,8 @@ export function useDeleteFile() {
       });
     },
     onError: (error) => {
-      console.error("Delete file error:", error);
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error("[useDeleteFile] onError:", msg);
       toast({
         variant: "destructive",
         title: "Delete Failed",
