@@ -222,6 +222,7 @@ export default function IDE() {
                     onChange={e => setNewFileName(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleCreateFile()}
                     autoFocus
+                    className="bg-white text-black font-bold text-base border-2 border-gray-400 h-12 placeholder:text-gray-400 focus-visible:ring-blue-500"
                   />
                 </div>
                 <DialogFooter>
