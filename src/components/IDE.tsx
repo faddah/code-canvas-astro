@@ -225,8 +225,21 @@ export default function IDE() {
                     className="bg-white text-black font-bold text-base border-2 border-gray-400 h-12 placeholder:text-gray-400 focus-visible:ring-blue-500"
                   />
                 </div>
-                <DialogFooter>
-                  <Button onClick={handleCreateFile}>Create File</Button>
+                <DialogFooter className="gap-2 sm:gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => { setIsNewFileDialogOpen(false); setNewFileName(""); }}
+                    className="border-gray-400 text-black hover:bg-gray-100 font-semibold"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleCreateFile}
+                    disabled={!newFileName.trim()}
+                    className="font-semibold"
+                  >
+                    Add
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
