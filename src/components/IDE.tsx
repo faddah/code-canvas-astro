@@ -210,7 +210,7 @@ export default function IDE() {
             <Dialog open={isNewFileDialogOpen} onOpenChange={setIsNewFileDialogOpen}>
               <DialogTrigger asChild>
                 <button className="hover:text-primary hover:bg-primary/10 p-1 rounded transition-colors">
-                  <Plus className="w-4 h-4" />
+                  {Plus({ className: "w-4 h-4" })}
                 </button>
               </DialogTrigger>
               <DialogContent className="bg-white text-black min-h-[220px] sm:rounded-xl">
