@@ -211,7 +211,7 @@ export default function IDE() {
                   <Plus className="w-4 h-4" />
                 </button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="bg-white text-black min-h-[220px] sm:rounded-xl">
                 <DialogHeader>
                   <DialogTitle>Create New File</DialogTitle>
                 </DialogHeader>
