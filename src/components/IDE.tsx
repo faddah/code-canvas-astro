@@ -160,7 +160,7 @@ export default function IDE() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-primary font-bold tracking-tight">
             <div className="bg-primary/20 p-1.5 rounded-md">
-              <Code2 className="w-5 h-5 text-primary" />
+              {Code2({ className: "w-5 h-5 text-primary" })}
             </div>
             <span className="font-mono text-lg hidden md:block">Python REPL IDE</span>
           </div>
