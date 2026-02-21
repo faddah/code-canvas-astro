@@ -128,7 +128,7 @@ export function useDeleteFile() {
       toast({
         variant: "destructive",
         title: "Delete Failed",
-        description: "Could not delete the file. Check the browser console (F12 → Network tab) for details.",
+        description: msg,
       });
     },
   });
