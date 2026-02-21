@@ -16,4 +16,6 @@ if (!databaseUrl) {
 const dbPath = databaseUrl.replace(/^(sqlite:|file:)/, "");
 
 const sqlite = new Database(dbPath);
+sqlite.pragma("journal_mode = WAL");
+sqlite.pragma("busy_timeout = 5000");
 export const db = drizzle(sqlite, { schema });
