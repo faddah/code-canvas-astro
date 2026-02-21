@@ -2,7 +2,6 @@ import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FileTabProps {
-  id: number;
   name: string;
   isActive: boolean;
   isUnsaved?: boolean;
