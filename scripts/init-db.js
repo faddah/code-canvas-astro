@@ -9,6 +9,8 @@ const dbPath = databaseUrl.replace(/^(sqlite:|file:)/, '');
 console.log('Initializing database at:', dbPath);
 
 const sqlite = new Database(dbPath);
+sqlite.pragma('journal_mode = WAL');
+sqlite.pragma('busy_timeout = 5000');
 const db = drizzle(sqlite);
 
 // Create the files table if it doesn't exist
