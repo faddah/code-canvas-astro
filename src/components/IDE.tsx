@@ -307,10 +307,11 @@ export default function IDE() {
                 {/* Monaco Editor */}
                 <div className="flex-1 relative bg-[#1e1e1e]">
                   {activeFileId ? (
-                    <Editor
-                      height="100%"
-                      defaultLanguage="python"
-                      theme="vs-dark"
+                    <div style={{ height: '100%' }}>
+                      {Editor({
+                        height: "100%",
+                        defaultLanguage: "python",
+                        theme="vs-dark"
                       path={`file://${activeFileId}`} // Important for independent editor states
                       value={unsavedChanges[activeFileId] ?? activeFile?.content}
                       onChange={handleEditorChange}
