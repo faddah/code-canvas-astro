@@ -100,6 +100,7 @@ export function useDeleteFile() {
   return useMutation({
     mutationFn: async (id: number) => {
       const url = buildUrl(api.files.delete.path, { id });
+      console.log(`[useDeleteFile] Sending DELETE ${url}`);
       const res = await fetch(url, { method: api.files.delete.method });
       console.log(`[useDeleteFile] Response status: ${res.status}`);
       if (!res.ok) {
