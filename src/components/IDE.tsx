@@ -145,7 +145,7 @@ export default function IDE() {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-background text-primary">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 animate-spin" />
+          {Loader2({ className: "w-10 h-10 animate-spin" })}
           <p className="text-muted-foreground font-mono animate-pulse">Initializing Environment...</p>
         </div>
       </div>
