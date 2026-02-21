@@ -285,15 +285,15 @@ export default function IDE() {
                     const file = files?.find(f => f.id === id);
                     if (!file) return null;
                     return (
-                      <FileTab
-                        key={id}
-                        id={id}
-                        name={file.name}
-                        isActive={activeFileId === id}
-                        isUnsaved={!!unsavedChanges[id]}
-                        onClick={() => setActiveFileId(id)}
-                        onClose={(e) => closeTab(e, id)}
-                      />
+                      <div key={id}>
+                        <FileTab
+                          name={file.name}
+                          isActive={activeFileId === id}
+                          isUnsaved={!!unsavedChanges[id]}
+                          onClick={() => setActiveFileId(id)}
+                          onClose={(e) => closeTab(e, id)}
+                        />
+                      </div>
                     );
                   })}
                   
