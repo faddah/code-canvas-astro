@@ -332,7 +332,7 @@ export default function IDE() {
                     </div>
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground/30">
-                      <Code2 className="w-16 h-16 mb-4 opacity-20" />
+                      {Code2({ className: "w-16 h-16 mb-4 opacity-20" })}
                       <p>Select a file to edit</p>
                     </div>
                   )}
