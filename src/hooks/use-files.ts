@@ -101,7 +101,18 @@ export function useDeleteFile() {
     mutationFn: async (id: number) => {
       const url = buildUrl(api.files.delete.path, { id });
       const res = await fetch(url, { method: api.files.delete.method });
-      if (!res.ok) throw new Error("Failed to delete file");
+      console.log(`[useDeleteFile] Response status: ${res.status}`);
+      if (!res.ok) {
+        let serverMsg = `HTTP ${res.status}`;
+        try {
+          const body = await res.json();
+          serverMsg = body.error ?? body.message ?? serverMsg;
+        } catch {
+          // body was not JSON
+        }
+        console.error(`[useDeleteFile] Delete failed — ${serverMsg}`);
+        throw new Error(serverMsg);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.files.list.path] });
