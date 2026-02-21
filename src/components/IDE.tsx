@@ -54,7 +54,7 @@ export default function IDE() {
     try {
       await updateFile.mutateAsync({
         id: activeFileId,
-        content: unsavedChanges[activeFileId],
+        content: content,
       });
       
       setUnsavedChanges(prev => {
