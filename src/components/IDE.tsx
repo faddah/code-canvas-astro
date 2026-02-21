@@ -378,7 +378,7 @@ function Trash2Btn({ onConfirm, disabled }: { onConfirm: () => void, disabled: b
     return (
       <div className="flex items-center gap-1 animate-in slide-in-from-right-2">
         <button
-          onClick={(e) => { e.stopPropagation(); setShowConfirm(false); onConfirm(); }}
+          onClick={(e: React.MouseEvent) => { e.stopPropagation(); setShowConfirm(false); onConfirm(); }}
           className="text-xs bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded hover:bg-red-500/40"
         >
           Confirm
