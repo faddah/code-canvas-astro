@@ -3,14 +3,8 @@ set -e
 
 echo "Starting Code Canvas Astro..."
 
-# Initialize the database schema if needed
-echo "Initializing database schema..."
-node /app/scripts/init-db.js
-
-# Seed the database with initial data if empty
-echo "Seeding database..."
-node /app/scripts/seed-db.js
-
 # Start the Astro server
+# Note: database init and seed are handled by the db-init container
+# which is guaranteed to complete before this container starts
 echo "Starting server..."
-exec node /app/dist/server/entry.mjs --host
+exec node /app/dist/server/entry.mjs
