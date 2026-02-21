@@ -311,25 +311,25 @@ export default function IDE() {
                       {Editor({
                         height: "100%",
                         defaultLanguage: "python",
-                        theme="vs-dark"
-                      path={`file://${activeFileId}`} // Important for independent editor states
-                      value={unsavedChanges[activeFileId] ?? activeFile?.content}
-                      onChange={handleEditorChange}
-                      options={{
-                        minimap: { enabled: false },
-                        fontSize: 14,
-                        fontFamily: "'JetBrains Mono', monospace",
-                        lineNumbers: "on",
-                        scrollBeyondLastLine: false,
-                        automaticLayout: true,
-                        tabSize: 4,
-                        padding: { top: 16 }
-                      }}
-                      onMount={(editor) => {
-                        // Add save command
-                        editor.addCommand(2048 | 49, handleSave); // Ctrl+S / Cmd+S
-                      }}
-                    />
+                        theme: "vs-dark",
+                        path: `file://${activeFileId}`,
+                        value: unsavedChanges[activeFileId] ?? activeFile?.content,
+                        onChange: handleEditorChange,
+                        options: {
+                          minimap: { enabled: false },
+                          fontSize: 14,
+                          fontFamily: "'JetBrains Mono', monospace",
+                          lineNumbers: "on",
+                          scrollBeyondLastLine: false,
+                          automaticLayout: true,
+                          tabSize: 4,
+                          padding: { top: 16 }
+                        },
+                        onMount: (editor) => {
+                          editor.addCommand(2048 | 49, handleSave);
+                        }
+                      })}
+                    </div>
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground/30">
                       <Code2 className="w-16 h-16 mb-4 opacity-20" />
