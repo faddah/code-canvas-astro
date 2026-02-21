@@ -186,7 +186,7 @@ export default function IDE() {
               disabled={!activeFileId}
               className={unsavedChanges[activeFileId || 0] ? "border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10" : ""}
             >
-              <Save className="w-4 h-4 mr-2" />
+              {Save({ className: "w-4 h-4 mr-2" })}
               Save
             </Button>
           </div>
