@@ -258,7 +258,7 @@ export default function IDE() {
                     : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                 }`}
               >
-                <FileCode className="w-4 h-4 opacity-70" />
+                {FileCode({ className: "w-4 h-4 opacity-70" })}
                 <span className="truncate flex-1">{file.name}</span>
                 {unsavedChanges[file.id] && (
                   <div className="w-2 h-2 rounded-full bg-yellow-500" />
