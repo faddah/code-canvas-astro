@@ -215,10 +215,10 @@ export default function IDE() {
                 <DialogHeader>
                   <DialogTitle className="text-black font-bold text-xl">Create New File</DialogTitle>
                 </DialogHeader>
-                <div className="py-4">
-                  <Input 
-                    placeholder="script.py" 
-                    value={newFileName} 
+                <div className="py-5">
+                  <Input
+                    placeholder="script.py"
+                    value={newFileName}
                     onChange={e => setNewFileName(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleCreateFile()}
                     autoFocus
