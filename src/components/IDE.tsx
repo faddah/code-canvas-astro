@@ -175,7 +175,7 @@ export default function IDE() {
               disabled={!isReady || isRunning || !activeFileId}
               className="bg-green-600 hover:bg-green-700 text-white border-none shadow-lg shadow-green-900/20 transition-all active:scale-95"
             >
-              {isRunning ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Play className="w-4 h-4 mr-2 fill-current" />}
+              {isRunning ? Loader2({ className: "w-4 h-4 mr-2 animate-spin" }) : Play({ className: "w-4 h-4 mr-2 fill-current" })}
               Run
             </Button>
 
