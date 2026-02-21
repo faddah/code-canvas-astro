@@ -886,9 +886,9 @@ class UpdateDeployer:
             self.reporter.info(f"Created At   : {created}")
             self.reporter.info(f"API Endpoint : {api_endpoint}")
 
-            # Verify stages exist
-            stages = self.apigw_client.get_stages(restApiId=API_GATEWAY_ID)
-            stage_names = [s["stageName"] for s in stages.get("item", [])]
+            # Verify stages exist (HTTP API v2 — uses apigatewayv2 client)
+            stages = self.apigwv2_client.get_stages(ApiId=API_GATEWAY_ID)
+            stage_names = [s["StageName"] for s in stages.get("Items", [])]
             self.reporter.info(f"Stages     : {stage_names if stage_names else '(none)'}")
 
             self.reporter.success(
