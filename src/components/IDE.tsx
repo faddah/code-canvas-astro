@@ -271,7 +271,7 @@ export default function IDE() {
           </div>
           {/* Explorer Footer */}
           <div className="px-3 py-2 border-t border-border text-[10px] text-muted-foreground/60 italic leading-relaxed">
-            <p>&copy; 2026 186,000 miles / second productions</p>
+            <p>&copy;{new Date().getFullYear()} 186,000 miles / second productions</p>
             <a
               href="mailto:my_biz@me.com?subject=Code%20Canvas%20Feedback"
               target="_blank"
