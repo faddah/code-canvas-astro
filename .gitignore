@@ -1,5 +1,12 @@
+# VS Code
+.vscode/
+.vscode/**
+.vscode/**/*
+.vscode/*.json
+
 # build output
 dist/
+
 # generated types
 .astro/
 
