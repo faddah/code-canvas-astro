@@ -269,6 +269,22 @@ export default function IDE() {
               </div>
             ))}
           </div>
+          {/* Explorer Footer */}
+          <div className="px-3 py-2 border-t border-border text-[10px] text-muted-foreground/60 italic leading-relaxed">
+            <p>&copy; 2026 186,000 miles / second productions</p>
+            <a
+              href="mailto:my_biz@me.com?subject=Code%20Canvas%20Feedback"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.location.href = "mailto:my_biz@me.com?subject=Code%20Canvas%20Feedback";
+              }}
+              className="hover:text-primary transition-colors underline"
+            >
+              Send Feedback
+            </a>
+          </div>
         </div>
 
         {/* Editor & Preview Area */}
