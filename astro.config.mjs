@@ -22,8 +22,8 @@ export default defineConfig({
 
   integrations: [
     react({
-      experimentalReactChildren: true
-    })
+      experimentalReactChildren: true,
+    }),
   ],
 
   vite: {
@@ -34,11 +34,11 @@ export default defineConfig({
         '@': './src',
         '@shared': './src/shared',
         '@assets': './src/assets',
-      }
-    }
+      },
+    },
   },
 
   adapter: node({
-    mode: 'standalone'
-  })
+    mode: 'standalone',
+  }),
 });
