@@ -280,7 +280,7 @@ export default function IDE() {
                 e.stopPropagation();
                 window.location.href = "mailto:my_biz@me.com?subject=Code%20Canvas%20Feedback";
               }}
-              className="hover:text-primary transition-colors underline"
+              className="text-[#000080] hover:text-[#1E90FF] active:text-[#1E90FF] transition-colors underline"
             >
               Send Feedback
             </a>
