@@ -1,6 +1,6 @@
 # Python REPL IDE App
 
-![Python REPL IDE App Screen Shot](./client/public/python-repl-ide-app-screenshot.png)
+![Python REPL IDE App Screen Shot](https://github.com/faddah/code-canvas-astro/blob/4c53d2ebc2e9b0dbdf1c0e052d92b0aeeaff7ad0/public/python-repl-ide-app-screenshot.png)
 
 A full-stack web-based IDE for executing Python code with an integrated REPL (Read-Eval-Print Loop). This application provides a modern, interactive development environment with a file explorer, console panel, and live web preview capabilities.
 
