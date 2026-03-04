@@ -24,6 +24,7 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // Legacy methods (backward compat — operate on starter_files)
   async getFiles(): Promise<File[]> {
     return await db.select().from(files).orderBy(files.id);
   }
