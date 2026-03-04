@@ -46,7 +46,7 @@ render(f'<h1 style="text-align: center;">{utils.greet("Faddah")}</h1>')
 
 try {
   // Check if data already exists
-  const countResult = db.get(sql`SELECT COUNT(*) as count FROM files`);
+  const countResult = db.get(sql`SELECT COUNT(*) as count FROM starter_files`);
 
   if (countResult && countResult.count > 0) {
     console.log(`✓ Database already has ${countResult.count} records, skipping seed`);
@@ -58,7 +58,7 @@ try {
 
   for (const record of seedData) {
     db.run(sql`
-      INSERT INTO files (id, name, content, created_at)
+      INSERT INTO starter_files (id, name, content, created_at)
       VALUES (${record.id}, ${record.name}, ${record.content}, ${record.created_at})
     `);
   }
