@@ -429,14 +429,14 @@ export default function IDE() {
         {/* Editor & Preview Area */}
         <div className="flex-1 flex flex-col min-w-0 bg-background">
           <ResizablePanelGroup orientation="horizontal">
-            
+
             {/* Editor Panel */}
             <ResizablePanel defaultSize={50} minSize={30}>
               <div className="h-full flex flex-col">
                 {/* Tabs Bar */}
                 <div className="h-9 flex bg-muted/30 border-b border-border overflow-x-auto no-scrollbar">
                   {openFileIds.map(id => {
-                    const file = files?.find(f => f.id === id);
+                    const file = files?.find((f: any) => f.id === id);
                     if (!file) return null;
                     return (
                       <div key={id}>
@@ -450,7 +450,7 @@ export default function IDE() {
                       </div>
                     );
                   })}
-                  
+
                   {openFileIds.length === 0 && (
                     <div className="flex items-center px-4 text-xs text-muted-foreground italic">
                       No files open
