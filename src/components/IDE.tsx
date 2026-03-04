@@ -502,7 +502,7 @@ export default function IDE() {
             {/* Right Panel Group (Preview + Console) */}
             <ResizablePanel defaultSize={50} minSize={30}>
               <ResizablePanelGroup orientation="vertical">
-                
+
                 {/* Web Preview */}
                 <ResizablePanel defaultSize={60} minSize={20}>
                   <WebPreview htmlContent={htmlOutput} />
@@ -514,13 +514,28 @@ export default function IDE() {
                 <ResizablePanel defaultSize={40} minSize={20}>
                   <ConsolePanel logs={output} onClear={clearConsole} />
                 </ResizablePanel>
-                
+
               </ResizablePanelGroup>
             </ResizablePanel>
-          
+
           </ResizablePanelGroup>
         </div>
       </div>
+
+      {/* Complete Profile Modal */}
+      {showCompleteProfile && (
+        <CompleteProfile onComplete={() => setShowCompleteProfile(false)} />
+      )}
+
+      {/* User Profile Modal */}
+      {isSignedIn && (
+        <UserProfileModal
+          open={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          user={user}
+          profile={profile}
+        />
+      )}
     </div>
   );
 }
