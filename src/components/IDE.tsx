@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { useFiles, useCreateFile, useUpdateFile, useDeleteFile } from "@/hooks/use-files";
+import {
+  useStarterFiles,
+  useUserFiles,
+  useCreateUserFile,
+  useUpdateUserFile,
+  useDeleteUserFile,
+} from "@/hooks/use-files";
+import { useUserProfile } from "@/hooks/use-user-profile";
 import { usePyodide } from "@/hooks/use-pyodide";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Loader2, Play, Plus, Save, FileCode, Code2, Trash2, X } from "lucide-react";
