@@ -100,6 +100,47 @@ export const api = {
       },
     },
   },
+  // Starter files (read-only)
+  starterFiles: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/starter-files',
+    },
+  },
+  // User files (auth-required)
+  userFiles: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/user-files',
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/user-files/create',
+    },
+    update: {
+      method: 'PUT' as const,
+      path: '/api/user-files/:id',
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/user-files/:id',
+    },
+  },
+  // User profile (auth-required)
+  userProfile: {
+    get: {
+      method: 'GET' as const,
+      path: '/api/user-profile',
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/user-profile',
+    },
+    update: {
+      method: 'PUT' as const,
+      path: '/api/user-profile',
+    },
+  },
 };
 
 export function buildUrl(path: string, params?: Record<string, string | number>): string {
