@@ -6,18 +6,18 @@ Triggered after code is pushed to GitHub. Performs a full rebuild and
 re-deployment of all Docker containers and AWS services.
 
 Pipeline:
-  1.  Read & validate version from package.json
-  2.  Build Docker app container  (Dockerfile        → code-canvas-astro-app)
-  3.  Build Docker db-init container (Dockerfile.db  → code-canvas-astro-db-init)
-  4.  Log in to Docker Hub & push both containers  (tagged v[VERSION])
-  5.  Authenticate with AWS ECR (boto3 token → docker login)
-  6.  Build Lambda Docker image   (Dockerfile.lambda → ECR compatible)
-  7.  Push Lambda image to AWS ECR (python-repl-container-lambda:v[VERSION])
-  8.  Update AWS Lambda function  (code-canvas-astro-lambda) with new ECR image
-  9.  Verify AWS API Gateway      (pyrepl-api / pvh7sgwr49) is operational
-  10. Invalidate AWS CloudFront   (E8UQ2BAGKYYM0) cache & wait for completion
-  11. Verify AWS Route 53         (pyrepl.dev / Z06161484WRKVMIQUBIG) DNS records
-  12. Final health check          (https://pyrepl.dev)
+    1.  Read & validate version from package.json
+    2.  Build Docker app container  (Dockerfile        → code-canvas-astro-app)
+    3.  Build Docker db-init container (Dockerfile.db  → code-canvas-astro-db-init)
+    4.  Log in to Docker Hub & push both containers  (tagged v[VERSION])
+    5.  Authenticate with AWS ECR (boto3 token → docker login)
+    6.  Build Lambda Docker image   (Dockerfile.lambda → ECR compatible)
+    7.  Push Lambda image to AWS ECR (python-repl-container-lambda:v[VERSION])
+    8.  Update AWS Lambda function  (code-canvas-astro-lambda) with new ECR image
+    9.  Verify AWS API Gateway      (pyrepl-api / pvh7sgwr49) is operational
+    10. Invalidate AWS CloudFront   (E8UQ2BAGKYYM0) cache & wait for completion
+    11. Verify AWS Route 53         (pyrepl.dev / Z06161484WRKVMIQUBIG) DNS records
+    12. Final health check          (https://pyrepl.dev)
 
 Usage:
     python3 update_aws_deployment.py
@@ -456,11 +456,11 @@ class UpdateDeployer:
         Log in to Docker Hub without ever blocking on interactive input.
 
         Strategy (in order):
-          1. If DOCKER_PASSWORD env var is set → use --password-stdin (safest).
-          2. Otherwise try docker login without a password flag with a short
-             timeout — succeeds immediately when credentials are already cached
-             in the OS credential store / ~/.docker/config.json.
-          3. If that also times out → fail with a clear fix message.
+            1. If DOCKER_PASSWORD env var is set → use --password-stdin (safest).
+            2. Otherwise try docker login without a password flag with a short
+                timeout — succeeds immediately when credentials are already cached
+                in the OS credential store / ~/.docker/config.json.
+            3. If that also times out → fail with a clear fix message.
         """
         password = os.environ.get("DOCKER_PASSWORD", "")
 
@@ -810,6 +810,8 @@ class UpdateDeployer:
                         "S3_DB_KEY":      S3_DB_KEY,
                         "PORT":           "8080",
                         "DATABASE_URL":   "file:/tmp/taskManagement.db",
+                        "PUBLIC_CLERK_PUBLISHABLE_KEY": os.environ.get("PUBLIC_CLERK_PUBLISHABLE_KEY", ""),
+                        "CLERK_SECRET_KEY": os.environ.get("CLERK_SECRET_KEY", ""),
                     }
                 },
             )
