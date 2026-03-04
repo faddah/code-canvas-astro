@@ -222,23 +222,26 @@ export default function IDE() {
   };
 
   const handleDeleteFile = (id: number) => {
-    deleteFile.mutate(id, {
-      onSuccess: () => {
-        // Close the tab if it was open
-        setOpenFileIds(prev => prev.filter(fid => fid !== id));
-        // Switch to another tab if this was the active file
-        if (activeFileId === id) {
-          const remaining = openFileIds.filter(fid => fid !== id);
-          setActiveFileId(remaining.length > 0 ? remaining[remaining.length - 1] : null);
-        }
-        // Discard any unsaved changes for the deleted file
-        setUnsavedChanges(prev => {
-          const next = { ...prev };
-          delete next[id];
-          return next;
-        });
-      },
-    });
+    const cleanupUI = () => {
+      setOpenFileIds(prev => prev.filter(fid => fid !== id));
+      if (activeFileId === id) {
+        const remaining = openFileIds.filter(fid => fid !== id);
+        setActiveFileId(remaining.length > 0 ? remaining[remaining.length - 1] : null);
+      }
+      setUnsavedChanges(prev => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    };
+
+    if (isSignedIn) {
+      deleteFile.mutate(id, { onSuccess: cleanupUI });
+    } else {
+      // Remove from local ephemeral files
+      setLocalFiles(prev => prev.filter(f => f.id !== id));
+      cleanupUI();
+    }
   };
 
   if (isLoadingFiles) {
