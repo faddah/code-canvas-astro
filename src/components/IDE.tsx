@@ -257,7 +257,7 @@ export default function IDE() {
 
   return (
     <div className="h-screen w-full flex flex-col bg-background text-foreground overflow-hidden">
-      
+
       {/* Top Navigation Bar */}
       <header className="h-14 border-b border-border bg-card/50 backdrop-blur px-4 flex items-center justify-between shrink-0 z-50">
         <div className="flex items-center gap-4">
@@ -272,8 +272,8 @@ export default function IDE() {
 
           {/* Toolbar Actions */}
           <div className="flex items-center gap-2">
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               onClick={handleRun}
               disabled={!isReady || isRunning || !activeFileId}
               className="bg-green-600 hover:bg-green-700 text-white border-none shadow-lg shadow-green-900/20 transition-all active:scale-95"
@@ -282,16 +282,18 @@ export default function IDE() {
               Run
             </Button>
 
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleSave}
-              disabled={!activeFileId}
-              className={unsavedChanges[activeFileId || 0] ? "border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10" : ""}
-            >
-              <Save className="w-4 h-4 mr-2" />
-              Save
-            </Button>
+            {isSignedIn && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSave}
+                disabled={!activeFileId}
+                className={unsavedChanges[activeFileId || 0] ? "border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10" : ""}
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save
+              </Button>
+            )}
           </div>
         </div>
 
