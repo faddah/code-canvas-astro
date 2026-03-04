@@ -71,23 +71,23 @@ export const api = {
       method: 'GET' as const,
       path: '/api/files',
       responses: {
-        200: z.array(z.custom<File>()),
+        200: z.array(z.custom<StarterFile>()),
       },
     },
     create: {
       method: 'POST' as const,
       path: '/api/files/create',
-      input: insertFileSchema,
+      input: insertStarterFileSchema,
       responses: {
-        201: z.custom<File>(),
+        201: z.custom<StarterFile>(),
       },
     },
     update: {
       method: 'PUT' as const,
       path: '/api/files/:id',
-      input: insertFileSchema.partial(),
+      input: insertStarterFileSchema.partial(),
       responses: {
-        200: z.custom<File>(),
+        200: z.custom<StarterFile>(),
         404: z.object({ message: z.string() }),
       },
     },
