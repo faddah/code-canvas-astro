@@ -297,7 +297,40 @@ export default function IDE() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* Auth banner / buttons */}
+          {!isSignedIn ? (
+            <>
+              <span className="text-xs text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-full border border-amber-500/20 hidden lg:block">
+                Files cannot be saved unless you create &amp; use a Python REPL IDE User account
+              </span>
+              <Button size="sm" variant="outline" onClick={openSignUp} className="gap-1.5">
+                <UserPlus className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Create An Account</span>
+              </Button>
+              <Button size="sm" onClick={openSignIn} className="gap-1.5">
+                <LogIn className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Log In</span>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowProfileModal(true)}
+                className="gap-1.5 text-xs text-muted-foreground hover:text-foreground hidden md:flex"
+              >
+                <User className="w-3.5 h-3.5" />
+                {user?.primaryEmailAddress?.emailAddress}
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => signOut()} className="gap-1.5">
+                <LogOut className="w-3.5 h-3.5" />
+                Log Out
+              </Button>
+            </>
+          )}
+
           <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full border border-white/5">
               <span className={`w-2 h-2 rounded-full ${isReady ? "bg-green-500" : "bg-yellow-500 animate-pulse"}`} />
               {isReady ? `Environment Ready          Version ${version}` : "Loading Python..."}
