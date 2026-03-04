@@ -20,6 +20,23 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { CompleteProfile } from "@/components/CompleteProfile";
 import { UserProfileModal } from "@/components/UserProfileModal";
+import { version } from "../../package.json";
+
+// Conditionally import Clerk hooks — they only work when ClerkProvider is present
+let useUser: () => { isSignedIn: boolean | undefined; user: any } = () => ({ isSignedIn: undefined, user: null });
+let useClerk: () => { signOut: () => void; openSignIn: () => void; openSignUp: () => void } = () => ({
+  signOut: () => {},
+  openSignIn: () => {},
+  openSignUp: () => {},
+});
+
+try {
+  const clerkReact = await import('@clerk/react');
+  useUser = clerkReact.useUser;
+  useClerk = clerkReact.useClerk;
+} catch {
+  // Clerk not available — fall back to unauthenticated mode
+}
 
 export default function IDE() {
   const { data: files, isLoading: isLoadingFiles } = useFiles();
