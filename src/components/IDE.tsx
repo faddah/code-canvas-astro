@@ -477,7 +477,8 @@ export default function IDE() {
                           scrollBeyondLastLine: false,
                           automaticLayout: true,
                           tabSize: 4,
-                          padding: { top: 16 }
+                          padding: { top: 16 },
+                          readOnly: false,
                         }}
                         onMount={(editor) => {
                           editor.addCommand(2048 | 49, handleSave);
