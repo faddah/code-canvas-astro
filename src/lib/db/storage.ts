@@ -67,6 +67,76 @@ export class DatabaseStorage implements IStorage {
   async deleteFile(id: number): Promise<void> {
     await db.delete(files).where(eq(files.id, id));
   }
+
+  // Starter files (read-only)
+  async getStarterFiles(): Promise<StarterFile[]> {
+    return await db.select().from(starterFiles).orderBy(starterFiles.id);
+  }
+
+  async getStarterFile(id: number): Promise<StarterFile | undefined> {
+    const [file] = await db.select().from(starterFiles).where(eq(starterFiles.id, id));
+    return file;
+  }
+
+  // User files (always scoped by clerkUserId for security)
+  async getUserFiles(clerkUserId: string): Promise<UserFile[]> {
+    return await db
+      .select()
+      .from(userFiles)
+      .where(eq(userFiles.clerkUserId, clerkUserId))
+      .orderBy(userFiles.id);
+  }
+
+  async getUserFile(id: number, clerkUserId: string): Promise<UserFile | undefined> {
+    const [file] = await db
+      .select()
+      .from(userFiles)
+      .where(and(eq(userFiles.id, id), eq(userFiles.clerkUserId, clerkUserId)));
+    return file;
+  }
+
+  async createUserFile(insertFile: InsertUserFile): Promise<UserFile> {
+    const [file] = await db.insert(userFiles).values(insertFile).returning();
+    return file;
+  }
+
+  async updateUserFile(id: number, clerkUserId: string, updates: Partial<InsertUserFile>): Promise<UserFile> {
+    const [updatedFile] = await db
+      .update(userFiles)
+      .set(updates)
+      .where(and(eq(userFiles.id, id), eq(userFiles.clerkUserId, clerkUserId)))
+      .returning();
+    return updatedFile;
+  }
+
+  async deleteUserFile(id: number, clerkUserId: string): Promise<void> {
+    await db
+      .delete(userFiles)
+      .where(and(eq(userFiles.id, id), eq(userFiles.clerkUserId, clerkUserId)));
+  }
+
+  // User profiles
+  async getUserProfile(clerkUserId: string): Promise<UserProfile | undefined> {
+    const [profile] = await db
+      .select()
+      .from(userProfiles)
+      .where(eq(userProfiles.clerkUserId, clerkUserId));
+    return profile;
+  }
+
+  async createUserProfile(profile: InsertUserProfile): Promise<UserProfile> {
+    const [created] = await db.insert(userProfiles).values(profile).returning();
+    return created;
+  }
+
+  async updateUserProfile(clerkUserId: string, updates: Partial<InsertUserProfile>): Promise<UserProfile> {
+    const [updated] = await db
+      .update(userProfiles)
+      .set(updates)
+      .where(eq(userProfiles.clerkUserId, clerkUserId))
+      .returning();
+    return updated;
+  }
 }
 
 export const storage = new DatabaseStorage();
