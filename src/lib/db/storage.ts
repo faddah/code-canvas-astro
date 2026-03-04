@@ -21,6 +21,22 @@ export interface IStorage {
   createFile(file: InsertFile): Promise<File>;
   updateFile(id: number, updates: Partial<InsertFile>): Promise<File>;
   deleteFile(id: number): Promise<void>;
+
+  // Starter files (read-only)
+  getStarterFiles(): Promise<StarterFile[]>;
+  getStarterFile(id: number): Promise<StarterFile | undefined>;
+
+  // User files (scoped by clerkUserId)
+  getUserFiles(clerkUserId: string): Promise<UserFile[]>;
+  getUserFile(id: number, clerkUserId: string): Promise<UserFile | undefined>;
+  createUserFile(file: InsertUserFile): Promise<UserFile>;
+  updateUserFile(id: number, clerkUserId: string, updates: Partial<InsertUserFile>): Promise<UserFile>;
+  deleteUserFile(id: number, clerkUserId: string): Promise<void>;
+
+  // User profiles
+  getUserProfile(clerkUserId: string): Promise<UserProfile | undefined>;
+  createUserProfile(profile: InsertUserProfile): Promise<UserProfile>;
+  updateUserProfile(clerkUserId: string, updates: Partial<InsertUserProfile>): Promise<UserProfile>;
 }
 
 export class DatabaseStorage implements IStorage {
