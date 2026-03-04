@@ -1,7 +1,7 @@
 # Multi-stage build for optimized production image
 
 # Stage 1: Build stage
-FROM --platform=linux/amd64 node:20-alpine AS builder
+FROM --platform=linux/amd64 node:22-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -16,11 +16,15 @@ RUN npm install
 # Copy source code
 COPY . .
 
+# Clerk publishable key must be available at build time (Vite bakes it in)
+ARG PUBLIC_CLERK_PUBLISHABLE_KEY
+ENV PUBLIC_CLERK_PUBLISHABLE_KEY=$PUBLIC_CLERK_PUBLISHABLE_KEY
+
 # Build the application
 RUN npm run build
 
 # Stage 2: Production stage
-FROM --platform=linux/amd64 node:20-alpine AS runtime
+FROM --platform=linux/amd64 node:22-alpine AS runtime
 
 # Set working directory
 WORKDIR /app
