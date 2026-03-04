@@ -18,7 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { version } from "../../package.json"
+import { CompleteProfile } from "@/components/CompleteProfile";
+import { UserProfileModal } from "@/components/UserProfileModal";
 
 export default function IDE() {
   const { data: files, isLoading: isLoadingFiles } = useFiles();
