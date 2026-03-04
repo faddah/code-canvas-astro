@@ -481,7 +481,9 @@ export default function IDE() {
                           readOnly: false,
                         }}
                         onMount={(editor) => {
-                          editor.addCommand(2048 | 49, handleSave);
+                          if (isSignedIn) {
+                            editor.addCommand(2048 | 49, handleSave);
+                          }
                         }}
                       />
                     </div>
