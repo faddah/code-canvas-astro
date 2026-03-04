@@ -3,6 +3,17 @@
 .vscode/**
 .vscode/**/*
 .vscode/*.json
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+
+# Claude
+.claude/
+.claude/**
+.claude/**/*
+.claude/*.json
+.claude/settings.json
+.claude/settings.local.json
 
 # build output
 dist/
