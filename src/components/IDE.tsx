@@ -98,6 +98,19 @@ export default function IDE() {
   const [unsavedChanges, setUnsavedChanges] = useState<Record<number, string>>({});
   const [newFileName, setNewFileName] = useState("");
   const [isNewFileDialogOpen, setIsNewFileDialogOpen] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+
+  // Reset state when auth changes
+  useEffect(() => {
+    setActiveFileId(null);
+    setOpenFileIds([]);
+    setUnsavedChanges({});
+    if (!isSignedIn) {
+      // Re-seed local files from starter files on logout
+      setLocalFiles(starterFiles ? starterFiles.map((f: any) => ({ ...f })) : []);
+      setLocalIdCounter(-1);
+    }
+  }, [isSignedIn]);
 
   // Initialize active file when files load
   useEffect(() => {
