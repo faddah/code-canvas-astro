@@ -70,6 +70,29 @@ export default function IDE() {
   const { isReady, isRunning, output, htmlOutput, runCode, clearConsole } = usePyodide();
   const { toast } = useToast();
 
+  // Ephemeral local files for non-logged-in users (lost on refresh)
+  const [localFiles, setLocalFiles] = useState<any[]>([]);
+  const [localIdCounter, setLocalIdCounter] = useState(-1);
+
+  // Seed local files from starter files when not signed in
+  useEffect(() => {
+    if (!isSignedIn && starterFiles && starterFiles.length > 0 && localFiles.length === 0) {
+      setLocalFiles(starterFiles.map((f: any) => ({ ...f })));
+    }
+  }, [isSignedIn, starterFiles]);
+
+  // Choose which files to display
+  const files = isSignedIn ? userFilesData : localFiles;
+  const isLoadingFiles = isSignedIn ? isLoadingUser : isLoadingStarter;
+
+  // Show complete profile modal after first signup
+  const [showCompleteProfile, setShowCompleteProfile] = useState(false);
+  useEffect(() => {
+    if (isSignedIn && !isLoadingProfile && profile === null) {
+      setShowCompleteProfile(true);
+    }
+  }, [isSignedIn, isLoadingProfile, profile]);
+
   const [activeFileId, setActiveFileId] = useState<number | null>(null);
   const [openFileIds, setOpenFileIds] = useState<number[]>([]);
   const [unsavedChanges, setUnsavedChanges] = useState<Record<number, string>>({});
