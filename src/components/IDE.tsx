@@ -555,7 +555,7 @@ function Trash2Btn({ onConfirm, disabled }: { onConfirm: () => void, disabled: b
         >
           Confirm
         </button>
-        <button 
+        <button
           onClick={(e: React.MouseEvent) => { e.stopPropagation(); setShowConfirm(false); }}
           className="p-0.5 hover:bg-white/10 rounded"
         >
@@ -566,7 +566,7 @@ function Trash2Btn({ onConfirm, disabled }: { onConfirm: () => void, disabled: b
   }
 
   return (
-    <button 
+    <button
       onClick={(e: React.MouseEvent) => { e.stopPropagation(); setShowConfirm(true); }}
       className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded transition-opacity"
     >
