@@ -1,6 +1,6 @@
 # Code Canvas — Python REPL IDE
 
-![Python REPL IDE App Screen Shot](./public/python-repl-ide-app-screenshot.png)
+![Python REPL IDE App Screen Shot](./client/public/python-repl-ide-app-screenshot.png)
 
 A full-stack web-based IDE for executing Python code with an integrated REPL (Read-Eval-Print Loop). Built on **Astro 5** with server-side rendering, React 19 interactive islands, and a SQLite-backed file system. The app provides a modern development environment with a file explorer, Monaco code editor, console panel, and live web preview.
 
