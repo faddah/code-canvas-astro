@@ -3,7 +3,8 @@ import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const files = sqliteTable("files", {
+// Starter files — default Python files shown to all users (read-only via API)
+export const starterFiles = sqliteTable("starter_files", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   content: text("content").notNull(),
