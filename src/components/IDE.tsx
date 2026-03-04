@@ -39,10 +39,34 @@ try {
 }
 
 export default function IDE() {
-  const { data: files, isLoading: isLoadingFiles } = useFiles();
-  const createFile = useCreateFile();
-  const updateFile = useUpdateFile();
-  const deleteFile = useDeleteFile();
+  // Auth state
+  let isSignedIn = false;
+  let user: any = null;
+  let signOut = () => {};
+  let openSignIn = () => {};
+  let openSignUp = () => {};
+
+  try {
+    const userResult = useUser();
+    isSignedIn = !!userResult.isSignedIn;
+    user = userResult.user;
+    const clerkResult = useClerk();
+    signOut = () => clerkResult.signOut();
+    openSignIn = () => clerkResult.openSignIn();
+    openSignUp = () => clerkResult.openSignUp();
+  } catch {
+    // Clerk hooks not available
+  }
+
+  // Data hooks
+  const { data: starterFiles, isLoading: isLoadingStarter } = useStarterFiles();
+  const { data: userFilesData, isLoading: isLoadingUser } = useUserFiles(isSignedIn);
+  const { data: profile, isLoading: isLoadingProfile } = useUserProfile(isSignedIn);
+
+  const createFile = useCreateUserFile();
+  const updateFile = useUpdateUserFile();
+  const deleteFile = useDeleteUserFile();
+
   const { isReady, isRunning, output, htmlOutput, runCode, clearConsole } = usePyodide();
   const { toast } = useToast();
 
