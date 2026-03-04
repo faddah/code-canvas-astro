@@ -162,8 +162,7 @@ export default function IDE() {
     }
 
     // Prepare all files for the virtual filesystem
-    // Mix saved files with current unsaved states
-    const fileSystem = (files || []).map(f => ({
+    const fileSystem = (files || []).map((f: any) => ({
       name: f.name,
       content: unsavedChanges[f.id] ?? f.content
     }));
