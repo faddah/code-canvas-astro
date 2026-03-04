@@ -131,22 +131,23 @@ export default function IDE() {
   };
 
   const handleSave = async () => {
+    if (!isSignedIn) return;
     if (!activeFileId || unsavedChanges[activeFileId] === undefined) return;
-    
+
     const content = unsavedChanges[activeFileId];
-    
+
     try {
       await updateFile.mutateAsync({
         id: activeFileId,
         content: content,
       });
-      
+
       setUnsavedChanges(prev => {
         const next = { ...prev };
         delete next[activeFileId];
         return next;
       });
-      
+
       toast({ title: "Saved", description: "Changes saved to disk." });
     } catch (e) {
       // Error handled in hook
