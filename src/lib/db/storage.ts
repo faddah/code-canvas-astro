@@ -1,8 +1,21 @@
-import { files, type File, type InsertFile } from "../../shared/schema";
+import {
+  files,
+  starterFiles,
+  userFiles,
+  userProfiles,
+  type File,
+  type InsertFile,
+  type StarterFile,
+  type UserFile,
+  type InsertUserFile,
+  type UserProfile,
+  type InsertUserProfile,
+} from "../../shared/schema";
 import { db } from "./index";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
+  // Legacy (backward compat — delegates to starter files)
   getFiles(): Promise<File[]>;
   getFile(id: number): Promise<File | undefined>;
   createFile(file: InsertFile): Promise<File>;
