@@ -11,15 +11,61 @@ export const starterFiles = sqliteTable("starter_files", {
   createdAt: integer("created_at", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
 
-export const insertFileSchema = createInsertSchema(files).omit({ 
-  id: true, 
-  createdAt: true 
+// Backward-compatible alias (used by old /api/files/ routes during transition)
+export const files = starterFiles;
+
+export const insertStarterFileSchema = createInsertSchema(starterFiles).omit({
+  id: true,
+  createdAt: true,
 });
 
-export type File = typeof files.$inferSelect;
-export type InsertFile = z.infer<typeof insertFileSchema>;
+// Keep old names for backward compatibility
+export const insertFileSchema = insertStarterFileSchema;
+
+export type StarterFile = typeof starterFiles.$inferSelect;
+export type InsertStarterFile = z.infer<typeof insertStarterFileSchema>;
+export type File = StarterFile;
+export type InsertFile = InsertStarterFile;
+
+// User profiles — extra profile data linked to Clerk user
+export const userProfiles = sqliteTable("user_profiles", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  clerkUserId: text("clerk_user_id").notNull().unique(),
+  phone: text("phone"),
+  city: text("city"),
+  state: text("state"),
+  postalCode: text("postal_code"),
+  country: text("country"),
+  createdAt: integer("created_at", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+});
+
+export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type UserProfile = typeof userProfiles.$inferSelect;
+export type InsertUserProfile = z.infer<typeof insertUserProfileSchema>;
+
+// User files — files owned by authenticated users
+export const userFiles = sqliteTable("user_files", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  clerkUserId: text("clerk_user_id").notNull(),
+  name: text("name").notNull(),
+  content: text("content").notNull(),
+  createdAt: integer("created_at", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+});
+
+export const insertUserFileSchema = createInsertSchema(userFiles).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type UserFile = typeof userFiles.$inferSelect;
+export type InsertUserFile = z.infer<typeof insertUserFileSchema>;
 
 export const api = {
+  // Legacy files endpoints (backward compat, points to starter_files)
   files: {
     list: {
       method: 'GET' as const,
