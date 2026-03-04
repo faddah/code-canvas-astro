@@ -2,7 +2,135 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl, type InsertFile } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
-// Fetch all files
+// ─── Starter Files (read-only, shown to all users) ───
+
+export function useStarterFiles() {
+  return useQuery({
+    queryKey: [api.starterFiles.list.path],
+    queryFn: async () => {
+      const res = await fetch(api.starterFiles.list.path);
+      if (!res.ok) throw new Error("Failed to fetch starter files");
+      return res.json();
+    },
+  });
+}
+
+// ─── User Files (auth-required, CRUD) ───
+
+export function useUserFiles(enabled: boolean) {
+  return useQuery({
+    queryKey: [api.userFiles.list.path],
+    enabled,
+    queryFn: async () => {
+      const res = await fetch(api.userFiles.list.path);
+      if (!res.ok) throw new Error("Failed to fetch user files");
+      return res.json();
+    },
+  });
+}
+
+export function useCreateUserFile() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (data: { name: string; content: string }) => {
+      const res = await fetch(api.userFiles.create.path, {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create file");
+      return res.json();
+    },
+    onSuccess: (newFile) => {
+      queryClient.invalidateQueries({ queryKey: [api.userFiles.list.path] });
+      toast({
+        title: "File Created",
+        description: `${newFile.name} has been created successfully.`,
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create file. Please try again.",
+      });
+    },
+  });
+}
+
+export function useUpdateUserFile() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: number; name?: string; content?: string }) => {
+      const url = buildUrl(api.userFiles.update.path, { id });
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      if (!res.ok) throw new Error("Failed to update file");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.userFiles.list.path] });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Save Failed",
+        description: "Could not save your changes.",
+      });
+    },
+  });
+}
+
+export function useDeleteUserFile() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const url = buildUrl(api.userFiles.delete.path, { id });
+      console.log(`[useDeleteUserFile] Sending DELETE ${url}`);
+      const res = await fetch(url, { method: 'DELETE' });
+      console.log(`[useDeleteUserFile] Response status: ${res.status}`);
+      if (!res.ok) {
+        let serverMsg = `HTTP ${res.status}`;
+        try {
+          const body = await res.json();
+          serverMsg = body.error ?? body.message ?? serverMsg;
+        } catch {
+          // body was not JSON
+        }
+        console.error(`[useDeleteUserFile] Delete failed — ${serverMsg}`);
+        throw new Error(serverMsg);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.userFiles.list.path] });
+      toast({
+        title: "File Deleted",
+        description: "The file has been permanently removed.",
+      });
+    },
+    onError: (error) => {
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error("[useDeleteUserFile] onError:", msg);
+      toast({
+        variant: "destructive",
+        title: "Delete Failed",
+        description: msg,
+      });
+    },
+  });
+}
+
+// ─── Legacy hooks (backward compat — delegate to starter files) ───
+
 export function useFiles() {
   return useQuery({
     queryKey: [api.files.list.path],
@@ -14,7 +142,6 @@ export function useFiles() {
   });
 }
 
-// Fetch single file
 export function useFile(id: number | null) {
   return useQuery({
     queryKey: [api.files.list.path, id],
@@ -30,7 +157,6 @@ export function useFile(id: number | null) {
   });
 }
 
-// Create new file
 export function useCreateFile() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -62,7 +188,6 @@ export function useCreateFile() {
   });
 }
 
-// Update file content
 export function useUpdateFile() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -80,7 +205,6 @@ export function useUpdateFile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.files.list.path] });
-      // Don't toast on every autosave, it's annoying
     },
     onError: () => {
       toast({
@@ -92,7 +216,6 @@ export function useUpdateFile() {
   });
 }
 
-// Delete file
 export function useDeleteFile() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
