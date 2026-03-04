@@ -173,20 +173,36 @@ export default function IDE() {
   const handleCreateFile = async () => {
     if (!newFileName) return;
     const fileName = newFileName.endsWith(".py") ? newFileName : `${newFileName}.py`;
-    
-    try {
-      const newFile = await createFile.mutateAsync({
+
+    if (isSignedIn) {
+      // Persist to server
+      try {
+        const newFile = await createFile.mutateAsync({
+          name: fileName,
+          content: "# New Python File\nprint('Hello World')\n"
+        });
+        setOpenFileIds(prev => [...prev, newFile.id]);
+        setActiveFileId(newFile.id);
+      } catch (e) {
+        // Error handled in hook
+      }
+    } else {
+      // Ephemeral local file (negative IDs to avoid collisions)
+      const newId = localIdCounter;
+      setLocalIdCounter(prev => prev - 1);
+      const newFile = {
+        id: newId,
         name: fileName,
-        content: "# New Python File\nprint('Hello World')\n"
-      });
-      
-      setOpenFileIds(prev => [...prev, newFile.id]);
-      setActiveFileId(newFile.id);
-      setIsNewFileDialogOpen(false);
-      setNewFileName("");
-    } catch (e) {
-      // Error handled in hook
+        content: "# New Python File\nprint('Hello World')\n",
+        createdAt: new Date(),
+      };
+      setLocalFiles(prev => [...prev, newFile]);
+      setOpenFileIds(prev => [...prev, newId]);
+      setActiveFileId(newId);
     }
+
+    setIsNewFileDialogOpen(false);
+    setNewFileName("");
   };
 
   const closeTab = (e: React.MouseEvent, id: number) => {
