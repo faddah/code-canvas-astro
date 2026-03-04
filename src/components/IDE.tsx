@@ -120,7 +120,7 @@ export default function IDE() {
     }
   }, [files, activeFileId]);
 
-  const activeFile = files?.find(f => f.id === activeFileId);
+  const activeFile = files?.find((f: any) => f.id === activeFileId);
   const activeContent = activeFileId ? (unsavedChanges[activeFileId] ?? activeFile?.content ?? "") : "";
 
   // Handlers
