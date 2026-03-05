@@ -6,7 +6,7 @@ import { sql } from 'drizzle-orm';
 const databaseUrl = process.env.DATABASE_URL || 'file:/app/data/taskManagement.db';
 const dbPath = databaseUrl.replace(/^(sqlite:|file:)/, '');
 
-console.log('Initializing database at:', dbPath);
+console.warn('Initializing database at:', dbPath);
 
 const sqlite = new Database(dbPath);
 sqlite.pragma('journal_mode = WAL');
@@ -19,9 +19,9 @@ try {
   const tableNames = tablesResult.map(r => r.name);
 
   if (tableNames.includes('files') && !tableNames.includes('starter_files')) {
-    console.log('Migrating: renaming "files" table to "starter_files"...');
+    console.warn('Migrating: renaming "files" table to "starter_files"...');
     db.run(sql`ALTER TABLE files RENAME TO starter_files`);
-    console.log('✓ Renamed "files" to "starter_files"');
+    console.warn('✓ Renamed "files" to "starter_files"');
   }
 
   // Create the starter_files table if it doesn't exist
@@ -33,7 +33,7 @@ try {
       created_at INTEGER NOT NULL
     )
   `);
-  console.log('✓ starter_files table ready');
+  console.warn('✓ starter_files table ready');
 
   // Create the user_profiles table
   db.run(sql`
@@ -48,7 +48,7 @@ try {
       created_at INTEGER NOT NULL
     )
   `);
-  console.log('✓ user_profiles table ready');
+  console.warn('✓ user_profiles table ready');
 
   // Create the user_files table
   db.run(sql`
@@ -60,14 +60,14 @@ try {
       created_at INTEGER NOT NULL
     )
   `);
-  console.log('✓ user_files table ready');
+  console.warn('✓ user_files table ready');
 
   // Create indexes for faster lookups
   db.run(sql`CREATE INDEX IF NOT EXISTS idx_user_files_clerk_user_id ON user_files(clerk_user_id)`);
   db.run(sql`CREATE INDEX IF NOT EXISTS idx_user_profiles_clerk_user_id ON user_profiles(clerk_user_id)`);
-  console.log('✓ Indexes created');
+  console.warn('✓ Indexes created');
 
-  console.log('✓ Database schema initialized successfully');
+  console.warn('✓ Database schema initialized successfully');
   process.exit(0);
 } catch (error) {
   console.error('✗ Failed to initialize database:', error);
