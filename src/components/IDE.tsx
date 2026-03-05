@@ -301,7 +301,7 @@ export default function IDE() {
           {/* Auth banner / buttons */}
           {!isSignedIn ? (
             <>
-              <span className="text-xs text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-full border border-amber-500/20 hidden lg:block">
+              <span className="text-xs px-3 py-1.5 rounded-full hidden lg:block border" style={{ color: '#33ff33', backgroundColor: '#0a0a0a', borderColor: '#33ff33', textShadow: '0 0 6px #33ff33' }}>
                 Files cannot be saved unless you create &amp; use a Python REPL IDE User account
               </span>
               <Button size="sm" variant="outline" onClick={openSignUp} className="gap-1.5">
