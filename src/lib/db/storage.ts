@@ -37,6 +37,10 @@ export interface IStorage {
   getUserProfile(clerkUserId: string): Promise<UserProfile | undefined>;
   createUserProfile(profile: InsertUserProfile): Promise<UserProfile>;
   updateUserProfile(clerkUserId: string, updates: Partial<InsertUserProfile>): Promise<UserProfile>;
+  deleteUserProfile(clerkUserId: string): Promise<void>;
+
+  // Bulk operations
+  deleteAllUserFiles(clerkUserId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -136,6 +140,18 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userProfiles.clerkUserId, clerkUserId))
       .returning();
     return updated;
+  }
+
+  async deleteUserProfile(clerkUserId: string): Promise<void> {
+    await db
+      .delete(userProfiles)
+      .where(eq(userProfiles.clerkUserId, clerkUserId));
+  }
+
+  async deleteAllUserFiles(clerkUserId: string): Promise<void> {
+    await db
+      .delete(userFiles)
+      .where(eq(userFiles.clerkUserId, clerkUserId));
   }
 }
 
