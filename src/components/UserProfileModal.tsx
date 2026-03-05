@@ -79,6 +79,7 @@ type EditProfileFormData = z.infer<typeof editProfileSchema>;
 interface UserProfileModalProps {
   open: boolean;
   onClose: () => void;
+  onDeleteProfile: () => void;
   user: any; // Clerk user object
   profile: any; // SQLite profile data
 }
