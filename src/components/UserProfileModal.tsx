@@ -172,6 +172,12 @@ export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile
     setIsEditing(false);
   };
 
+  const handleDeleteProfile = async () => {
+    await deleteProfile.mutateAsync();
+    setShowDeleteConfirm(false);
+    onDeleteProfile();
+  };
+
   const email = user?.primaryEmailAddress?.emailAddress || '';
   const fullName = user?.fullName || user?.firstName || '';
 
