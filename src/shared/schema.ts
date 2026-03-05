@@ -140,6 +140,10 @@ export const api = {
       method: 'PUT' as const,
       path: '/api/user-profile',
     },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/user-profile',
+    },
   },
 };
 
