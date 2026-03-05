@@ -2,6 +2,38 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
+export function useDeleteUserProfile() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async () => {
+      const res = await fetch(api.userProfile.delete.path, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || 'Failed to delete profile');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.userProfile.get.path] });
+      queryClient.invalidateQueries({ queryKey: [api.userFiles.list.path] });
+      toast({
+        title: "Profile Deleted",
+        description: "Your account and all saved files have been deleted.",
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete profile. Please try again.",
+      });
+    },
+  });
+}
+
 export function useUserProfile(enabled: boolean) {
   return useQuery({
     queryKey: [api.userProfile.get.path],
