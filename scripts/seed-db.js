@@ -6,7 +6,7 @@ import { sql } from 'drizzle-orm';
 const databaseUrl = process.env.DATABASE_URL || 'file:/app/data/taskManagement.db';
 const dbPath = databaseUrl.replace(/^(sqlite:|file:)/, '');
 
-console.log('Seeding database at:', dbPath);
+console.warn('Seeding database at:', dbPath);
 
 const sqlite = new Database(dbPath);
 const db = drizzle(sqlite);
@@ -32,7 +32,7 @@ render(f'<h1 style="text-align: center;">{utils.greet("Faddah")}</h1>')
 # (This works in Pyodide!)
 # js.document.title = "Updated from Python"
                 `,
-    created_at: 1770857054
+    created_at: 1770857054,
   },
   {
     id: 2,
@@ -40,8 +40,8 @@ render(f'<h1 style="text-align: center;">{utils.greet("Faddah")}</h1>')
     content: `def greet(name):
                         return f"Hello, {name}!"
                     `,
-    created_at: 1770857054
-  }
+    created_at: 1770857054,
+  },
 ];
 
 try {
@@ -49,12 +49,12 @@ try {
   const countResult = db.get(sql`SELECT COUNT(*) as count FROM starter_files`);
 
   if (countResult && countResult.count > 0) {
-    console.log(`✓ Database already has ${countResult.count} records, skipping seed`);
+    console.warn(`✓ Database already has ${countResult.count} records, skipping seed`);
     process.exit(0);
   }
 
   // Insert seed data
-  console.log('Inserting seed data...');
+  console.warn('Inserting seed data...');
 
   for (const record of seedData) {
     db.run(sql`
@@ -63,7 +63,7 @@ try {
     `);
   }
 
-  console.log(`✓ Successfully seeded ${seedData.length} records`);
+  console.warn(`✓ Successfully seeded ${seedData.length} records`);
   process.exit(0);
 } catch (error) {
   console.error('✗ Failed to seed database:', error);
