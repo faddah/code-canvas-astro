@@ -532,6 +532,10 @@ export default function IDE() {
         <UserProfileModal
           open={showProfileModal}
           onClose={() => setShowProfileModal(false)}
+          onDeleteProfile={() => {
+            setShowProfileModal(false);
+            signOut();
+          }}
           user={user}
           profile={profile}
         />
