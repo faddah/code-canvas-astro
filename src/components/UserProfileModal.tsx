@@ -29,7 +29,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from '@/components/ui/alert-dialog';
-import { useUpdateUserProfile } from '@/hooks/use-user-profile';
+import { useUpdateUserProfile, useDeleteUserProfile } from '@/hooks/use-user-profile';
 import { User } from 'lucide-react';
 
 const COUNTRY_PHONE_CODES: Record<string, string> = {
