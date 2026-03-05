@@ -381,11 +381,13 @@ class UpdateDeployer:
             f"Build Docker app container: {DOCKER_APP_IMAGE}:{self.image_tag}"
         )
         local_tag = f"{DOCKER_APP_IMAGE}:{self.image_tag}"
+        clerk_key = os.environ.get("PUBLIC_CLERK_PUBLISHABLE_KEY", "")
         cmd = [
             "docker", "buildx", "build",
             "--platform", "linux/amd64",
             "--provenance=false",
             "--sbom=false",
+            "--build-arg", f"PUBLIC_CLERK_PUBLISHABLE_KEY={clerk_key}",
             "--load",
             "-t", local_tag,
             "-f", os.path.join(PROJECT_ROOT, "Dockerfile"),
@@ -698,11 +700,13 @@ class UpdateDeployer:
         self.reporter.info(
             "Using --provenance=false --sbom=false for Lambda manifest compatibility."
         )
+        clerk_key = os.environ.get("PUBLIC_CLERK_PUBLISHABLE_KEY", "")
         build_cmd = [
             "docker", "buildx", "build",
             "--platform", "linux/amd64",
             "--provenance=false",
             "--sbom=false",
+            "--build-arg", f"PUBLIC_CLERK_PUBLISHABLE_KEY={clerk_key}",
             "--load",
             "-t", local_tag,
             "-f", os.path.join(PROJECT_ROOT, "Dockerfile.lambda"),
