@@ -83,9 +83,11 @@ interface UserProfileModalProps {
   profile: any; // SQLite profile data
 }
 
-export function UserProfileModal({ open, onClose, user, profile }: UserProfileModalProps) {
+export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile }: UserProfileModalProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const updateProfile = useUpdateUserProfile();
+  const deleteProfile = useDeleteUserProfile();
 
   // Detect if user signed up with OAuth (no password to change)
   const isOAuthUser = user?.externalAccounts?.length > 0 && user?.passwordEnabled === false;
