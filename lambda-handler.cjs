@@ -13,7 +13,6 @@ const { spawn } = require('child_process');
 const http = require('http');
 const { S3Client, GetObjectCommand, PutObjectCommand, HeadObjectCommand } = require('@aws-sdk/client-s3');
 const fs = require('fs');
-const { Readable } = require('stream');
 
 // S3 Configuration
 const S3_BUCKET = process.env.S3_BUCKET_NAME || 'code-canvas-astro-db';
