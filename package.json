@@ -57,7 +57,7 @@
     "@types/react-dom": "^19.2.3",
     "astro": "^5.18.0",
     "autoprefixer": "^10.4.27",
-    "aws-cdk": "^3.0.0",
+    "aws-cdk": "^2.1109.0",
     "better-sqlite3": "^12.6.2",
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
