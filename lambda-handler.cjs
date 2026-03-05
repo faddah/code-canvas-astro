@@ -42,7 +42,7 @@ async function downloadDatabaseFromS3() {
     try {
       await s3Client.send(new HeadObjectCommand({
         Bucket: S3_BUCKET,
-        Key: S3_KEY
+        Key: S3_KEY,
       }));
       console.log('✓ Database found in S3');
     } catch (error) {
@@ -56,7 +56,7 @@ async function downloadDatabaseFromS3() {
     // Download database
     const command = new GetObjectCommand({
       Bucket: S3_BUCKET,
-      Key: S3_KEY
+      Key: S3_KEY,
     });
 
     const response = await s3Client.send(command);
@@ -103,8 +103,8 @@ async function uploadDatabaseToS3() {
       ContentType: 'application/x-sqlite3',
       Metadata: {
         'last-updated': new Date().toISOString(),
-        'lambda-function': process.env.AWS_LAMBDA_FUNCTION_NAME || 'unknown'
-      }
+        'lambda-function': process.env.AWS_LAMBDA_FUNCTION_NAME || 'unknown',
+      },
     });
 
     await s3Client.send(command);
@@ -148,7 +148,7 @@ async function startAstroServer() {
       console.log('Initializing database schema...');
       const initDb = spawn('node', ['./scripts/init-db.js'], {
         env: { ...process.env, DATABASE_URL: `file:${DB_PATH}` },
-        cwd: process.env.LAMBDA_TASK_ROOT || '/var/task'
+        cwd: process.env.LAMBDA_TASK_ROOT || '/var/task',
       });
 
       await new Promise((resolve, reject) => {
@@ -166,7 +166,7 @@ async function startAstroServer() {
       console.log('Seeding database...');
       const seedDb = spawn('node', ['./scripts/seed-db.js'], {
         env: { ...process.env, DATABASE_URL: `file:${DB_PATH}` },
-        cwd: process.env.LAMBDA_TASK_ROOT || '/var/task'
+        cwd: process.env.LAMBDA_TASK_ROOT || '/var/task',
       });
 
       await new Promise((resolve, reject) => {
@@ -195,10 +195,10 @@ async function startAstroServer() {
       HOST: '0.0.0.0',
       PORT: PORT.toString(),
       NODE_ENV: 'production',
-      DATABASE_URL: `file:${DB_PATH}`
+      DATABASE_URL: `file:${DB_PATH}`,
     },
     cwd: process.env.LAMBDA_TASK_ROOT || '/var/task',
-    stdio: ['ignore', 'pipe', 'pipe']
+    stdio: ['ignore', 'pipe', 'pipe'],
   });
 
   astroServer.stdout.on('data', (data) => {
@@ -294,7 +294,7 @@ exports.handler = async (event, context) => {
     return {
       statusCode: 500,
       headers: { 'Content-Type': 'text/plain' },
-      body: `Internal Server Error: ${error.message}`
+      body: `Internal Server Error: ${error.message}`,
     };
   } finally {
     // On Lambda shutdown, try to sync one last time
@@ -302,7 +302,7 @@ exports.handler = async (event, context) => {
     if (context.getRemainingTimeInMillis() < 3000) {
       console.log('Lambda shutting down, final S3 sync...');
       await uploadDatabaseToS3().catch(err =>
-        console.error('Final sync failed:', err)
+        console.error('Final sync failed:', err),
       );
     }
   }
@@ -320,8 +320,8 @@ function proxyToAstro(method, path, headers, body) {
       method: method,
       headers: {
         ...headers,
-        'host': `localhost:${PORT}` // Override host header
-      }
+        'host': `localhost:${PORT}`, // Override host header
+      },
     };
 
     const req = http.request(options, (res) => {
@@ -336,7 +336,7 @@ function proxyToAstro(method, path, headers, body) {
           statusCode: res.statusCode,
           headers: res.headers,
           body: responseBody,
-          isBase64Encoded: false
+          isBase64Encoded: false,
         });
       });
     });
