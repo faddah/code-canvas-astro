@@ -336,12 +336,42 @@ function proxyToAstro(method, path, headers, body) {
       });
 
       res.on('end', () => {
-        resolve({
+        // Lambda Function URL / API Gateway v2 requires headers to be
+        // {string: string} — no arrays allowed. Node.js res.headers
+        // returns set-cookie (and potentially others) as arrays, which
+        // causes API Gateway to return {"message":"Internal Server Error"}.
+        const flatHeaders = {};
+        const cookies = [];
+
+        for (const [key, value] of Object.entries(res.headers)) {
+          if (key === 'set-cookie') {
+            // set-cookie must go in the separate 'cookies' array
+            if (Array.isArray(value)) {
+              cookies.push(...value);
+            } else {
+              cookies.push(value);
+            }
+          } else if (Array.isArray(value)) {
+            // Join other multi-value headers with comma (RFC 7230)
+            flatHeaders[key] = value.join(', ');
+          } else {
+            flatHeaders[key] = value;
+          }
+        }
+
+        const response = {
           statusCode: res.statusCode,
-          headers: res.headers,
+          headers: flatHeaders,
           body: responseBody,
           isBase64Encoded: false,
-        });
+        };
+
+        // Only include cookies array if there are cookies to set
+        if (cookies.length > 0) {
+          response.cookies = cookies;
+        }
+
+        resolve(response);
       });
     });
 
