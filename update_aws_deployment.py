@@ -37,7 +37,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
-from typing import Dict, Optional, Tuple
+from typing import Optional, Tuple
 
 import boto3
 from botocore.exceptions import ClientError
