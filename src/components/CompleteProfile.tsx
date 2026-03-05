@@ -164,7 +164,7 @@ export function CompleteProfile({ onComplete }: CompleteProfileProps) {
           <div className="space-y-2">
             <Label htmlFor="phone" className="text-black">Phone Number</Label>
             <div className="flex gap-2 items-center">
-              <span className="text-sm text-gray-500 min-w-[3rem]">
+              <span className="text-sm text-gray-500 min-w-12">
                 {COUNTRY_PHONE_CODES[selectedCountry] || '+1'}
               </span>
               <Input
