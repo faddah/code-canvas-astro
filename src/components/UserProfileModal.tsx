@@ -373,6 +373,32 @@ export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile
           </form>
         )}
       </DialogContent>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent className="bg-white text-black rounded-xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-black">Delete Account</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600">
+              Are you certain you wish to completely delete your Account with Python REPL IDE?
+              Once you do this, any files you created &amp; saved will be lost, and you cannot
+              save files in this app until you create a new account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-gray-400 text-black hover:bg-gray-100 font-semibold">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteProfile}
+              disabled={deleteProfile.isPending}
+              className="bg-red-600 text-white hover:bg-red-700 font-semibold"
+            >
+              {deleteProfile.isPending ? 'Deleting...' : 'Delete Profile'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
