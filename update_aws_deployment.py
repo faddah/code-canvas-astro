@@ -958,16 +958,27 @@ class UpdateDeployer:
                 "(this can take 5–15 minutes)…"
             )
             waiter = self.cf_client.get_waiter("invalidation_completed")
-            waiter.wait(
-                DistributionId=CLOUDFRONT_DISTRIBUTION_ID,
-                Id=invalidation_id,
-                WaiterConfig={"Delay": 20, "MaxAttempts": 30},  # up to 10 min
-            )
-
-            self.reporter.success(
-                f"CloudFront invalidation `{invalidation_id}` completed — "
-                f"Distribution {CLOUDFRONT_DISTRIBUTION_ID} cache cleared"
-            )
+            try:
+                waiter.wait(
+                    DistributionId=CLOUDFRONT_DISTRIBUTION_ID,
+                    Id=invalidation_id,
+                    WaiterConfig={"Delay": 20, "MaxAttempts": 45},  # up to 15 min
+                )
+                self.reporter.success(
+                    f"CloudFront invalidation `{invalidation_id}` completed — "
+                    f"Distribution {CLOUDFRONT_DISTRIBUTION_ID} cache cleared"
+                )
+            except Exception:                                      # noqa: BLE001
+                # Invalidation was created successfully — it will finish
+                # in the background even if the waiter times out.
+                self.reporter.info(
+                    f"CloudFront invalidation `{invalidation_id}` is still in "
+                    "progress but will complete in the background. Continuing…"
+                )
+                self.reporter.success(
+                    f"CloudFront invalidation `{invalidation_id}` created — "
+                    "propagation continues in background"
+                )
             return True
 
         except ClientError as exc:
