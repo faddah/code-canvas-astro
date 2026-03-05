@@ -952,10 +952,10 @@ class UpdateDeployer:
             self.reporter.info(f"Invalidation ID    : {invalidation_id}")
             self.reporter.info(f"Invalidation Status: {invalidation_status}")
 
-            # Wait for the invalidation to complete (up to ~10 min)
+            # Wait for the invalidation to complete (up to ~15 min)
             self.reporter.progress(
                 "Waiting for CloudFront invalidation to complete "
-                "(this can take 1–5 minutes)…"
+                "(this can take 5–15 minutes)…"
             )
             waiter = self.cf_client.get_waiter("invalidation_completed")
             waiter.wait(
