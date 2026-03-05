@@ -267,7 +267,11 @@ exports.handler = async (event, context) => {
     // For Lambda Function URL, the event is already in the right format
     // We just need to proxy it to the local server
 
-    const path = event.rawPath || event.path || '/';
+    let path = event.rawPath || event.path || '/';
+    const queryString = event.rawQueryString || '';
+    if (queryString) {
+      path = `${path}?${queryString}`;
+    }
     const method = event.requestContext?.http?.method || event.httpMethod || 'GET';
     const headers = event.headers || {};
     const body = event.body || '';
