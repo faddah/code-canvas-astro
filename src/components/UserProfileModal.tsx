@@ -203,20 +203,29 @@ export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile
             <ProfileField label="State / Province" value={profile?.state || 'Not set'} />
             <ProfileField label="Postal Code" value={profile?.postalCode || 'Not set'} />
 
-            <DialogFooter className="gap-2 sm:gap-2 pt-2">
+            <DialogFooter className="gap-2 sm:gap-2 pt-2 flex flex-row justify-between">
               <Button
                 variant="outline"
-                onClick={handleClose}
-                className="border-gray-400 text-black hover:bg-gray-100 font-semibold"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="bg-red-600 text-white hover:bg-red-700 border-red-600 hover:border-red-700 font-semibold"
               >
-                Cancel
+                Delete Profile
               </Button>
-              <Button
-                onClick={() => setIsEditing(true)}
-                className="bg-blue-600 text-white hover:bg-blue-700 font-semibold"
-              >
-                Edit Profile
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleClose}
+                  className="border-gray-400 text-black hover:bg-gray-100 font-semibold"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => setIsEditing(true)}
+                  className="bg-blue-600 text-white hover:bg-blue-700 font-semibold"
+                >
+                  Edit Profile
+                </Button>
+              </div>
             </DialogFooter>
           </div>
         ) : (
