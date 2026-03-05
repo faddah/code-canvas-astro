@@ -86,3 +86,28 @@ export const PUT: APIRoute = async ({ request, locals }) => {
         });
     }
 };
+
+export const DELETE: APIRoute = async ({ locals }) => {
+    const { userId } = locals.auth();
+    if (!userId) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    try {
+        const storage = new DatabaseStorage();
+        // Delete all user files first, then the profile
+        await storage.deleteAllUserFiles(userId);
+        await storage.deleteUserProfile(userId);
+
+        return new Response(null, { status: 204 });
+    } catch (err) {
+        console.error('Failed to delete user profile:', err);
+        return new Response(JSON.stringify({ message: 'Failed to delete profile' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+};
