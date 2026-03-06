@@ -313,14 +313,32 @@ export default function IDE() {
               <span className="text-xs px-3 py-1.5 rounded-full hidden lg:block border" style={{ color: '#33ff33', backgroundColor: '#0a0a0a', borderColor: '#33ff33', textShadow: '0 0 6px #33ff33' }}>
                 Files cannot be saved unless you create &amp; use a Python REPL IDE User account
               </span>
-              <Button size="sm" variant="outline" onClick={openSignUp} className="gap-1.5">
-                <UserPlus className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Create An Account</span>
-              </Button>
-              <Button size="sm" onClick={openSignIn} className="gap-1.5">
-                <LogIn className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Log In</span>
-              </Button>
+              {SignUpButton ? (
+                <SignUpButton mode="modal">
+                  <Button size="sm" variant="outline" className="gap-1.5">
+                    <UserPlus className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Create An Account</span>
+                  </Button>
+                </SignUpButton>
+              ) : (
+                <Button size="sm" variant="outline" onClick={openSignUp} className="gap-1.5">
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Create An Account</span>
+                </Button>
+              )}
+              {SignInButton ? (
+                <SignInButton mode="modal">
+                  <Button size="sm" className="gap-1.5">
+                    <LogIn className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Log In</span>
+                  </Button>
+                </SignInButton>
+              ) : (
+                <Button size="sm" onClick={openSignIn} className="gap-1.5">
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Log In</span>
+                </Button>
+              )}
             </>
           ) : (
             <>
