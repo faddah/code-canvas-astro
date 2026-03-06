@@ -10,8 +10,11 @@ import { Toaster } from '@/components/ui/toaster';
 export default function App() {
   const clerkPubKey = import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY;
 
+  console.log('[App] PUBLIC_CLERK_PUBLISHABLE_KEY:', clerkPubKey ? `${clerkPubKey.substring(0, 15)}...` : '(empty)');
+
   // If Clerk keys aren't configured, render without auth (graceful degradation)
   if (!clerkPubKey || clerkPubKey === 'pk_test_REPLACE_ME') {
+    console.log('[App] Clerk key missing or placeholder — rendering WITHOUT ClerkProvider');
     return (
       <QueryProvider>
         <IDE />
@@ -20,6 +23,7 @@ export default function App() {
     );
   }
 
+  console.log('[App] Rendering WITH ClerkProvider');
   return (
     <ClerkProvider publishableKey={clerkPubKey}>
       <QueryProvider>
