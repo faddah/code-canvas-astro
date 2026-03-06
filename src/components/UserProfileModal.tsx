@@ -295,7 +295,7 @@ export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile
               )}
               <Label htmlFor="phone" className="text-black text-sm">Phone Number</Label>
               <div className="flex gap-2 items-center">
-                <span className="text-sm text-gray-500 min-w-[3rem]">
+                <span className="text-sm text-gray-500 min-w-12">
                   {COUNTRY_PHONE_CODES[selectedCountry] || '+1'}
                 </span>
                 <Input
