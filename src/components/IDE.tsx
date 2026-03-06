@@ -24,7 +24,7 @@ import { version } from "../../package.json";
 
 // Conditionally import Clerk hooks and components — they only work when ClerkProvider is present
 let useUser: () => { isSignedIn: boolean | undefined; user: any } = () => ({ isSignedIn: undefined, user: null });
-let useClerk: () => { signOut: () => void; openSignIn: () => void; openSignUp: () => void } = () => ({
+let useClerk: () => { loaded: boolean; signOut: () => void; openSignIn: () => void; openSignUp: () => void } = () => ({
   loaded: false,
   signOut: () => {},
   openSignIn: () => {},
