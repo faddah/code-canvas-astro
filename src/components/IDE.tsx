@@ -22,13 +22,16 @@ import { CompleteProfile } from "@/components/CompleteProfile";
 import { UserProfileModal } from "@/components/UserProfileModal";
 import { version } from "../../package.json";
 
-// Conditionally import Clerk hooks — they only work when ClerkProvider is present
+// Conditionally import Clerk hooks and components — they only work when ClerkProvider is present
 let useUser: () => { isSignedIn: boolean | undefined; user: any } = () => ({ isSignedIn: undefined, user: null });
 let useClerk: () => { signOut: () => void; openSignIn: () => void; openSignUp: () => void } = () => ({
   signOut: () => {},
   openSignIn: () => {},
   openSignUp: () => {},
 });
+let SignInButton: any = null;
+let SignUpButton: any = null;
+let SignOutButton: any = null;
 
 try {
   const clerkReact = await import('@clerk/react');
