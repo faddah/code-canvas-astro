@@ -351,10 +351,19 @@ export default function IDE() {
                 <User className="w-3.5 h-3.5" />
                 {user?.primaryEmailAddress?.emailAddress}
               </Button>
-              <Button size="sm" variant="outline" onClick={() => signOut()} className="gap-1.5">
-                <LogOut className="w-3.5 h-3.5" />
-                Log Out
-              </Button>
+              {SignOutButton ? (
+                <SignOutButton>
+                  <Button size="sm" variant="outline" className="gap-1.5">
+                    <LogOut className="w-3.5 h-3.5" />
+                    Log Out
+                  </Button>
+                </SignOutButton>
+              ) : (
+                <Button size="sm" variant="outline" onClick={() => signOut()} className="gap-1.5">
+                  <LogOut className="w-3.5 h-3.5" />
+                  Log Out
+                </Button>
+              )}
             </>
           )}
 
