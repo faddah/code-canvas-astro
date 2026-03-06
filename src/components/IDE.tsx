@@ -59,11 +59,12 @@ export default function IDE() {
     isSignedIn = !!userResult.isSignedIn;
     user = userResult.user;
     const clerkResult = useClerk();
+    console.log('[IDE] useClerk() result — loaded:', clerkResult.loaded, 'openSignIn:', typeof clerkResult.openSignIn);
     signOut = () => clerkResult.signOut();
-    openSignIn = () => clerkResult.openSignIn();
-    openSignUp = () => clerkResult.openSignUp();
-  } catch {
-    // Clerk hooks not available
+    openSignIn = () => { console.log('[IDE] openSignIn called, clerk.loaded:', clerkResult.loaded); clerkResult.openSignIn(); };
+    openSignUp = () => { console.log('[IDE] openSignUp called, clerk.loaded:', clerkResult.loaded); clerkResult.openSignUp(); };
+  } catch (e) {
+    console.error('[IDE] Clerk hooks failed:', e);
   }
 
   // Data hooks
