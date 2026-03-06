@@ -37,8 +37,12 @@ try {
   const clerkReact = await import('@clerk/react');
   useUser = clerkReact.useUser;
   useClerk = clerkReact.useClerk;
-} catch {
-  // Clerk not available — fall back to unauthenticated mode
+  SignInButton = clerkReact.SignInButton;
+  SignUpButton = clerkReact.SignUpButton;
+  SignOutButton = clerkReact.SignOutButton;
+  console.log('[IDE] @clerk/react loaded. SignInButton:', !!SignInButton);
+} catch (e) {
+  console.error('[IDE] Failed to load @clerk/react:', e);
 }
 
 export default function IDE() {
