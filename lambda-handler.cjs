@@ -143,43 +143,46 @@ async function startAstroServer() {
   if (!dbInitialized) {
     const dbExists = await downloadDatabaseFromS3();
 
+    // Always run init-db.js to ensure schema is up to date.
+    // It uses CREATE TABLE IF NOT EXISTS, so it's safe to run on
+    // an existing database and handles schema migrations.
+    console.log('Ensuring database schema is up to date...');
+    const initDb = spawn('node', ['./scripts/init-db.js'], {
+      env: { ...process.env, DATABASE_URL: `file:${DB_PATH}` },
+      cwd: process.env.LAMBDA_TASK_ROOT || '/var/task',
+    });
+
+    await new Promise((resolve, reject) => {
+      initDb.on('close', (code) => {
+        if (code === 0) {
+          console.log('✓ Database schema initialized');
+          resolve();
+        } else {
+          reject(new Error(`Database initialization failed with code ${code}`));
+        }
+      });
+    });
+
+    // Always run seed-db.js — it checks if tables are empty
+    // before inserting, so it's safe to run repeatedly.
+    console.log('Seeding database (if needed)...');
+    const seedDb = spawn('node', ['./scripts/seed-db.js'], {
+      env: { ...process.env, DATABASE_URL: `file:${DB_PATH}` },
+      cwd: process.env.LAMBDA_TASK_ROOT || '/var/task',
+    });
+
+    await new Promise((resolve, reject) => {
+      seedDb.on('close', (code) => {
+        if (code === 0) {
+          console.log('✓ Database seeded');
+          resolve();
+        } else {
+          reject(new Error(`Database seeding failed with code ${code}`));
+        }
+      });
+    });
+
     if (!dbExists) {
-      // Initialize database schema
-      console.log('Initializing database schema...');
-      const initDb = spawn('node', ['./scripts/init-db.js'], {
-        env: { ...process.env, DATABASE_URL: `file:${DB_PATH}` },
-        cwd: process.env.LAMBDA_TASK_ROOT || '/var/task',
-      });
-
-      await new Promise((resolve, reject) => {
-        initDb.on('close', (code) => {
-          if (code === 0) {
-            console.log('✓ Database schema initialized');
-            resolve();
-          } else {
-            reject(new Error(`Database initialization failed with code ${code}`));
-          }
-        });
-      });
-
-      // Seed database with initial data
-      console.log('Seeding database...');
-      const seedDb = spawn('node', ['./scripts/seed-db.js'], {
-        env: { ...process.env, DATABASE_URL: `file:${DB_PATH}` },
-        cwd: process.env.LAMBDA_TASK_ROOT || '/var/task',
-      });
-
-      await new Promise((resolve, reject) => {
-        seedDb.on('close', (code) => {
-          if (code === 0) {
-            console.log('✓ Database seeded');
-            resolve();
-          } else {
-            reject(new Error(`Database seeding failed with code ${code}`));
-          }
-        });
-      });
-
       // Upload initial database to S3
       await uploadDatabaseToS3();
     }
