@@ -11,6 +11,7 @@
 
 const { spawn } = require('child_process');
 const http = require('http');
+const { URL } = require('url');
 const { S3Client, GetObjectCommand, PutObjectCommand, HeadObjectCommand } = require('@aws-sdk/client-s3');
 const fs = require('fs');
 
