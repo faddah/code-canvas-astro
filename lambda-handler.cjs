@@ -277,7 +277,20 @@ exports.handler = async (event, context) => {
     }
     const method = event.requestContext?.http?.method || event.httpMethod || 'GET';
     const headers = event.headers || {};
-    const body = event.body || '';
+
+    // API Gateway HTTP API (v2, payload format 2.0) extracts cookies from
+    // the Cookie header and places them in event.cookies[].  Reconstruct
+    // the Cookie header so the Astro server (and Clerk middleware) can
+    // read session tokens.
+    if (event.cookies && Array.isArray(event.cookies) && event.cookies.length > 0) {
+      headers['cookie'] = event.cookies.join('; ');
+    }
+
+    // API Gateway v2 may base64-encode the request body
+    let body = event.body || '';
+    if (body && event.isBase64Encoded) {
+      body = Buffer.from(body, 'base64').toString('utf-8');
+    }
 
     console.log(`[Lambda] ${method} ${path}`);
 
