@@ -886,7 +886,10 @@ class UpdateDeployer:
                     "lambda:UpdateFunctionConfiguration.",
                 )
             return False
-        except Exception as exc:                               # noqa: BLE001
+        except (
+            OSError,
+            subprocess.SubprocessError,
+            RuntimeError) as exc:                               # noqa: BLE001
             self.reporter.fail("Unexpected error during Lambda update.", error=exc)
             return False
 
@@ -948,7 +951,10 @@ class UpdateDeployer:
                     fix_hint="Ensure IAM permissions include apigateway:GET.",
                 )
             return False
-        except Exception as exc:                               # noqa: BLE001
+        except (
+            OSError,
+            subprocess.SubprocessError,
+            RuntimeError) as exc:                               # noqa: BLE001
             self.reporter.fail("Unexpected error verifying API Gateway.", error=exc)
             return False
 
@@ -1029,7 +1035,7 @@ class UpdateDeployer:
                     ),
                 )
             return False
-        except Exception as exc:                               # noqa: BLE001
+        except (OSError, RuntimeError, ValueError) as exc:               # noqa: BLE001
             self.reporter.fail("Unexpected error during CloudFront invalidation.", error=exc)
             return False
 
@@ -1118,7 +1124,7 @@ class UpdateDeployer:
                     fix_hint="Ensure IAM permissions include route53:GetHostedZone.",
                 )
             return False
-        except Exception as exc:                               # noqa: BLE001
+        except (OSError, RuntimeError, ValueError) as exc:                          # noqa: BLE001
             self.reporter.fail("Unexpected error verifying Route 53.", error=exc)
             return False
 
@@ -1170,7 +1176,7 @@ class UpdateDeployer:
 
             except urllib.error.URLError as exc:
                 self.reporter.info(f"Connection error: {exc.reason} — will retry…")
-            except Exception as exc:                           # noqa: BLE001
+            except (OSError, RuntimeError, ValueError) as exc:                 # noqa: BLE001
                 self.reporter.info(f"Unexpected error: {exc} — will retry…")
 
             if attempt < max_retries:
@@ -1240,7 +1246,7 @@ class UpdateDeployer:
                     f"Connection error: {exc.reason} — CloudFront/DNS may still be "
                     "propagating; will retry…"
                 )
-            except Exception as exc:                           # noqa: BLE001
+            except (OSError, RuntimeError, ValueError) as exc:       # noqa: BLE001
                 self.reporter.info(f"Unexpected error: {exc} — will retry…")
 
             if attempt < max_retries:
