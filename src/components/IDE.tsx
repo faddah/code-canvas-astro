@@ -21,29 +21,13 @@ import { useToast } from "@/hooks/use-toast";
 import { CompleteProfile } from "@/components/CompleteProfile";
 import { UserProfileModal } from "@/components/UserProfileModal";
 import { version } from "../../package.json";
+import { useAuth, SignInButton, SignUpButton, SignOutButton } from "@clerk/astro/react";
+import { $userStore } from "@clerk/astro/client";
 
-// Conditionally import Clerk hooks and components — they only work when ClerkProvider is present
-let useUser: () => { isSignedIn: boolean | undefined; user: any } = () => ({ isSignedIn: undefined, user: null });
-let useClerk: () => { loaded: boolean; signOut: () => void; openSignIn: () => void; openSignUp: () => void } = () => ({
-  loaded: false,
-  signOut: () => {},
-  openSignIn: () => {},
-  openSignUp: () => {},
-});
-let SignInButton: any = null;
-let SignUpButton: any = null;
-let SignOutButton: any = null;
-
-try {
-  const clerkReact = await import('@clerk/react');
-  useUser = clerkReact.useUser;
-  useClerk = clerkReact.useClerk;
-  SignInButton = clerkReact.SignInButton;
-  SignUpButton = clerkReact.SignUpButton;
-  SignOutButton = clerkReact.SignOutButton;
-  console.log('[IDE] @clerk/react loaded. SignInButton:', !!SignInButton);
-} catch (e) {
-  console.error('[IDE] Failed to load @clerk/react:', e);
+// Subscribe to the $userStore nanostore from @clerk/astro/client
+function useClerkUser() {
+  const get = $userStore.get.bind($userStore);
+  return useSyncExternalStore($userStore.listen, get, () => null);
 }
 
 export default function IDE() {
