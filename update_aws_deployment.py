@@ -40,7 +40,7 @@ import urllib.request
 from typing import Optional, Tuple
 
 import boto3
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, WaiterError
 
 # ============================================================================
 # CONFIGURATION  —  Edit the values below to match your environment
