@@ -334,6 +334,15 @@ exports.handler = async (event, context) => {
  */
 function proxyToAstro(method, path, headers, body) {
   return new Promise((resolve, reject) => {
+    // Resolve the public-facing host so Clerk (and Astro) build correct
+    // redirect URLs.  Priority: x-forwarded-host → origin header → PUBLIC_HOST
+    // env var → fall back to the upstream host from API Gateway.
+    const publicHost =
+      headers['x-forwarded-host'] ||
+      (headers['origin'] ? new URL(headers['origin']).host : null) ||
+      process.env.PUBLIC_HOST ||
+      headers['host'];
+
     const options = {
       hostname: 'localhost',
       port: PORT,
@@ -341,7 +350,9 @@ function proxyToAstro(method, path, headers, body) {
       method: method,
       headers: {
         ...headers,
-        'host': `localhost:${PORT}`, // Override host header
+        'host': publicHost,                // public domain, NOT localhost
+        'x-forwarded-host': publicHost,
+        'x-forwarded-proto': 'https',
       },
     };
 
