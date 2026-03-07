@@ -858,7 +858,7 @@ class UpdateDeployer:
                     "Lambda update failed with an unexpected AWS error.",
                     error=exc,
                     fix_hint="Check IAM permissions: lambda:UpdateFunctionCode, "
-                             "lambda:UpdateFunctionConfiguration.",
+                    "lambda:UpdateFunctionConfiguration.",
                 )
             return False
         except Exception as exc:                               # noqa: BLE001
