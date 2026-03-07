@@ -406,7 +406,7 @@ class UpdateDeployer:
         self.reporter.progress(f"docker buildx build … -t {local_tag} -f Dockerfile")
         self.reporter.info("This may take several minutes on first build…")
 
-        ok, stdout, stderr = run(cmd)
+        ok, _, stderr = run(cmd)
         if not ok:
             self.reporter.fail(
                 f"docker build failed for {DOCKER_APP_IMAGE}",
@@ -443,7 +443,7 @@ class UpdateDeployer:
         ]
         self.reporter.progress(f"docker buildx build … -t {local_tag} -f Dockerfile.db")
 
-        ok, stdout, stderr = run(cmd)
+        ok, _, stderr = run(cmd)
         if not ok:
             self.reporter.fail(
                 f"docker build failed for {DOCKER_DB_INIT_IMAGE}",
