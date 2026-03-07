@@ -827,6 +827,16 @@ class UpdateDeployer:
             )
             self.reporter.info("Lambda configuration update complete.")
 
+            # Ensure only one Lambda instance runs at a time (SQLite in /tmp
+            # is per-instance; concurrent instances would each have their own
+            # stale copy of the database).
+            self.reporter.progress("Setting reserved concurrency to 1…")
+            self.lambda_client.put_function_concurrency(
+                FunctionName=LAMBDA_FUNCTION_NAME,
+                ReservedConcurrentExecutions=1,
+            )
+            self.reporter.info("Reserved concurrency set to 1.")
+
             # Confirm active image
             fn_info = self.lambda_client.get_function(
                 FunctionName=LAMBDA_FUNCTION_NAME
