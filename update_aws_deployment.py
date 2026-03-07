@@ -829,7 +829,8 @@ class UpdateDeployer:
                         "S3_DB_KEY":      S3_DB_KEY,
                         "PORT":           "8080",
                         "DATABASE_URL":   "file:/tmp/taskManagement.db",
-                        "PUBLIC_CLERK_PUBLISHABLE_KEY": os.environ.get("PUBLIC_CLERK_PUBLISHABLE_KEY", ""),
+                        "PUBLIC_CLERK_PUBLISHABLE_KEY": os.environ.get(
+                            "PUBLIC_CLERK_PUBLISHABLE_KEY", ""),
                         "CLERK_SECRET_KEY": os.environ.get("CLERK_SECRET_KEY", ""),
                         "PUBLIC_HOST": "pyrepl.dev",
                     }
