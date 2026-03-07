@@ -518,7 +518,7 @@ export default function IDE() {
           onClose={() => setShowProfileModal(false)}
           onDeleteProfile={() => {
             setShowProfileModal(false);
-            signOut();
+            signOut({ redirectUrl: '/' });
           }}
           user={user}
           profile={profile}
