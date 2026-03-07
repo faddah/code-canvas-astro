@@ -31,25 +31,10 @@ function useClerkUser() {
 }
 
 export default function IDE() {
-  // Auth state
-  let isSignedIn = false;
-  let user: any = null;
-  let signOut = () => {};
-  let openSignIn = () => {};
-  let openSignUp = () => {};
-
-  try {
-    const userResult = useUser();
-    isSignedIn = !!userResult.isSignedIn;
-    user = userResult.user;
-    const clerkResult = useClerk();
-    console.log('[IDE] useClerk() result — loaded:', clerkResult.loaded, 'openSignIn:', typeof clerkResult.openSignIn);
-    signOut = () => clerkResult.signOut();
-    openSignIn = () => { console.log('[IDE] openSignIn called, clerk.loaded:', clerkResult.loaded); clerkResult.openSignIn(); };
-    openSignUp = () => { console.log('[IDE] openSignUp called, clerk.loaded:', clerkResult.loaded); clerkResult.openSignUp(); };
-  } catch (e) {
-    console.error('[IDE] Clerk hooks failed:', e);
-  }
+  // Auth state from @clerk/astro/react (uses nanostores, not React Context)
+  const { userId, signOut } = useAuth();
+  const isSignedIn = !!userId;
+  const user = useClerkUser();
 
   // Data hooks
   const { data: starterFiles, isLoading: isLoadingStarter } = useStarterFiles();
