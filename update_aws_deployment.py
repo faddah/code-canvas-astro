@@ -663,7 +663,7 @@ class UpdateDeployer:
                 "--password-stdin",
                 ecr_endpoint,
             ]
-            proc = subprocess.run(
+            subprocess.run(
                 login_cmd,
                 input=password,
                 capture_output=True,
