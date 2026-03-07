@@ -1002,7 +1002,7 @@ class UpdateDeployer:
                     f"CloudFront invalidation `{invalidation_id}` completed — "
                     f"Distribution {CLOUDFRONT_DISTRIBUTION_ID} cache cleared"
                 )
-            except Exception:                                      # noqa: BLE001
+            except WaiterError:                                      # noqa: BLE001
                 # Invalidation was created successfully — it will finish
                 # in the background even if the waiter times out.
                 self.reporter.info(
