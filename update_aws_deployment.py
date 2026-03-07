@@ -492,6 +492,7 @@ class UpdateDeployer:
                     capture_output=True,
                     text=True,
                     timeout=30,
+                    check=False,
                 )
                 if proc.returncode == 0:
                     self.reporter.info("Docker Hub login successful (--password-stdin)")
@@ -525,6 +526,7 @@ class UpdateDeployer:
                 capture_output=True,
                 text=True,
                 timeout=15,   # cached login completes in <1 s; hang = no creds
+                check=False,
             )
             if proc.returncode == 0:
                 self.reporter.info(
