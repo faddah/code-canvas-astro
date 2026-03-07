@@ -106,6 +106,8 @@ ROUTE53_HOSTED_ZONE_ID = "Z06161484WRKVMIQUBIG"
 # ============================================================================
 
 class C:
+    """ANSI escape code constants for colorized terminal output."""
+
     HEADER  = "\033[95m"
     BLUE    = "\033[94m"
     CYAN    = "\033[96m"
@@ -128,6 +130,7 @@ class StageReporter:
         self.current = 0
 
     def start(self, description: str) -> None:
+        """Increment the stage counter and print a decorated stage header."""
         self.current += 1
         print(
             f"\n{C.HEADER}{C.BOLD}"
@@ -137,6 +140,7 @@ class StageReporter:
         )
 
     def success(self, detail: str = "") -> None:
+        """Print a green SUCCESS line for the current stage with an optional detail message."""
         label = f"STAGE {self.current}/{self.total}"
         msg   = f" — {detail}" if detail else ""
         print(f"{C.GREEN}{C.BOLD}✅ {label}: SUCCESS{msg}{C.ENDC}")
@@ -147,6 +151,7 @@ class StageReporter:
         error: Optional[Exception] = None,
         fix_hint: str = "",
     ) -> None:
+        """Print a red FAIL line with error details and an optional fix hint."""
         label = f"STAGE {self.current}/{self.total}"
         print(f"{C.FAIL}{C.BOLD}❌ {label}: FAIL — {description}{C.ENDC}")
         if error:
@@ -162,10 +167,12 @@ class StageReporter:
 
     @staticmethod
     def info(msg: str) -> None:
+        """Print a cyan informational message."""
         print(f"{C.CYAN}   ℹ  {msg}{C.ENDC}")
 
     @staticmethod
     def progress(msg: str) -> None:
+        """Print a blue progress/status message."""
         print(f"{C.BLUE}   ⟳  {msg}{C.ENDC}")
 
 
@@ -341,6 +348,8 @@ class UpdateDeployer:
     # ────────────────────────────────────────────────────────────────────────
 
     def stage_01_read_version(self) -> bool:
+        """Read and validate the app version from package.json,
+            setting self.version and self.image_tag."""
         self.reporter.start("Read & validate version from package.json")
         try:
             with open(PACKAGE_JSON_PATH, "r", encoding="utf-8") as fh:
@@ -377,6 +386,7 @@ class UpdateDeployer:
     # ────────────────────────────────────────────────────────────────────────
 
     def stage_02_build_app_container(self) -> bool:
+        """Build the Docker app container image for linux/amd64 using buildx."""
         self.reporter.start(
             f"Build Docker app container: {DOCKER_APP_IMAGE}:{self.image_tag}"
         )
@@ -416,6 +426,7 @@ class UpdateDeployer:
     # ────────────────────────────────────────────────────────────────────────
 
     def stage_03_build_db_init_container(self) -> bool:
+        """Build the Docker db-init container image for linux/amd64 using buildx."""
         self.reporter.start(
             f"Build Docker db-init container: {DOCKER_DB_INIT_IMAGE}:{self.image_tag}"
         )
@@ -548,6 +559,7 @@ class UpdateDeployer:
             return False
 
     def stage_04_push_to_dockerhub(self) -> bool:
+        """Tag and push the app and db-init container images to Docker Hub."""
         self.reporter.start(
             f"Push Docker containers to Docker Hub as "
             f"{DOCKERHUB_USERNAME}/{DOCKER_APP_IMAGE}:{self.image_tag} "
@@ -632,6 +644,7 @@ class UpdateDeployer:
     # ────────────────────────────────────────────────────────────────────────
 
     def stage_05_ecr_auth(self) -> bool:
+        """Authenticate Docker with AWS ECR using a boto3 authorization token."""
         self.reporter.start(
             f"Authenticate with AWS ECR ({ECR_REPO_URI})"
         )
@@ -682,6 +695,7 @@ class UpdateDeployer:
     # ────────────────────────────────────────────────────────────────────────
 
     def stage_06_build_and_push_ecr(self) -> bool:
+        """Build the Lambda-compatible Docker image and push it to AWS ECR."""
         local_tag  = f"{ECR_REPO_NAME}:{self.image_tag}"
         ecr_tag    = f"{ECR_FULL_URI}:{self.image_tag}"
         ecr_latest = f"{ECR_FULL_URI}:latest"
@@ -779,6 +793,7 @@ class UpdateDeployer:
     # ────────────────────────────────────────────────────────────────────────
 
     def stage_07_update_lambda(self) -> bool:
+        """Update the AWS Lambda function code and configuration to use the new ECR image."""
         self.reporter.start(
             f"Update AWS Lambda function `{LAMBDA_FUNCTION_NAME}` "
             f"→ new ECR image {self.ecr_image_uri}"
@@ -880,6 +895,7 @@ class UpdateDeployer:
     # ────────────────────────────────────────────────────────────────────────
 
     def stage_08_verify_api_gateway(self) -> bool:
+        """Verify the AWS API Gateway v2 (HTTP API) is present and accessible."""
         self.reporter.start(
             f"Verify AWS API Gateway `{API_GATEWAY_NAME}` (ID: {API_GATEWAY_ID}) "
             "is operational"
@@ -941,6 +957,7 @@ class UpdateDeployer:
     # ────────────────────────────────────────────────────────────────────────
 
     def stage_09_invalidate_cloudfront(self) -> bool:
+        """Create a CloudFront cache invalidation for all paths (/*) on the distribution."""
         self.reporter.start(
             f"Invalidate AWS CloudFront Distribution `{CLOUDFRONT_DISTRIBUTION_ID}` cache"
         )
@@ -1021,6 +1038,7 @@ class UpdateDeployer:
     # ────────────────────────────────────────────────────────────────────────
 
     def stage_10_verify_route53(self) -> bool:
+        """Verify the Route 53 hosted zone exists and list its DNS records."""
         self.reporter.start(
             f"Verify AWS Route 53 Hosted Zone `{ROUTE53_DOMAIN}` "
             f"(Zone ID: {ROUTE53_HOSTED_ZONE_ID}) DNS records"
@@ -1109,6 +1127,7 @@ class UpdateDeployer:
     # ────────────────────────────────────────────────────────────────────────
 
     def stage_11_health_check_lambda_url(self) -> bool:
+        """Smoke-test the Lambda function URL with retries to confirm it is reachable."""
         self.reporter.start(
             f"Health check — Lambda Function URL: {LAMBDA_FUNCTION_URL}"
         )
@@ -1177,6 +1196,7 @@ class UpdateDeployer:
     # ────────────────────────────────────────────────────────────────────────
 
     def stage_12_health_check_public_domain(self) -> bool:
+        """Final smoke-test of the public domain (https://pyrepl.dev) with retries."""
         self.reporter.start(
             f"Final health check — public domain: https://{ROUTE53_DOMAIN}"
         )
@@ -1248,6 +1268,16 @@ class UpdateDeployer:
     # ────────────────────────────────────────────────────────────────────────
 
     def run(self) -> bool:
+        """Execute the full 12-stage AWS deployment pipeline.
+
+        Runs a preflight check, then sequentially executes each stage from
+        version reading through Docker builds, ECR/Lambda updates, CloudFront
+        invalidation, DNS verification, and final health checks. Stops on the
+        first stage failure since later stages depend on earlier ones.
+
+        Returns:
+            True if all 12 stages passed, False if preflight or any stage failed.
+        """
         if not self.preflight_check():
             print(
                 f"\n{C.FAIL}{C.BOLD}Pre-flight checks failed. "
@@ -1333,6 +1363,11 @@ class UpdateDeployer:
 # ============================================================================
 
 def main() -> None:
+    """Entry point for the AWS deployment pipeline.
+
+    Instantiates an UpdateDeployer, executes the full 12-stage build and
+    deploy pipeline, and exits with code 0 on success or 1 on failure.
+    """
     deployer = UpdateDeployer()
     success  = deployer.run()
     sys.exit(0 if success else 1)
