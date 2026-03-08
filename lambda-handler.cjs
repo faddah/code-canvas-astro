@@ -95,6 +95,23 @@ async function downloadDatabaseFromS3() {
 }
 
 /**
+ * Force a WAL checkpoint so all pending writes are flushed into the main
+ * database file before we upload it to S3.  Without this, data written to
+ * the -wal file would be lost on the next cold start.
+ */
+function checkpointDatabase() {
+  try {
+    if (!fs.existsSync(DB_PATH)) return;
+    const sqliteDb = new BetterSqlite3(DB_PATH);
+    sqliteDb.pragma('wal_checkpoint(TRUNCATE)');
+    sqliteDb.close();
+    console.log('✓ WAL checkpoint completed');
+  } catch (error) {
+    console.error('WAL checkpoint failed:', error);
+  }
+}
+
+/**
  * Upload database to S3
  */
 async function uploadDatabaseToS3() {
