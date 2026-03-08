@@ -11,8 +11,10 @@
 
 const { spawn } = require('child_process');
 const http = require('http');
+const { URL } = require('url');
 const { S3Client, GetObjectCommand, PutObjectCommand, HeadObjectCommand } = require('@aws-sdk/client-s3');
 const fs = require('fs');
+const BetterSqlite3 = require('better-sqlite3');
 
 // S3 Configuration
 const S3_BUCKET = process.env.S3_BUCKET_NAME || 'code-canvas-astro-db';
@@ -73,11 +75,39 @@ async function downloadDatabaseFromS3() {
     });
 
     console.log(`✓ Database downloaded to ${DB_PATH}`);
+
+    // Remove stale WAL/SHM files from previous Lambda instances
+    // (they're invalid for a freshly-downloaded database)
+    for (const suffix of ['-wal', '-shm']) {
+      const walPath = DB_PATH + suffix;
+      if (fs.existsSync(walPath)) {
+        fs.unlinkSync(walPath);
+        console.log(`  Removed stale ${suffix} file`);
+      }
+    }
+
     return true;
 
   } catch (error) {
     console.error('Failed to download database from S3:', error);
     return false;
+  }
+}
+
+/**
+ * Force a WAL checkpoint so all pending writes are flushed into the main
+ * database file before we upload it to S3.  Without this, data written to
+ * the -wal file would be lost on the next cold start.
+ */
+function checkpointDatabase() {
+  try {
+    if (!fs.existsSync(DB_PATH)) return;
+    const sqliteDb = new BetterSqlite3(DB_PATH);
+    sqliteDb.pragma('wal_checkpoint(TRUNCATE)');
+    sqliteDb.close();
+    console.log('✓ WAL checkpoint completed');
+  } catch (error) {
+    console.error('WAL checkpoint failed:', error);
   }
 }
 
@@ -91,6 +121,9 @@ async function uploadDatabaseToS3() {
       console.log('ℹ️  No database file to upload');
       return;
     }
+
+    // Flush WAL to main database file before uploading
+    checkpointDatabase();
 
     console.log(`Uploading database to S3: s3://${S3_BUCKET}/${S3_KEY}`);
 
@@ -277,7 +310,20 @@ exports.handler = async (event, context) => {
     }
     const method = event.requestContext?.http?.method || event.httpMethod || 'GET';
     const headers = event.headers || {};
-    const body = event.body || '';
+
+    // API Gateway HTTP API (v2, payload format 2.0) extracts cookies from
+    // the Cookie header and places them in event.cookies[].  Reconstruct
+    // the Cookie header so the Astro server (and Clerk middleware) can
+    // read session tokens.
+    if (event.cookies && Array.isArray(event.cookies) && event.cookies.length > 0) {
+      headers['cookie'] = event.cookies.join('; ');
+    }
+
+    // API Gateway v2 may base64-encode the request body
+    let body = event.body || '';
+    if (body && event.isBase64Encoded) {
+      body = Buffer.from(body, 'base64').toString('utf-8');
+    }
 
     console.log(`[Lambda] ${method} ${path}`);
 
@@ -320,6 +366,15 @@ exports.handler = async (event, context) => {
  */
 function proxyToAstro(method, path, headers, body) {
   return new Promise((resolve, reject) => {
+    // Resolve the public-facing host so Clerk (and Astro) build correct
+    // redirect URLs.  Priority: x-forwarded-host → origin header → PUBLIC_HOST
+    // env var → fall back to the upstream host from API Gateway.
+    const publicHost =
+      headers['x-forwarded-host'] ||
+      (headers['origin'] ? new URL(headers['origin']).host : null) ||
+      process.env.PUBLIC_HOST ||
+      headers['host'];
+
     const options = {
       hostname: 'localhost',
       port: PORT,
@@ -327,7 +382,9 @@ function proxyToAstro(method, path, headers, body) {
       method: method,
       headers: {
         ...headers,
-        'host': `localhost:${PORT}`, // Override host header
+        'host': publicHost,                // public domain, NOT localhost
+        'x-forwarded-host': publicHost,
+        'x-forwarded-proto': 'https',
       },
     };
 
