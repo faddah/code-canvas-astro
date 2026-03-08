@@ -75,6 +75,17 @@ async function downloadDatabaseFromS3() {
     });
 
     console.log(`✓ Database downloaded to ${DB_PATH}`);
+
+    // Remove stale WAL/SHM files from previous Lambda instances
+    // (they're invalid for a freshly-downloaded database)
+    for (const suffix of ['-wal', '-shm']) {
+      const walPath = DB_PATH + suffix;
+      if (fs.existsSync(walPath)) {
+        fs.unlinkSync(walPath);
+        console.log(`  Removed stale ${suffix} file`);
+      }
+    }
+
     return true;
 
   } catch (error) {
