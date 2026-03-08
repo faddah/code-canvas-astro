@@ -122,6 +122,9 @@ async function uploadDatabaseToS3() {
       return;
     }
 
+    // Flush WAL to main database file before uploading
+    checkpointDatabase();
+
     console.log(`Uploading database to S3: s3://${S3_BUCKET}/${S3_KEY}`);
 
     const fileStream = fs.createReadStream(DB_PATH);
