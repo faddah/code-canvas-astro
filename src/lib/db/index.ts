@@ -2,9 +2,11 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
 import * as schema from "../../shared/schema";
 
-// In Astro, use import.meta.env instead of process.env
-// Fallback to process.env for compatibility with build scripts
-const databaseUrl = import.meta.env?.DATABASE_URL || process.env.DATABASE_URL;
+// Prefer runtime process.env.DATABASE_URL (set by Lambda handler) over
+// import.meta.env.DATABASE_URL which Vite bakes at build time from .env.
+// In Lambda, the handler sets DATABASE_URL=file:/tmp/taskManagement.db at
+// runtime — the build-time value (file:./taskManagement.db) would be wrong.
+const databaseUrl = process.env.DATABASE_URL || import.meta.env?.DATABASE_URL;
 
 if (!databaseUrl) {
   throw new Error(
