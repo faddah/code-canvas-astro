@@ -335,6 +335,11 @@ exports.handler = async (event, context) => {
     // Proxy request to Astro server
     const response = await proxyToAstro(method, path, headers, body);
 
+    // Log response status for API calls (auth debugging)
+    if (path.startsWith('/api/')) {
+      console.log(`[Lambda] ${method} ${path} → ${response.statusCode}`);
+    }
+
     // Sync database to S3 if needed (for write operations or after interval)
     if (method !== 'GET' && method !== 'HEAD') {
       // Write operation detected, sync immediately
