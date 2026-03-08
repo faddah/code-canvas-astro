@@ -26,6 +26,14 @@ export function useUserFiles(enabled: boolean) {
       if (!res.ok) throw new Error("Failed to fetch user files");
       return res.json();
     },
+    // On page refresh, Clerk's session token may be expired for the first
+    // request(s) while the client SDK refreshes it.  Use a longer retry
+    // delay so the refreshed cookie is available by the time we retry.
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
+    // Always refetch when the query is re-enabled (e.g., after auth state
+    // transitions from signed-out → signed-in during page refresh).
+    refetchOnMount: 'always',
   });
 }
 
