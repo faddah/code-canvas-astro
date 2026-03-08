@@ -1,7 +1,8 @@
 # Multi-stage build for optimized production image
 
 # Stage 1: Build stage
-FROM --platform=linux/amd64 node:22-alpine AS builder
+ARG BUILDPLATFORM_OVERRIDE=linux/amd64
+FROM --platform=$BUILDPLATFORM_OVERRIDE node:22-bookworm-slim AS builder
 
 # Set working directory
 WORKDIR /app
@@ -24,7 +25,8 @@ ENV PUBLIC_CLERK_PUBLISHABLE_KEY=$PUBLIC_CLERK_PUBLISHABLE_KEY
 RUN npm run build
 
 # Stage 2: Production stage
-FROM --platform=linux/amd64 node:22-alpine AS runtime
+ARG BUILDPLATFORM_OVERRIDE=linux/amd64
+FROM --platform=$BUILDPLATFORM_OVERRIDE node:22-bookworm-slim AS runtime
 
 # Set working directory
 WORKDIR /app
