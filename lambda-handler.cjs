@@ -325,7 +325,12 @@ exports.handler = async (event, context) => {
       body = Buffer.from(body, 'base64').toString('utf-8');
     }
 
-    console.log(`[Lambda] ${method} ${path}`);
+    // Log request details (include cookie presence for auth debugging)
+    const hasCookies = !!headers['cookie'];
+    const cookieNames = hasCookies
+      ? headers['cookie'].split(';').map(c => c.trim().split('=')[0]).join(', ')
+      : '(none)';
+    console.log(`[Lambda] ${method} ${path} | cookies: ${cookieNames}`);
 
     // Proxy request to Astro server
     const response = await proxyToAstro(method, path, headers, body);
