@@ -1,4 +1,4 @@
-import { useState, useEffect, useSyncExternalStore } from "react";
+import { useState, useEffect, useRef, useSyncExternalStore } from "react";
 import {
   useStarterFiles,
   useUserFiles,
@@ -6,6 +6,7 @@ import {
   useUpdateUserFile,
   useDeleteUserFile,
 } from "@/hooks/use-files";
+import { useQueryClient } from "@tanstack/react-query";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { usePyodide } from "@/hooks/use-pyodide";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
@@ -23,6 +24,7 @@ import { UserProfileModal } from "@/components/UserProfileModal";
 import { version } from "../../package.json";
 import { useAuth, SignInButton, SignUpButton, SignOutButton } from "@clerk/astro/react";
 import { $userStore } from "@clerk/astro/client";
+import { api } from "@shared/schema";
 
 // Subscribe to the $userStore nanostore from @clerk/astro/client
 function useClerkUser() {
