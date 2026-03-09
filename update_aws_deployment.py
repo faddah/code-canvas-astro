@@ -530,9 +530,8 @@ class UpdateDeployer:
     def stage_03_push_to_dockerhub(self) -> bool:
         """Tag and push the app container image to Docker Hub."""
         self.reporter.start(
-            f"Push Docker containers to Docker Hub as "
-            f"{DOCKERHUB_USERNAME}/{DOCKER_APP_IMAGE}:{self.image_tag} "
-            f"and {DOCKERHUB_USERNAME}/{DOCKER_DB_INIT_IMAGE}:{self.image_tag}"
+            f"Push Docker container to Docker Hub as "
+            f"{DOCKERHUB_USERNAME}/{DOCKER_APP_IMAGE}:{self.image_tag}"
         )
 
         # Log in to Docker Hub (non-interactive, never hangs)
