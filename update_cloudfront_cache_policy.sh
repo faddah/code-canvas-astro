@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Step 1: Create a cache policy that forwards cookies and doesn't cache API routes
+# Step 1: Create a cache policy that disables caching for API routes
+#         (Cookie is NOT allowed here — CloudFront reserves it for origin request policies)
 aws cloudfront create-cache-policy --cache-policy-config '{
     "Name": "CodeCanvasNoCacheAPI",
     "MinTTL": 0,
