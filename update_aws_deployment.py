@@ -849,10 +849,10 @@ class UpdateDeployer:
             return False
 
     # ────────────────────────────────────────────────────────────────────────
-    # STAGE 8 — Verify AWS API Gateway is operational
+    # STAGE 7 — Verify AWS API Gateway is operational
     # ────────────────────────────────────────────────────────────────────────
 
-    def stage_08_verify_api_gateway(self) -> bool:
+    def stage_07_verify_api_gateway(self) -> bool:
         """Verify the AWS API Gateway v2 (HTTP API) is present and accessible."""
         self.reporter.start(
             f"Verify AWS API Gateway `{API_GATEWAY_NAME}` (ID: {API_GATEWAY_ID}) "
