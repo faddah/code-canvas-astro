@@ -54,7 +54,6 @@ PACKAGE_JSON_PATH = os.path.join(PROJECT_ROOT, "package.json")
 DOCKERHUB_USERNAME = "faddah"   # <── UPDATE THIS
 
 DOCKER_APP_IMAGE     = "code-canvas-astro-app"
-DOCKER_DB_INIT_IMAGE = "code-canvas-astro-db-init"
 
 # ── AWS ───────────────────────────────────────────────────────────────────────
 AWS_REGION  = "us-west-2"
