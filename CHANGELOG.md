@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0](https://github.com/faddah/code-canvas-astro/compare/v1.3.0...v1.4.0) (2026-03-09)
+
 ## [1.3.0](https://github.com/faddah/code-canvas-astro/compare/v1.2.6...v1.3.0) (2026-03-04)
 
 ### [1.2.6](https://github.com/faddah/code-canvas-astro/compare/v1.2.5...v1.2.6) (2026-02-23)
