@@ -10,10 +10,7 @@ pnpm-debug.log*
 dist/
 .astro/
 
-# Database files (will be in volume)
-*.db
-*.db-shm
-*.db-wal
+# Database is hosted on Turso (no local DB files)
 
 # Environment files
 .env
