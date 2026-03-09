@@ -655,10 +655,10 @@ class UpdateDeployer:
             return False
 
     # ────────────────────────────────────────────────────────────────────────
-    # STAGE 6 — Build Lambda Docker image & push to AWS ECR
+    # STAGE 5 — Build Lambda Docker image & push to AWS ECR
     # ────────────────────────────────────────────────────────────────────────
 
-    def stage_06_build_and_push_ecr(self) -> bool:
+    def stage_05_build_and_push_ecr(self) -> bool:
         """Build the Lambda-compatible Docker image and push it to AWS ECR."""
         local_tag  = f"{ECR_REPO_NAME}:{self.image_tag}"
         ecr_tag    = f"{ECR_FULL_URI}:{self.image_tag}"
