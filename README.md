@@ -2,7 +2,7 @@
 
 ![Python REPL IDE App Screen Shot](./client/public/python-repl-ide-app-screenshot.png)
 
-A full-stack web-based IDE for executing Python code with an integrated REPL (Read-Eval-Print Loop). Built on **Astro 5** with server-side rendering, React 19 interactive islands, and a SQLite-backed file system. The app provides a modern development environment with a file explorer, Monaco code editor, console panel, and live web preview.
+A full-stack web-based IDE for executing Python code with an integrated REPL (Read-Eval-Print Loop). Built on **Astro 5** with server-side rendering, React 19 interactive islands, and a **Turso** (libSQL) cloud database. The app provides a modern development environment with a file explorer, Monaco code editor, console panel, and live web preview.
 
 ## Overview
 
@@ -12,13 +12,14 @@ This project started with inspiration from [Replit's](https://replit.com) "vibe 
 
 - **Python REPL** — Execute Python code directly in the browser via Pyodide
 - **Monaco Editor** — Full VS Code-quality code editing with syntax highlighting and IntelliSense
-- **File Explorer** — Create, rename, and delete project files backed by a SQLite database
+- **File Explorer** — Create, rename, and delete project files backed by a Turso cloud database
 - **Console Panel** — View stdout, stderr, and debug output in real-time
 - **Web Preview** — Instantly render HTML output from your code
 - **Resizable Panels** — Drag to resize the editor, console, and preview panes
+- **Authentication** — User authentication via Clerk
 - **Modern UI** — React 19 + shadcn/ui component library with Tailwind CSS 4
 - **Docker Support** — Multi-stage containerized builds with Docker Compose
-- **AWS Deployment** — Automated 12-stage deployment pipeline (ECR, Lambda, API Gateway, CloudFront, Route 53)
+- **AWS Deployment** — Automated 11-stage deployment pipeline (ECR, Lambda, API Gateway, CloudFront, Route 53)
 
 ## Tech Stack
 
@@ -41,21 +42,24 @@ This project started with inspiration from [Replit's](https://replit.com) "vibe 
 
 - **[Astro API Routes](https://docs.astro.build/en/guides/endpoints/)** — REST endpoints under `src/pages/api/`
 - **[Drizzle ORM](https://orm.drizzle.team)** — Type-safe SQL query builder
-- **[better-sqlite3](https://github.com/WiseLibs/better-sqlite3)** — Embedded SQLite database
+- **[Turso](https://turso.tech)** — Cloud-hosted libSQL database (remote SQLite-compatible)
+- **[@libsql/client](https://github.com/tursodatabase/libsql-client-ts)** — TypeScript client for Turso/libSQL
+- **[Clerk](https://clerk.com)** — Authentication and user management
 - **[Zod](https://zod.dev)** — Runtime schema validation (via `drizzle-zod`)
 
 ### DevOps
 
-- **Docker** — Multi-stage Alpine builds
-- **Docker Compose** — App + DB-init service orchestration
+- **Docker** — Multi-stage Debian Bookworm Slim builds
+- **Docker Compose** — Single-service app container with Turso cloud DB
 - **AWS** — ECR, Lambda, API Gateway v2, CloudFront, Route 53
 
 ## Getting Started
 
 ### Prerequisites
 
-- **Node.js** v20 or higher
+- **Node.js** v22 or higher
 - **npm** v10 or higher
+- **A Turso account** — [turso.tech](https://turso.tech) (free tier available)
 - **Docker** (optional, for containerized development/deployment)
 
 ### Installation
@@ -73,21 +77,31 @@ This project started with inspiration from [Replit's](https://replit.com) "vibe 
    npm install
    ```
 
-3. **Set up the database**
+3. **Set up environment variables**
 
    Create a `.env` file in the project root:
 
    ```bash
-   DATABASE_URL=file:./taskManagement.db
+   TURSO_DATABASE_URL=libsql://your-db-name-your-org.turso.io
+   TURSO_AUTH_TOKEN=your-turso-auth-token
+   PUBLIC_CLERK_PUBLISHABLE_KEY=your-clerk-publishable-key
+   CLERK_SECRET_KEY=your-clerk-secret-key
    ```
 
-   Then push the schema to SQLite:
+   To get your Turso credentials:
+
+   ```bash
+   turso db show your-db-name --url
+   turso db tokens create your-db-name
+   ```
+
+4. **Push the schema to Turso**
 
    ```bash
    npm run db:push
    ```
 
-4. **Start the development server**
+5. **Start the development server**
 
    ```bash
    npm run dev
@@ -103,12 +117,11 @@ To run the application in Docker:
 docker-compose up --build
 ```
 
-This starts two services:
+This starts a single container:
 
-- **db-init** — Initializes the SQLite schema and seeds data, then exits
-- **app** — Starts the production Astro server on port 3000
+- **app** — Builds and runs the production Astro server on port 3000, connecting to your Turso cloud database via environment variables
 
-The database is persisted on a named Docker volume (`db-data`).
+The database lives in Turso's cloud — no local volumes or initialization containers needed.
 
 ## Project Structure
 
@@ -133,7 +146,7 @@ code-canvas-astro/
 │   │   └── Layout.astro       # Base HTML layout
 │   ├── lib/
 │   │   ├── db/
-│   │   │   ├── index.ts       # SQLite connection + Drizzle setup
+│   │   │   ├── index.ts       # Turso/libSQL connection + Drizzle setup
 │   │   │   └── storage.ts     # DatabaseStorage class (CRUD operations)
 │   │   └── utils.ts           # Utility helpers (cn, etc.)
 │   ├── pages/
@@ -149,20 +162,16 @@ code-canvas-astro/
 │   ├── styles/
 │   │   └── global.css         # Global Tailwind styles
 │   └── types/                 # TypeScript type definitions
-├── scripts/
-│   ├── docker-entrypoint.sh   # Container startup script
-│   ├── init-db.js             # DB initialization for Docker
-│   └── seed-db.js             # DB seeding for Docker
 ├── migrations/                # Drizzle migration files
 ├── public/                    # Static assets (served at /)
-├── astro.config.mjs           # Astro configuration (SSR, React, Tailwind, Node adapter)
-├── drizzle.config.ts          # Drizzle ORM configuration
+├── astro.config.mjs           # Astro configuration (SSR, React, Tailwind, Clerk, Node adapter)
+├── drizzle.config.ts          # Drizzle ORM configuration (Turso dialect)
 ├── tsconfig.json              # TypeScript configuration
-├── tailwind.config.ts         # Tailwind CSS theme customization
-├── Dockerfile                 # Multi-stage production build
-├── Dockerfile.db              # Database initialization image
-├── docker-compose.yml         # App + DB-init service orchestration
-├── update_aws_deployment.py   # 12-stage AWS deployment script
+├── Dockerfile                 # Multi-stage production build (local/Docker Compose)
+├── Dockerfile.lambda          # Lambda container image build
+├── docker-compose.yml         # Single-service app container
+├── lambda-handler.cjs         # Lambda handler — proxies requests to Astro server
+├── update_aws_deployment.py   # 11-stage AWS deployment script
 └── package.json               # Dependencies and scripts
 ```
 
@@ -174,7 +183,7 @@ code-canvas-astro/
 | `npm run build`        | Build for production (SSR)           |
 | `npm run preview`      | Preview the production build locally |
 | `npm start`            | Run the built production server      |
-| `npm run db:push`      | Push Drizzle schema to SQLite        |
+| `npm run db:push`      | Push Drizzle schema to Turso         |
 | `npm run db:generate`  | Generate Drizzle migration files     |
 | `npm run db:migrate`   | Run pending migrations               |
 | `npm run db:studio`    | Open Drizzle Studio (database GUI)   |

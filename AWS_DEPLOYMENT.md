@@ -9,7 +9,7 @@ This document covers two scenarios:
 
 ## AWS Service Architecture
 
-```
+```bash
 Browser → pyrepl.dev (Route 53)
             └→ CloudFront Distribution (E8UQ2BAGKYYM0 / d367a5xu7jwhol.cloudfront.net)
                   └→ API Gateway (pyrepl-api / pvh7sgwr49)
@@ -20,7 +20,7 @@ Browser → pyrepl.dev (Route 53)
 **Resource Reference:**
 
 | Resource | ID / ARN |
-|---|---|
+| --- | --- |
 | Route 53 Hosted Zone | `Z06161484WRKVMIQUBIG` (pyrepl.dev) |
 | CloudFront Distribution | `E8UQ2BAGKYYM0` |
 | CloudFront Domain | `d367a5xu7jwhol.cloudfront.net` |
@@ -96,6 +96,7 @@ npm version major
 ```
 
 `npm version` automatically:
+
 - Updates the `version` field in `package.json`
 - Creates a git commit for the version bump
 - Creates a git tag (e.g. `v1.2.1`)
@@ -121,7 +122,7 @@ python3 update_aws_deployment.py
 The script will run **12 stages** and print a clear `SUCCESS` or `FAIL` status after each one:
 
 | Stage | Description |
-|---|---|
+| --- | --- |
 | **STAGE 1** | Read & validate version from `package.json` |
 | **STAGE 2** | Build Docker app container (`code-canvas-astro-app:v[VER]`) from `Dockerfile` |
 | **STAGE 3** | Build Docker db-init container (`code-canvas-astro-db-init:v[VER]`) from `Dockerfile.db` |
@@ -260,6 +261,7 @@ python3 deploy_to_lambda.py
 ```
 
 This creates or updates:
+
 - The S3 bucket for SQLite database persistence (`code-canvas-astro-db`)
 - The ECR repository (`python-repl-container-lambda`)
 - The Lambda function (`code-canvas-astro-lambda`) with a Function URL
@@ -303,7 +305,7 @@ curl -I https://pyrepl.dev
 ### What the Initial Deployment Creates
 
 | Resource | Details |
-|---|---|
+| --- | --- |
 | Route 53 Hosted Zone | `pyrepl.dev` |
 | ACM SSL Certificate | Auto-renewing, covers `pyrepl.dev` and `*.pyrepl.dev` |
 | CloudFront Distribution | Points to the Lambda Function URL |
@@ -361,7 +363,7 @@ The AWS credentials used for deployment need at minimum:
 ## Deployment Scripts Reference
 
 | Script | Purpose |
-|---|---|
+| --- | --- |
 | `update_aws_deployment.py` | **Primary update script** — rebuilds containers, pushes to Docker Hub & ECR, updates Lambda, invalidates CloudFront cache, and verifies the full service chain |
 | `deploy_to_lambda.py` | Initial Lambda deployment with S3 database persistence |
 | `aws_route53_cloudfront_deploy.py` | Initial CDK stack for Route 53, ACM, and CloudFront |
