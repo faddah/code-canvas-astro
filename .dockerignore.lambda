@@ -5,10 +5,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Database files
-*.db
-*.db-shm
-*.db-wal
+# Database is hosted on Turso (no local DB files)
 
 # Environment files
 .env
