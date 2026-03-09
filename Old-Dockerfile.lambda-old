@@ -1,0 +1,61 @@
+# Lambda Container Dockerfile for Code Canvas Astro with S3 Database Persistence
+# This Dockerfile creates a container image that runs on AWS Lambda
+
+# Multi-stage build for optimized production image
+# Stage 1: Build stage
+FROM node:20-alpine AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies (including devDependencies for build)
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Clerk publishable key must be available at build time (Vite bakes it in)
+ARG PUBLIC_CLERK_PUBLISHABLE_KEY
+ENV PUBLIC_CLERK_PUBLISHABLE_KEY=$PUBLIC_CLERK_PUBLISHABLE_KEY
+
+# Build the application
+RUN npm run build
+
+# Stage 2: Lambda Runtime stage
+FROM public.ecr.aws/lambda/nodejs:20
+
+# Set working directory
+WORKDIR ${LAMBDA_TASK_ROOT}
+
+# Copy package files
+COPY package*.json ./
+
+# Install only production dependencies
+RUN npm install --omit=dev
+
+# Install AWS SDK v3 for S3 operations
+RUN npm install @aws-sdk/client-s3
+
+# Copy built application from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Copy Lambda handler (using .cjs for CommonJS compatibility)
+COPY lambda-handler.cjs ./
+
+# Copy database scripts
+COPY --from=builder /app/scripts ./scripts
+
+# Create directory for database in /tmp (Lambda's writable directory)
+RUN mkdir -p /tmp/data
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=8080
+ENV DATABASE_URL=file:/tmp/taskManagement.db
+
+# Set the Lambda handler (.cjs extension for CommonJS)
+CMD ["lambda-handler.handler"]
