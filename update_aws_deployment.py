@@ -597,10 +597,10 @@ class UpdateDeployer:
             self.reporter.info(f"Pushed {hub_latest_tag} ✓")
 
         self.reporter.success(
-            f"{DOCKERHUB_USERNAME}/{DOCKER_APP_IMAGE}:{self.image_tag} and "
-            f"{DOCKERHUB_USERNAME}/{DOCKER_DB_INIT_IMAGE}:{self.image_tag} "
+            f"{DOCKERHUB_USERNAME}/{DOCKER_APP_IMAGE}:{self.image_tag} "
             "pushed to Docker Hub"
         )
+
         return True
 
     # ────────────────────────────────────────────────────────────────────────
