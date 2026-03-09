@@ -753,10 +753,10 @@ class UpdateDeployer:
         return True
 
     # ────────────────────────────────────────────────────────────────────────
-    # STAGE 7 — Update AWS Lambda function with new ECR image
+    # STAGE 6 — Update AWS Lambda function with new ECR image
     # ────────────────────────────────────────────────────────────────────────
 
-    def stage_07_update_lambda(self) -> bool:
+    def stage_06_update_lambda(self) -> bool:
         """Update the AWS Lambda function code and configuration to use the new ECR image."""
         self.reporter.start(
             f"Update AWS Lambda function `{LAMBDA_FUNCTION_NAME}` "
