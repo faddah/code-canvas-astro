@@ -27,4 +27,31 @@ aws cloudfront create-cache-policy --cache-policy-config '{
             "QueryStringBehavior": "all"
         }
     }
-}
+}'
+
+# Step 2: Create an origin request policy that forwards cookies to the origin
+aws cloudfront create-origin-request-policy --origin-request-policy-config '{
+    "Name": "CodeCanvasForwardCookies",
+    "HeadersConfig": {
+        "HeaderBehavior": "whitelist",
+        "Headers": {
+            "Quantity": 2,
+            "Items": [
+                "Authorization",
+                "Origin"
+            ]
+        }
+    },
+    "CookiesConfig": {
+        "CookieBehavior": "all"
+    },
+    "QueryStringsConfig": {
+        "QueryStringBehavior": "all"
+    }
+}'
+
+echo ""
+echo "Done. Next steps:"
+echo "1. Note the cache policy ID and origin request policy ID from the output above."
+echo "2. Attach both to your CloudFront distribution's behavior (distribution E8UQ2BAGKYYM0)"
+echo "   via the console or with 'aws cloudfront update-distribution'."
