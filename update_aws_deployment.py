@@ -1084,10 +1084,10 @@ class UpdateDeployer:
             return False
 
     # ────────────────────────────────────────────────────────────────────────
-    # STAGE 11 — Smoke-test Lambda function URL directly
+    # STAGE 10 — Smoke-test Lambda function URL directly
     # ────────────────────────────────────────────────────────────────────────
 
-    def stage_11_health_check_lambda_url(self) -> bool:
+    def stage_10_health_check_lambda_url(self) -> bool:
         """Smoke-test the Lambda function URL with retries to confirm it is reachable."""
         self.reporter.start(
             f"Health check — Lambda Function URL: {LAMBDA_FUNCTION_URL}"
