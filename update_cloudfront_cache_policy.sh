@@ -13,7 +13,7 @@ aws cloudfront create-cache-policy --cache-policy-config '{
         "HeadersConfig": {
             "HeaderBehavior": "whitelist",
             "Headers": {
-                "Quantity": 3,
+                "Quantity": 2,
                 "Items": [
                     ""Authorization",
                     "Cookie",
