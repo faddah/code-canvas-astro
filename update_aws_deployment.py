@@ -318,7 +318,8 @@ class UpdateDeployer:
                     "Docker Hub credentials detected.{C.ENDC}"
                 )
                 print(
-                    f"   {C.WARNING}   The script will time out at Stage 4 unless "
+                    f"   {C.WARNING}   The script will time out at Stage 3 unless "
+
                     "you do one of the following BEFORE running:{C.ENDC}"
                 )
                 print(
@@ -332,7 +333,7 @@ class UpdateDeployer:
                 # Non-fatal warning — allow the user to continue if they know
                 # credentials are cached somewhere the config check missed.
                 print(
-                    f"   {C.WARNING}   Continuing anyway — Stage 4 will fail "
+                    f"   {C.WARNING}   Continuing anyway — Stage 3 will fail "
                     "clearly if login cannot complete.{C.ENDC}"
                 )
 
