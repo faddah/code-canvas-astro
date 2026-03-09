@@ -424,42 +424,7 @@ class UpdateDeployer:
         return True
 
     # ────────────────────────────────────────────────────────────────────────
-    # STAGE 3 — Build db-init Docker container (Dockerfile.db)
-    # ────────────────────────────────────────────────────────────────────────
-
-    def stage_03_build_db_init_container(self) -> bool:
-        """Build the Docker db-init container image for linux/amd64 using buildx."""
-        self.reporter.start(
-            f"Build Docker db-init container: {DOCKER_DB_INIT_IMAGE}:{self.image_tag}"
-        )
-        local_tag = f"{DOCKER_DB_INIT_IMAGE}:{self.image_tag}"
-        cmd = [
-            "docker", "buildx", "build",
-            "--platform", "linux/amd64",
-            "--provenance=false",
-            "--sbom=false",
-            "--load",
-            "-t", local_tag,
-            "-f", os.path.join(PROJECT_ROOT, "Dockerfile.db"),
-            PROJECT_ROOT,
-        ]
-        self.reporter.progress(f"docker buildx build … -t {local_tag} -f Dockerfile.db")
-
-        ok, _, stderr = run(cmd)
-        if not ok:
-            self.reporter.fail(
-                f"docker build failed for {DOCKER_DB_INIT_IMAGE}",
-                fix_hint=f"Review Dockerfile.db errors:\n{stderr}",
-            )
-            if stderr:
-                print(f"{C.FAIL}{stderr}{C.ENDC}")
-            return False
-
-        self.reporter.success(f"{DOCKER_DB_INIT_IMAGE}:{self.image_tag} built")
-        return True
-
-    # ────────────────────────────────────────────────────────────────────────
-    # STAGE 4 — Log in to Docker Hub & push both containers
+    # STAGE 3 — Log in to Docker Hub & push app container
     # ────────────────────────────────────────────────────────────────────────
 
     # ────────────────────────────────────────────────────────────────────────
