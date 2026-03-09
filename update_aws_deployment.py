@@ -1237,7 +1237,7 @@ class UpdateDeployer:
         first stage failure since later stages depend on earlier ones.
 
         Returns:
-            True if all 12 stages passed, False if preflight or any stage failed.
+            True if all 11 stages passed, False if preflight or any stage failed.
         """
         if not self.preflight_check():
             print(
