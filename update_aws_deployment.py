@@ -545,12 +545,8 @@ class UpdateDeployer:
                 f"{DOCKERHUB_USERNAME}/{DOCKER_APP_IMAGE}:{self.image_tag}",
                 f"{DOCKERHUB_USERNAME}/{DOCKER_APP_IMAGE}:latest",
             ),
-            (
-                f"{DOCKER_DB_INIT_IMAGE}:{self.image_tag}",
-                f"{DOCKERHUB_USERNAME}/{DOCKER_DB_INIT_IMAGE}:{self.image_tag}",
-                f"{DOCKERHUB_USERNAME}/{DOCKER_DB_INIT_IMAGE}:latest",
-            ),
         ]
+
 
         for local_tag, hub_tag, hub_latest_tag in images_to_push:
             # Tag versioned
