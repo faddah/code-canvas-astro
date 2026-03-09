@@ -728,7 +728,7 @@ class UpdateDeployer:
             self.reporter.fail(
                 f"docker push failed for {ecr_tag}",
                 fix_hint=(
-                    f"Ensure ECR auth succeeded (Stage 5) and the repository "
+                    f"Ensure ECR auth succeeded (Stage 4) and the repository "
                     f"'{ECR_REPO_NAME}' exists in {AWS_REGION}. Error: {err}"
                 ),
             )
