@@ -9,7 +9,7 @@ aws cloudfront create-cache-policy --cache-policy-config '{
     "MaxTTL": 0,
     "DefaultTTL": 0,
     "ParametersInCacheKeyAndForwardedToOrigin": {
-        "EnableAcceptEncodingGzip": true,
+        "EnableAcceptEncodingGzip": false,
         "HeadersConfig": {
             "HeaderBehavior": "none"
         },
