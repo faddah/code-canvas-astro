@@ -527,7 +527,7 @@ class UpdateDeployer:
             )
             return False
 
-    def stage_04_push_to_dockerhub(self) -> bool:
+    def stage_03_push_to_dockerhub(self) -> bool:
         """Tag and push the app and db-init container images to Docker Hub."""
         self.reporter.start(
             f"Push Docker containers to Docker Hub as "
