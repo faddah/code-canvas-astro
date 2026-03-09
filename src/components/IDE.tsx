@@ -50,9 +50,16 @@ export default function IDE() {
   const { isReady, isRunning, output, htmlOutput, runCode, clearConsole } = usePyodide();
   const { toast } = useToast();
 
+  const queryClient = useQueryClient();
+
   // Ephemeral local files for non-logged-in users (lost on refresh)
   const [localFiles, setLocalFiles] = useState<any[]>([]);
   const [localIdCounter, setLocalIdCounter] = useState(-1);
+
+  // Track previous auth state to distinguish real login/logout from
+  // the spurious false→true transition that happens on every page refresh
+  // (Clerk starts with isSignedIn=false while the client SDK loads).
+  const prevSignedIn = useRef<boolean | null>(null);
 
   // Seed local files from starter files when not signed in
   useEffect(() => {
@@ -80,15 +87,31 @@ export default function IDE() {
   const [isNewFileDialogOpen, setIsNewFileDialogOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
 
-  // Reset state when auth changes
+  // Handle auth state changes (login/logout) without disrupting page refreshes.
   useEffect(() => {
-    setActiveFileId(null);
-    setOpenFileIds([]);
-    setUnsavedChanges({});
-    if (!isSignedIn) {
-      // Re-seed local files from starter files on logout
+    const wasSignedIn = prevSignedIn.current;
+    prevSignedIn.current = isSignedIn;
+
+    // First render (wasSignedIn === null): skip reset — component just mounted,
+    // let the data hooks populate files naturally.
+    if (wasSignedIn === null) return;
+
+    // Real logout (was signed in, now signed out)
+    if (wasSignedIn && !isSignedIn) {
+      setActiveFileId(null);
+      setOpenFileIds([]);
+      setUnsavedChanges({});
       setLocalFiles(starterFiles ? starterFiles.map((f: any) => ({ ...f })) : []);
       setLocalIdCounter(-1);
+    }
+
+    // Real login (was signed out, now signed in)
+    if (!wasSignedIn && isSignedIn) {
+      setActiveFileId(null);
+      setOpenFileIds([]);
+      setUnsavedChanges({});
+      // Invalidate & refetch user files to ensure fresh data after login
+      queryClient.invalidateQueries({ queryKey: [api.userFiles.list.path] });
     }
   }, [isSignedIn]);
 
