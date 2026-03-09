@@ -36,26 +36,16 @@ COPY package*.json ./
 # Install only production dependencies
 RUN npm install --omit=dev
 
-# Install AWS SDK v3 for S3 operations
-RUN npm install @aws-sdk/client-s3
-
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
 
 # Copy Lambda handler (using .cjs for CommonJS compatibility)
 COPY lambda-handler.cjs ./
 
-# Copy database scripts
-COPY --from=builder /app/scripts ./scripts
-
-# Create directory for database in /tmp (Lambda's writable directory)
-RUN mkdir -p /tmp/data
-
 # Set environment variables
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=8080
-ENV DATABASE_URL=file:/tmp/taskManagement.db
 
 # Set the Lambda handler (.cjs extension for CommonJS)
 CMD ["lambda-handler.handler"]
