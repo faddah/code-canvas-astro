@@ -8,16 +8,15 @@ re-deployment of all Docker containers and AWS services.
 Pipeline:
     1.  Read & validate version from package.json
     2.  Build Docker app container  (Dockerfile        → code-canvas-astro-app)
-    3.  Build Docker db-init container (Dockerfile.db  → code-canvas-astro-db-init)
-    4.  Log in to Docker Hub & push both containers  (tagged v[VERSION])
-    5.  Authenticate with AWS ECR (boto3 token → docker login)
-    6.  Build Lambda Docker image   (Dockerfile.lambda → ECR compatible)
-    7.  Push Lambda image to AWS ECR (python-repl-container-lambda:v[VERSION])
-    8.  Update AWS Lambda function  (code-canvas-astro-lambda) with new ECR image
-    9.  Verify AWS API Gateway      (pyrepl-api / pvh7sgwr49) is operational
-    10. Invalidate AWS CloudFront   (E8UQ2BAGKYYM0) cache & wait for completion
-    11. Verify AWS Route 53         (pyrepl.dev / Z06161484WRKVMIQUBIG) DNS records
-    12. Final health check          (https://pyrepl.dev)
+    3.  Log in to Docker Hub & push app container  (tagged v[VERSION])
+    4.  Authenticate with AWS ECR (boto3 token → docker login)
+    5.  Build Lambda Docker image   (Dockerfile.lambda → ECR compatible)
+    6.  Push Lambda image to AWS ECR (python-repl-container-lambda:v[VERSION])
+    7.  Update AWS Lambda function  (code-canvas-astro-lambda) with new ECR image
+    8.  Verify AWS API Gateway      (pyrepl-api / pvh7sgwr49) is operational
+    9.  Invalidate AWS CloudFront   (E8UQ2BAGKYYM0) cache & wait for completion
+    10. Verify AWS Route 53         (pyrepl.dev / Z06161484WRKVMIQUBIG) DNS records
+    11. Final health check          (https://pyrepl.dev)
 
 Usage:
     python3 update_aws_deployment.py
