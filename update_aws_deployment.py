@@ -789,16 +789,16 @@ class UpdateDeployer:
                 Environment={
                     "Variables": {
                         "NODE_ENV":       "production",
-                        "S3_BUCKET_NAME": S3_BUCKET_NAME,
-                        "S3_DB_KEY":      S3_DB_KEY,
                         "PORT":           "8080",
-                        "DATABASE_URL":   "file:/tmp/taskManagement.db",
+                        "TURSO_DATABASE_URL": TURSO_DATABASE_URL,
+                        "TURSO_AUTH_TOKEN":   TURSO_AUTH_TOKEN,
                         "PUBLIC_CLERK_PUBLISHABLE_KEY": os.environ.get(
                             "PUBLIC_CLERK_PUBLISHABLE_KEY", ""),
                         "CLERK_SECRET_KEY": os.environ.get("CLERK_SECRET_KEY", ""),
                         "PUBLIC_HOST": "pyrepl.dev",
                     }
                 },
+
             )
             # Wait again after configuration update
             waiter.wait(
