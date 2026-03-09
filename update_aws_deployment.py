@@ -1153,10 +1153,10 @@ class UpdateDeployer:
         return False
 
     # ────────────────────────────────────────────────────────────────────────
-    # STAGE 12 — Final health check of public domain https://pyrepl.dev
+    # STAGE 11 — Final health check of public domain https://pyrepl.dev
     # ────────────────────────────────────────────────────────────────────────
 
-    def stage_12_health_check_public_domain(self) -> bool:
+    def stage_11_health_check_public_domain(self) -> bool:
         """Final smoke-test of the public domain (https://pyrepl.dev) with retries."""
         self.reporter.start(
             f"Final health check — public domain: https://{ROUTE53_DOMAIN}"
