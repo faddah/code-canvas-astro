@@ -604,10 +604,10 @@ class UpdateDeployer:
         return True
 
     # ────────────────────────────────────────────────────────────────────────
-    # STAGE 5 — Authenticate with AWS ECR
+    # STAGE 4 — Authenticate with AWS ECR
     # ────────────────────────────────────────────────────────────────────────
 
-    def stage_05_ecr_auth(self) -> bool:
+    def stage_04_ecr_auth(self) -> bool:
         """Authenticate Docker with AWS ECR using a boto3 authorization token."""
         self.reporter.start(
             f"Authenticate with AWS ECR ({ECR_REPO_URI})"
