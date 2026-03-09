@@ -1,4 +1,4 @@
-# Lambda Container Dockerfile for Code Canvas Astro with S3 Database Persistence
+# Lambda Container Dockerfile for Code Canvas Astro with Turso Database
 # This Dockerfile creates a container image that runs on AWS Lambda
 
 # Multi-stage build for optimized production image
