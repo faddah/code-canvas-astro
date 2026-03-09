@@ -24,7 +24,7 @@ aws cloudfront create-cache-policy --cache-policy-config '{
             "CookieBehavior": "none"
         },
         "QueryStringsConfig": {
-            "QueryStringBehavior": "all"
+            "QueryStringBehavior": "none"
         }
     }
 }'
