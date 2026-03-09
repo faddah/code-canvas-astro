@@ -1282,10 +1282,10 @@ class UpdateDeployer:
             print(f"{C.GREEN}  App version  : {self.version}  ({self.image_tag}){C.ENDC}")
             print(
                 f"{C.GREEN}  Docker Hub   : "
-                f"{DOCKERHUB_USERNAME}/{DOCKER_APP_IMAGE}:{self.image_tag}  |  "
-                f"{DOCKERHUB_USERNAME}/{DOCKER_DB_INIT_IMAGE}:{self.image_tag}"
+                f"{DOCKERHUB_USERNAME}/{DOCKER_APP_IMAGE}:{self.image_tag}"
                 f"{C.ENDC}"
             )
+
             print(
                 f"{C.GREEN}  AWS ECR      : {ECR_FULL_URI}:{self.image_tag}{C.ENDC}"
             )
