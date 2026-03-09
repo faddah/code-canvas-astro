@@ -1249,17 +1249,17 @@ class UpdateDeployer:
         stages = [
             ("Stage 1",  self.stage_01_read_version),
             ("Stage 2",  self.stage_02_build_app_container),
-            ("Stage 3",  self.stage_03_build_db_init_container),
-            ("Stage 4",  self.stage_04_push_to_dockerhub),
-            ("Stage 5",  self.stage_05_ecr_auth),
-            ("Stage 6",  self.stage_06_build_and_push_ecr),
-            ("Stage 7",  self.stage_07_update_lambda),
-            ("Stage 8",  self.stage_08_verify_api_gateway),
-            ("Stage 9",  self.stage_09_invalidate_cloudfront),
-            ("Stage 10", self.stage_10_verify_route53),
-            ("Stage 11", self.stage_11_health_check_lambda_url),
-            ("Stage 12", self.stage_12_health_check_public_domain),
+            ("Stage 3",  self.stage_03_push_to_dockerhub),
+            ("Stage 4",  self.stage_04_ecr_auth),
+            ("Stage 5",  self.stage_05_build_and_push_ecr),
+            ("Stage 6",  self.stage_06_update_lambda),
+            ("Stage 7",  self.stage_07_verify_api_gateway),
+            ("Stage 8",  self.stage_08_invalidate_cloudfront),
+            ("Stage 9",  self.stage_09_verify_route53),
+            ("Stage 10", self.stage_10_health_check_lambda_url),
+            ("Stage 11", self.stage_11_health_check_public_domain),
         ]
+
 
         all_passed = True
         failed_at  = None
