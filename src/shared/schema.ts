@@ -23,7 +23,7 @@ export const insertStarterFileSchema = createInsertSchema(starterFiles).omit({
 export const insertFileSchema = insertStarterFileSchema;
 
 export type StarterFile = typeof starterFiles.$inferSelect;
-export type InsertStarterFile = z.infer<typeof insertStarterFileSchema>;
+export type InsertStarterFile = (typeof insertStarterFileSchema)["_output"];
 export type File = StarterFile;
 export type InsertFile = InsertStarterFile;
 
@@ -45,7 +45,7 @@ export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({
 });
 
 export type UserProfile = typeof userProfiles.$inferSelect;
-export type InsertUserProfile = z.infer<typeof insertUserProfileSchema>;
+export type InsertUserProfile = (typeof insertUserProfileSchema)["_output"];
 
 // User files — files owned by authenticated users
 export const userFiles = sqliteTable("user_files", {
@@ -62,7 +62,7 @@ export const insertUserFileSchema = createInsertSchema(userFiles).omit({
 });
 
 export type UserFile = typeof userFiles.$inferSelect;
-export type InsertUserFile = z.infer<typeof insertUserFileSchema>;
+export type InsertUserFile = (typeof insertUserFileSchema)["_output"];
 
 export const api = {
   // Legacy files endpoints (backward compat, points to starter_files)
