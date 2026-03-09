@@ -2,16 +2,19 @@ import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
 import * as schema from "../../shared/schema";
 
-// Prefer runtime process.env.DATABASE_URL (set by Lambda handler) over
-// import.meta.env.DATABASE_URL which Vite bakes at build time from .env.
-// In Lambda, the handler sets DATABASE_URL=file:/tmp/taskManagement.db at
-// runtime — the build-time value (file:./taskManagement.db) would be wrong.
-const databaseUrl = process.env.DATABASE_URL || import.meta.env?.DATABASE_URL;
+const tursoUrl = process.env.TURSO_DATABASE_URL || import.meta.env?.TURSO_DATABASE_URL;
+const tursoToken = process.env.TURSO_AUTH_TOKEN || import.meta.env?.TURSO_AUTH_TOKEN;
 
-if (!databaseUrl) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
+if (!tursoUrl) {
+    throw new Error(
+        "TURSO_DATABASE_URL must be set. Did you forget to configure Turso?",
+    );
+}
+
+if (!tursoToken) {
+    throw new Error(
+        "TURSO_AUTH_TOKEN must be set. Did you forget to configure Turso?",
+    );
 }
 
 // Extract the file path from the DATABASE_URL (removes "sqlite:" or "file:" prefix if present)
