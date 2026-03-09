@@ -917,7 +917,7 @@ class UpdateDeployer:
     # STAGE 9 — Invalidate AWS CloudFront distribution cache
     # ────────────────────────────────────────────────────────────────────────
 
-    def stage_09_invalidate_cloudfront(self) -> bool:
+    def stage_08_invalidate_cloudfront(self) -> bool:
         """Create a CloudFront cache invalidation for all paths (/*) on the distribution."""
         self.reporter.start(
             f"Invalidate AWS CloudFront Distribution `{CLOUDFRONT_DISTRIBUTION_ID}` cache"
