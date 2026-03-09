@@ -17,10 +17,9 @@ if (!tursoToken) {
     );
 }
 
-// Extract the file path from the DATABASE_URL (removes "sqlite:" or "file:" prefix if present)
-const dbPath = databaseUrl.replace(/^(sqlite:|file:)/, "");
+const client = createClient({
+    url: tursoUrl,
+    authToken: tursoToken,
+});
 
-const sqlite = new Database(dbPath);
-sqlite.pragma("journal_mode = WAL");
-sqlite.pragma("busy_timeout = 5000");
-export const db = drizzle(sqlite, { schema });
+export const db = drizzle(client, { schema });
