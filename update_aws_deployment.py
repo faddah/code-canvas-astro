@@ -233,7 +233,7 @@ class UpdateDeployer:
         self.r53_client    = boto3.client("route53")
         self.sts_client    = boto3.client("sts")
 
-        self.reporter = StageReporter(total=12)
+        self.reporter = StageReporter(total=11)
 
     # ────────────────────────────────────────────────────────────────────────
     # PRE-FLIGHT
