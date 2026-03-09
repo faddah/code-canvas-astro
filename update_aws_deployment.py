@@ -914,7 +914,7 @@ class UpdateDeployer:
             return False
 
     # ────────────────────────────────────────────────────────────────────────
-    # STAGE 9 — Invalidate AWS CloudFront distribution cache
+    # STAGE 8 — Invalidate AWS CloudFront distribution cache
     # ────────────────────────────────────────────────────────────────────────
 
     def stage_08_invalidate_cloudfront(self) -> bool:
