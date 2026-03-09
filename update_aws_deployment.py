@@ -78,9 +78,15 @@ LAMBDA_CONFIG = {
     "ephemeral_storage": 1024,   # MB for /tmp
 }
 
-# S3 (Lambda database persistence)
-S3_BUCKET_NAME = "code-canvas-astro-db"
-S3_DB_KEY      = "database/taskManagement.db"
+# Turso Database
+TURSO_DATABASE_URL = os.environ.get("TURSO_DATABASE_URL", "")
+TURSO_AUTH_TOKEN   = os.environ.get("TURSO_AUTH_TOKEN", "")
+
+if not TURSO_DATABASE_URL or not TURSO_AUTH_TOKEN:
+    print("✗ TURSO_DATABASE_URL and TURSO_AUTH_TOKEN must be set in your environment.")
+    print("  Export them or add them to your .env file, then run:")
+    print("  export $(grep -v '^#' .env | xargs)")
+    sys.exit(1)
 
 # API Gateway
 API_GATEWAY_ID   = "pvh7sgwr49"
