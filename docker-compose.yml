@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Main Astro application container (PUBLIC)
+  # Main Astro application container
   app:
     platform: linux/amd64
     build:
