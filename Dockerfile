@@ -42,15 +42,6 @@ COPY --from=builder /app/dist ./dist
 # Copy package.json for runtime info
 COPY --from=builder /app/package.json ./package.json
 
-# Copy initialization and seeding scripts
-COPY --from=builder /app/scripts ./scripts
-
-# Make entrypoint script executable
-RUN chmod +x /app/scripts/docker-entrypoint.sh
-
-# Create directory for database
-RUN mkdir -p /app/data
-
 # Set environment variables
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
