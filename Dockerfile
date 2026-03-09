@@ -39,7 +39,7 @@ RUN npm install --omit=dev
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
 
-# Copy package.json for runtime info (optional but good practice)
+# Copy package.json for runtime info
 COPY --from=builder /app/package.json ./package.json
 
 # Copy initialization and seeding scripts
