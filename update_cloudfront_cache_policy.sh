@@ -15,8 +15,7 @@ aws cloudfront create-cache-policy --cache-policy-config '{
             "Headers": {
                 "Quantity": 2,
                 "Items": [
-                    ""Authorization",
-                    "Cookie",
+                    "Authorization",
                     "Origin"
                 ]
             }
