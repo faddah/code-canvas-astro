@@ -995,10 +995,10 @@ class UpdateDeployer:
             return False
 
     # ────────────────────────────────────────────────────────────────────────
-    # STAGE 10 — Verify AWS Route 53 DNS records for pyrepl.dev
+    # STAGE 9 — Verify AWS Route 53 DNS records for pyrepl.dev
     # ────────────────────────────────────────────────────────────────────────
 
-    def stage_10_verify_route53(self) -> bool:
+    def stage_09_verify_route53(self) -> bool:
         """Verify the Route 53 hosted zone exists and list its DNS records."""
         self.reporter.start(
             f"Verify AWS Route 53 Hosted Zone `{ROUTE53_DOMAIN}` "
