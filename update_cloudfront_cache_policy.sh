@@ -11,14 +11,7 @@ aws cloudfront create-cache-policy --cache-policy-config '{
     "ParametersInCacheKeyAndForwardedToOrigin": {
         "EnableAcceptEncodingGzip": true,
         "HeadersConfig": {
-            "HeaderBehavior": "whitelist",
-            "Headers": {
-                "Quantity": 2,
-                "Items": [
-                    "Authorization",
-                    "Origin"
-                ]
-            }
+            "HeaderBehavior": "none"
         },
         "CookiesConfig": {
             "CookieBehavior": "none"
