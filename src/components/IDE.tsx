@@ -87,6 +87,12 @@ export default function IDE() {
   const [isNewFileDialogOpen, setIsNewFileDialogOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
 
+    // Remove the static loading placeholder once React has mounted
+  useEffect(() => {
+    const el = document.getElementById("app-loading");
+    if (el) el.remove();
+  }, []);
+
   // Handle auth state changes (login/logout) without disrupting page refreshes.
   useEffect(() => {
     const wasSignedIn = prevSignedIn.current;
