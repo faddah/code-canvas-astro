@@ -270,6 +270,14 @@ export default function IDE() {
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 animate-spin" />
           <p className="text-muted-foreground font-mono animate-pulse">Initializing Environment...</p>
+          {loadingTooLong && (
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-2 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+            >
+              Taking too long? Click to reload
+            </button>
+          )}
         </div>
       </div>
     );
