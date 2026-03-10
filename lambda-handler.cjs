@@ -223,6 +223,14 @@ function proxyToAstro(method, path, headers, body) {
                 // Set correct content-length from the actual response body
         flatHeaders['content-length'] = Buffer.byteLength(responseBody).toString();
 
+        // Don't let browsers cache error responses with immutable headers.
+        // If the upstream returned a 4xx/5xx, override cache-control so
+        // browsers will retry on next navigation instead of serving a
+        // cached error for a year.
+        if (res.statusCode >= 400) {
+          flatHeaders['cache-control'] = 'no-store';
+        }
+
         const response = {
           statusCode: res.statusCode,
           headers: flatHeaders,
