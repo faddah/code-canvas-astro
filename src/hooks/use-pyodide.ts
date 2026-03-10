@@ -45,7 +45,7 @@ export function usePyodide() {
             def render(html_content):
                 js.set_preview_content(html_content)
           `);
-          
+
           // Expose the hook's setter to global scope for Pyodide to call
           (window as any).set_preview_content = (content: string) => {
             setHtmlOutput(content);
