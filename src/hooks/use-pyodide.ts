@@ -31,11 +31,13 @@ export function usePyodide() {
           const pyodide = await window.loadPyodide({
             indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/",
           });
-          
+
+          if (cancelled) return;
+
           // Redirect stdout/stderr
           pyodide.setStdout({ batched: (msg: string) => appendOutput(msg) });
           pyodide.setStderr({ batched: (msg: string) => appendOutput(msg, true) });
-          
+
           // Define a custom render function for HTML preview
           // Users can call render("<h1>Hello</h1>") in Python
           await pyodide.runPythonAsync(`
