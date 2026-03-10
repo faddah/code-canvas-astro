@@ -201,6 +201,10 @@ function proxyToAstro(method, path, headers, body) {
         const cookies = [];
 
         for (const [key, value] of Object.entries(res.headers)) {
+          // Skip headers that are invalid for API Gateway v2 responses
+          if (key === 'transfer-encoding' || key === 'content-length') {
+            continue;
+          }
           if (key === 'set-cookie') {
             // set-cookie must go in the separate 'cookies' array
             if (Array.isArray(value)) {
@@ -215,6 +219,9 @@ function proxyToAstro(method, path, headers, body) {
             flatHeaders[key] = value;
           }
         }
+
+                // Set correct content-length from the actual response body
+        flatHeaders['content-length'] = Buffer.byteLength(responseBody).toString();
 
         const response = {
           statusCode: res.statusCode,
