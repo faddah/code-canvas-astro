@@ -56,7 +56,9 @@ export function usePyodide() {
           appendOutput("Pyodide v0.25.0 initialized ready.");
         } catch (err) {
           console.error("Pyodide init failed:", err);
-          appendOutput("Failed to initialize Python environment.", true);
+          if (!cancelled) {
+            appendOutput("Failed to initialize Python environment.", true);
+          }
         }
       }
     };
