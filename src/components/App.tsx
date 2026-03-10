@@ -1,6 +1,7 @@
 import { QueryProvider } from '@/components/QueryProvider';
 import IDE from '@/components/IDE';
 import { Toaster } from '@/components/ui/toaster';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 /**
  * Main App component that wraps the IDE with all necessary providers.
@@ -8,9 +9,11 @@ import { Toaster } from '@/components/ui/toaster';
  */
 export default function App() {
   return (
-    <QueryProvider>
-      <IDE />
-      <Toaster />
-    </QueryProvider>
+    <ErrorBoundary>
+      <QueryProvider>
+        <IDE />
+        <Toaster />
+      </QueryProvider>
+    </ErrorBoundary>
   );
 }
