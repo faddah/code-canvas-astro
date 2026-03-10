@@ -15,9 +15,12 @@ export function usePyodide() {
   const pyodideRef = useRef<any>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const load = async () => {
+      if (cancelled) return;
+
       if (!window.loadPyodide) {
-        // Wait for script to load
         setTimeout(load, 100);
         return;
       }
