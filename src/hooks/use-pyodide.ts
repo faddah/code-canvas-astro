@@ -81,10 +81,7 @@ export function usePyodide() {
     }
 
     return () => {
-      // Cleanup global if needed, though Pyodide instance persists
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
+      cancelled = true;
     };
   }, []);
 
