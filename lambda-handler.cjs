@@ -220,7 +220,7 @@ function proxyToAstro(method, path, headers, body) {
           }
         }
 
-                // Set correct content-length from the actual response body
+        // Set correct content-length from the actual response body
         flatHeaders['content-length'] = Buffer.byteLength(responseBody).toString();
 
         // Don't let browsers cache error responses with immutable headers.
