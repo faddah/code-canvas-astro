@@ -253,6 +253,17 @@ export default function IDE() {
     }
   };
 
+  // Track how long we've been loading — show a retry hint after 10 seconds
+  const [loadingTooLong, setLoadingTooLong] = useState(false);
+  useEffect(() => {
+    if (!isLoadingFiles) {
+      setLoadingTooLong(false);
+      return;
+    }
+    const timer = setTimeout(() => setLoadingTooLong(true), 10_000);
+    return () => clearTimeout(timer);
+  }, [isLoadingFiles]);
+
   if (isLoadingFiles) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-background text-primary">
