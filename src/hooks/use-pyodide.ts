@@ -63,12 +63,22 @@ export function usePyodide() {
       }
     };
 
-    // Load Pyodide Script
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js";
-    script.async = true;
-    script.onload = load;
-    document.body.appendChild(script);
+    // Check if the script is already loaded (e.g., from a previous mount)
+    if (window.loadPyodide) {
+      load();
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js";
+      script.async = true;
+      script.onload = load;
+      script.onerror = () => {
+        console.error("Failed to load Pyodide script");
+        if (!cancelled) {
+          appendOutput("Failed to load Python environment script.", true);
+        }
+      };
+      document.head.appendChild(script);
+    }
 
     return () => {
       // Cleanup global if needed, though Pyodide instance persists
