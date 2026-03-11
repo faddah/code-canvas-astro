@@ -1378,7 +1378,7 @@ class UpdateDeployer:
 def main() -> None:
     """Entry point for the AWS deployment pipeline.
 
-    Instantiates an UpdateDeployer, executes the full 11-stage build and
+    Instantiates an UpdateDeployer, executes the full 12-stage build and
     deploy pipeline, and exits with code 0 on success or 1 on failure.
     """
     deployer = UpdateDeployer()
