@@ -395,6 +395,10 @@ def stage_4_update_cloudfront(cf_client, oac_id: str) -> bool:
         #   immutable when uploading to S3, so CloudFront and browsers
         #   cache them effectively forever.  New builds produce new
         #   filenames, so stale cache is never a problem.
+        # LambdaFunctionAssociations and FunctionAssociations are required
+        # by the CloudFront API on every cache behavior, even when empty.
+        # Without them, UpdateDistribution returns:
+        #   "The parameter Lambda function associations is required."
         new_behavior = {
             "PathPattern": "/_astro/*",
             "TargetOriginId": s3_origin_id,
@@ -411,6 +415,8 @@ def stage_4_update_cloudfront(cf_client, oac_id: str) -> bool:
             "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
             "SmoothStreaming": False,
             "FieldLevelEncryptionId": "",
+            "LambdaFunctionAssociations": {"Quantity": 0, "Items": []},
+            "FunctionAssociations": {"Quantity": 0, "Items": []},
         }
         # Insert at the front so it takes priority
         cache_behaviors["Items"].insert(0, new_behavior)
