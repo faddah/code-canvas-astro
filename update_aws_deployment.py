@@ -962,10 +962,10 @@ class UpdateDeployer:
             return False
 
     # ────────────────────────────────────────────────────────────────────────
-    # STAGE 8 — Invalidate AWS CloudFront distribution cache
+    # STAGE 9 — Invalidate AWS CloudFront distribution cache
     # ────────────────────────────────────────────────────────────────────────
 
-    def stage_08_invalidate_cloudfront(self) -> bool:
+    def stage_09_invalidate_cloudfront(self) -> bool:
         """Create a CloudFront cache invalidation for all paths (/*) on the distribution."""
         self.reporter.start(
             f"Invalidate AWS CloudFront Distribution `{CLOUDFRONT_DISTRIBUTION_ID}` cache"
@@ -1043,10 +1043,10 @@ class UpdateDeployer:
             return False
 
     # ────────────────────────────────────────────────────────────────────────
-    # STAGE 9 — Verify AWS Route 53 DNS records for pyrepl.dev
+    # STAGE 10 — Verify AWS Route 53 DNS records for pyrepl.dev
     # ────────────────────────────────────────────────────────────────────────
 
-    def stage_09_verify_route53(self) -> bool:
+    def stage_10_verify_route53(self) -> bool:
         """Verify the Route 53 hosted zone exists and list its DNS records."""
         self.reporter.start(
             f"Verify AWS Route 53 Hosted Zone `{ROUTE53_DOMAIN}` "
@@ -1135,7 +1135,7 @@ class UpdateDeployer:
     # STAGE 10 — Smoke-test Lambda function URL directly
     # ────────────────────────────────────────────────────────────────────────
 
-    def stage_10_health_check_lambda_url(self) -> bool:
+    def stage_11_health_check_lambda_url(self) -> bool:
         """Smoke-test the Lambda function URL with retries to confirm it is reachable."""
         self.reporter.start(
             f"Health check — Lambda Function URL: {LAMBDA_FUNCTION_URL}"
@@ -1201,10 +1201,10 @@ class UpdateDeployer:
         return False
 
     # ────────────────────────────────────────────────────────────────────────
-    # STAGE 11 — Final health check of public domain https://pyrepl.dev
+    # STAGE 12 — Final health check of public domain https://pyrepl.dev
     # ────────────────────────────────────────────────────────────────────────
 
-    def stage_11_health_check_public_domain(self) -> bool:
+    def stage_12_health_check_public_domain(self) -> bool:
         """Final smoke-test of the public domain (https://pyrepl.dev) with retries."""
         self.reporter.start(
             f"Final health check — public domain: https://{ROUTE53_DOMAIN}"
