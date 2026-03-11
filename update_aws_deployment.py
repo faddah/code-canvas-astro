@@ -1325,7 +1325,7 @@ class UpdateDeployer:
         if all_passed:
             print(
                 f"{C.GREEN}{C.BOLD}"
-                "✅  DEPLOYMENT UPDATE COMPLETE — ALL 11 STAGES PASSED\n"
+                "✅  DEPLOYMENT UPDATE COMPLETE — ALL 12 STAGES PASSED\n"
                 f"{C.ENDC}"
             )
             print(f"{C.GREEN}  App version  : {self.version}  ({self.image_tag}){C.ENDC}")
