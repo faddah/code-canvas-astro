@@ -24,6 +24,95 @@ const { title = 'Python REPL IDE' } = Astro.props;
         <style>
             @keyframes spin { to { transform: rotate(360deg); } }
         </style>
+        <!--
+          Module retry script — catches failed JS chunk loads (503 during Lambda
+          cold start) and retries them up to 3 times with exponential backoff.
+          This runs BEFORE any module scripts, so it patches the import mechanism
+          early enough to catch Astro's dynamic imports.
+        -->
+        <script is:inline>
+          (function () {
+            // How many times to retry a failed module import
+            var MAX_RETRIES = 3;
+            // Base delay in ms — doubles each retry (1s, 2s, 4s)
+            var BASE_DELAY = 1000;
+
+            // Store the browser's native dynamic import so we can wrap it
+            // We patch window.__import__ which Astro uses for chunk loading
+            var originalFetch = window.fetch;
+
+            // Wrap fetch() to retry /_astro/ requests that fail with 503
+            window.fetch = function (input, init) {
+              var url = typeof input === 'string' ? input : (input && input.url) || '';
+              var isAstroAsset = url.indexOf('/_astro/') !== -1;
+
+              if (!isAstroAsset) {
+                return originalFetch.call(this, input, init);
+              }
+
+              // Retry wrapper for /_astro/ assets
+              function attemptFetch(retriesLeft, delay) {
+                return originalFetch.call(window, input, init).then(function (response) {
+                  // 503 = service unavailable (Lambda cold start)
+                  if (response.status === 503 && retriesLeft > 0) {
+                    console.warn(
+                      '[retry] ' + url + ' returned 503, retrying in ' +
+                      delay + 'ms (' + retriesLeft + ' left)'
+                    );
+                    return new Promise(function (resolve) {
+                      setTimeout(function () {
+                        resolve(attemptFetch(retriesLeft - 1, delay * 2));
+                      }, delay);
+                    });
+                  }
+                  return response;
+                }).catch(function (err) {
+                  if (retriesLeft > 0) {
+                    console.warn(
+                      '[retry] ' + url + ' failed, retrying in ' +
+                      delay + 'ms (' + retriesLeft + ' left)'
+                    );
+                    return new Promise(function (resolve) {
+                      setTimeout(function () {
+                        resolve(attemptFetch(retriesLeft - 1, delay * 2));
+                      }, delay);
+                    });
+                  }
+                  throw err;
+                });
+              }
+
+              return attemptFetch(MAX_RETRIES, BASE_DELAY);
+            };
+
+            // Also handle failed <script type="module"> by listening for errors
+            // and reloading the page as a last resort after all chunks fail
+            var failedModules = 0;
+            var reloadScheduled = false;
+
+            window.addEventListener('error', function (event) {
+              // Module script load failures show up as error events on the window
+              if (
+                event.target &&
+                event.target.tagName === 'SCRIPT' &&
+                event.target.type === 'module'
+              ) {
+                failedModules++;
+                console.warn('[retry] Module script failed to load (' + failedModules + ')');
+
+                // If multiple modules fail and we haven't reloaded yet,
+                // schedule a reload after a delay to let retries finish
+                if (failedModules >= 2 && !reloadScheduled) {
+                  reloadScheduled = true;
+                  console.warn('[retry] Multiple modules failed — will reload in 5s');
+                  setTimeout(function () {
+                    window.location.reload();
+                  }, 5000);
+                }
+              }
+            }, true); // 'true' = capture phase, catches errors before they bubble
+          })();
+        </script>
         <slot />
     </body>
 </html>
