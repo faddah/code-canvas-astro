@@ -24,7 +24,7 @@ export function WebPreview({ htmlContent }: WebPreviewProps) {
           <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">
             <div className="text-center space-y-2 p-6">
               <p className="text-sm font-medium">No Output to Render</p>
-              <p className="text-xs text-gray-400 max-w-[200px]">
+              <p className="text-xs text-gray-400 max-w-50">
                 Call <code className="bg-gray-200 px-1 py-0.5 rounded text-gray-700">render("&lt;h1&gt;Hi&lt;/h1&gt;")</code> in your Python code to see HTML here.
               </p>
             </div>
