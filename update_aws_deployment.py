@@ -883,7 +883,7 @@ class UpdateDeployer:
             "--delete",
         ]
 
-        ok, stdout, stderr = run(cmd, f"Syncing dist/client/ → s3://{S3_STATIC_BUCKET}/")
+        ok, _stdout, stderr = run(cmd, f"Syncing dist/client/ → s3://{S3_STATIC_BUCKET}/")
         if not ok:
             self.reporter.fail(
                 f"S3 sync failed: {stderr}",

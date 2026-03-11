@@ -632,13 +632,13 @@ def main() -> None:
     print(f"  {C.GREEN}Static path : /_astro/* → S3 (bypasses Lambda){C.ENDC}")
     print()
     print(f"  {C.CYAN}Next steps:{C.ENDC}")
-    print(f"  1. Wait 2-5 minutes for CloudFront distribution to deploy")
-    print(f"  2. Test in a fresh incognito window: https://pyrepl.dev")
-    print(f"  3. Check that JS/CSS loads instantly (no 503s)")
+    print("  1. Wait 2-5 minutes for CloudFront distribution to deploy")
+    print("  2. Test in a fresh incognito window: https://pyrepl.dev")
+    print("  3. Check that JS/CSS loads instantly (no 503s)")
     print()
     print(f"  {C.CYAN}On future deploys:{C.ENDC}")
-    print(f"  Your update_aws_deployment.py will now auto-sync dist/client/")
-    print(f"  to S3 as part of the deployment pipeline.")
+    print("  Your update_aws_deployment.py will now auto-sync dist/client/")
+    print("  to S3 as part of the deployment pipeline.")
     print(f"{C.BOLD}{'=' * 70}{C.ENDC}\n")
 
 
