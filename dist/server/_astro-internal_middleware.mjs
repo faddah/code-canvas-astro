@@ -13,17 +13,17 @@ import * as path from "path";
 import { DEV_BROWSER_KEY, setDevBrowserInURL } from "@clerk/shared/devBrowser";
 import "@clerk/shared/pathMatcher";
 import "es-module-lexer";
-import "./chunks/astro-designed-error-pages_s7J2Ixmj.mjs";
+.import "./chunks/astro-designed-error-pages_gcJyMFG9.mjs";
 import "piccolore";
-import "./chunks/astro/server_B_dMq552.mjs";
+import "./chunks/astro/server_D_M58jvm.mjs";
 import "clsx";
-import { s as sequence } from "./chunks/index_D7sGBpdz.mjs";
+import { s as sequence } from "./chunks/index_C4X5Ys1E.mjs";
 async function createAsyncLocalStorage() {
   const { AsyncLocalStorage } = await import("async_hooks");
   return new AsyncLocalStorage();
 }
 var authAsyncStorage = await createAsyncLocalStorage();
-const __vite_import_meta_env__ = { "ASSETS_PREFIX": void 0, "BASE_URL": "/", "DEV": false, "MODE": "production", "PROD": true, "PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_Zml0LXdvbGYtNTIuY2xlcmsuYWNjb3VudHMuZGV2JA", "SITE": void 0, "SSR": true };
+const __vite_import_meta_env__ = { "ASSETS_PREFIX": void 0, "BASE_URL": "/", "DEV": false, "MODE": "production", "PROD": true, "PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsucHlyZXBsLmRldiQ", "SITE": void 0, "SSR": true };
 var KEYLESS_DISABLED = isTruthy(getEnvVariable("PUBLIC_CLERK_KEYLESS_DISABLED")) || isTruthy(getEnvVariable("CLERK_KEYLESS_DISABLED")) || false;
 var canUseKeyless = isDevelopmentEnvironment() && !KEYLESS_DISABLED;
 var cloudflareEnv;
