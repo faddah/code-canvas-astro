@@ -531,7 +531,7 @@ export default function IDE() {
               </div>
             </ResizablePanel>
 
-            <ResizableHandle className="w-1.5 bg-border hover:bg-primary/50 transition-colors" />
+            <ResizableHandle className="w-1.5 bg-border hover:bg-primary/50 transition-colors cursor-col-resize" />
 
             {/* Right Panel Group (Preview + Console) */}
             <ResizablePanel defaultSize={50} minSize={30}>
@@ -542,7 +542,8 @@ export default function IDE() {
                   <WebPreview htmlContent={htmlOutput} />
                 </ResizablePanel>
 
-                <ResizableHandle className="h-1.5 bg-border hover:bg-primary/50 transition-colors" />
+                <ResizableHandle className="h-0.75! w-full! bg-[#CCCCCC] hover:bg-primary/50 transition-colors cursor-row-resize" />
+
 
                 {/* Console */}
                 <ResizablePanel defaultSize={40} minSize={20}>
