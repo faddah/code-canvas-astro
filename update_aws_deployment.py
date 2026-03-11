@@ -1277,7 +1277,7 @@ class UpdateDeployer:
     # ────────────────────────────────────────────────────────────────────────
 
     def run(self) -> bool:
-        """Execute the full 11-stage AWS deployment pipeline.
+        """Execute the full 12-stage AWS deployment pipeline.
 
         Runs a preflight check, then sequentially executes each stage from
         version reading through Docker builds, ECR/Lambda updates, CloudFront
