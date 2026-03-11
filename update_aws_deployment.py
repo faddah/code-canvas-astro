@@ -874,26 +874,77 @@ class UpdateDeployer:
             f"Extract static assets from Docker & sync to S3 `{S3_STATIC_BUCKET}`"
         )
 
-        if not os.path.isdir(DIST_CLIENT_DIR):
+        # Step 7a: Extract dist/client/ from the Lambda Docker image
+        #
+        # We create a temporary container (not started), copy the files out,
+        # then remove the container.  This guarantees the files in S3 have
+        # the exact same content hashes as the files Lambda is serving.
+        container_name = "extract-static-assets"
+
+        # Clean up any leftover container from a previous failed run
+        run(
+            ["docker", "rm", "-f", container_name],
+            "Removing stale extract container (if any)",
+        )
+
+        self.reporter.progress(
+            f"Creating temporary container from {local_tag}…"
+        )
+        ok, _, err = run(
+            ["docker", "create", "--name", container_name, local_tag],
+            f"Creating container from {local_tag}",
+        )
+        if not ok:
             self.reporter.fail(
-                f"dist/client/ not found at {DIST_CLIENT_DIR}",
-                fix_hint="Build may have failed — check Stage 2 output.",
+                f"Failed to create container from {local_tag}: {err}",
+                fix_hint="Ensure Stage 5 (Docker build) completed successfully.",
             )
             return False
 
-        file_count = sum(len(files) for _, _, files in os.walk(DIST_CLIENT_DIR))
-        self.reporter.progress(f"Syncing {file_count} files to s3://{S3_STATIC_BUCKET}/")
+        # Remove old extracted files if present
+        if os.path.isdir(extract_dir):
+            import shutil
+            shutil.rmtree(extract_dir)
 
+        # docker cp extracts from the Lambda image's /var/task/dist/client/
+        self.reporter.progress("Extracting dist/client/ from Docker image…")
+        ok, _, err = run(
+            ["docker", "cp", f"{container_name}:/var/task/dist/client",
+             extract_dir],
+            "Copying dist/client/ from container",
+        )
+
+        # Clean up the temporary container
+        run(["docker", "rm", "-f", container_name], "Removing temp container")
+
+        if not ok:
+            self.reporter.fail(
+                f"Failed to extract dist/client/ from Docker image: {err}",
+                fix_hint="Check that Dockerfile.lambda copies dist/ to /var/task/dist/",
+            )
+            return False
+
+        file_count = sum(len(files) for _, _, files in os.walk(extract_dir))
+        self.reporter.info(
+            f"Extracted {file_count} files from Docker image"
+        )
+
+        # Step 7b: Sync extracted files to S3
+        self.reporter.progress(
+            f"Syncing {file_count} files to s3://{S3_STATIC_BUCKET}/"
+        )
         cmd = [
             "aws", "s3", "sync",
-            DIST_CLIENT_DIR,
+            extract_dir,
             f"s3://{S3_STATIC_BUCKET}/",
             "--region", AWS_REGION,
             "--cache-control", "public, max-age=31536000, immutable",
             "--delete",
         ]
 
-        ok, _stdout, stderr = run(cmd, f"Syncing dist/client/ → s3://{S3_STATIC_BUCKET}/")
+        ok, _stdout, stderr = run(
+            cmd, f"Syncing Docker dist/client/ → s3://{S3_STATIC_BUCKET}/"
+        )
         if not ok:
             self.reporter.fail(
                 f"S3 sync failed: {stderr}",
@@ -904,9 +955,13 @@ class UpdateDeployer:
             )
             return False
 
+        # Clean up extracted files
+        import shutil
+        shutil.rmtree(extract_dir, ignore_errors=True)
+
         self.reporter.success(
-            f"Synced {file_count} files to s3://{S3_STATIC_BUCKET}/ "
-            "with immutable caching"
+            f"Synced {file_count} Docker-built files to "
+            f"s3://{S3_STATIC_BUCKET}/ with immutable caching"
         )
         return True
 
