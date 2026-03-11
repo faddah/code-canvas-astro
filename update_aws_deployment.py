@@ -851,10 +851,56 @@ class UpdateDeployer:
             return False
 
     # ────────────────────────────────────────────────────────────────────────
-    # STAGE 7 — Verify AWS API Gateway is operational
+    # STAGE 7 — Sync static assets to S3
     # ────────────────────────────────────────────────────────────────────────
 
-    def stage_07_verify_api_gateway(self) -> bool:
+    def stage_07_sync_static_assets_to_s3(self) -> bool:
+        """Upload dist/client/ to S3 so CloudFront serves /_astro/* from S3."""
+        self.reporter.start(
+            f"Sync static assets to S3 bucket `{S3_STATIC_BUCKET}`"
+        )
+
+        if not os.path.isdir(DIST_CLIENT_DIR):
+            self.reporter.fail(
+                f"dist/client/ not found at {DIST_CLIENT_DIR}",
+                fix_hint="Build may have failed — check Stage 2 output.",
+            )
+            return False
+
+        file_count = sum(len(files) for _, _, files in os.walk(DIST_CLIENT_DIR))
+        self.reporter.progress(f"Syncing {file_count} files to s3://{S3_STATIC_BUCKET}/")
+
+        cmd = [
+            "aws", "s3", "sync",
+            DIST_CLIENT_DIR,
+            f"s3://{S3_STATIC_BUCKET}/",
+            "--region", AWS_REGION,
+            "--cache-control", "public, max-age=31536000, immutable",
+            "--delete",
+        ]
+
+        ok, stdout, stderr = run(cmd, f"Syncing dist/client/ → s3://{S3_STATIC_BUCKET}/")
+        if not ok:
+            self.reporter.fail(
+                f"S3 sync failed: {stderr}",
+                fix_hint=(
+                    "Ensure AWS CLI is installed and IAM permissions include "
+                    "s3:PutObject, s3:DeleteObject, s3:ListBucket."
+                ),
+            )
+            return False
+
+        self.reporter.success(
+            f"Synced {file_count} files to s3://{S3_STATIC_BUCKET}/ "
+            "with immutable caching"
+        )
+        return True
+
+    # ────────────────────────────────────────────────────────────────────────
+    # STAGE 8 — Verify AWS API Gateway is operational (was Stage 7)
+    # ────────────────────────────────────────────────────────────────────────
+
+    def stage_08_verify_api_gateway(self) -> bool:
         """Verify the AWS API Gateway v2 (HTTP API) is present and accessible."""
         self.reporter.start(
             f"Verify AWS API Gateway `{API_GATEWAY_NAME}` (ID: {API_GATEWAY_ID}) "
