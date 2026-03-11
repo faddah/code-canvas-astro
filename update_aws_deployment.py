@@ -79,6 +79,10 @@ LAMBDA_CONFIG = {
     "ephemeral_storage": 1024,   # MB for /tmp
 }
 
+# S3 — static assets bucket (serves /_astro/* via CloudFront, bypassing Lambda)
+S3_STATIC_BUCKET = "pyrepl-static-assets"
+DIST_CLIENT_DIR  = os.path.join(PROJECT_ROOT, "dist", "client")
+
 # Turso Database
 TURSO_DATABASE_URL = os.environ.get("TURSO_DATABASE_URL", "")
 TURSO_AUTH_TOKEN   = os.environ.get("TURSO_AUTH_TOKEN", "")
