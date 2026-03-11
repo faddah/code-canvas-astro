@@ -1301,11 +1301,12 @@ class UpdateDeployer:
             ("Stage 4",  self.stage_04_ecr_auth),
             ("Stage 5",  self.stage_05_build_and_push_ecr),
             ("Stage 6",  self.stage_06_update_lambda),
-            ("Stage 7",  self.stage_07_verify_api_gateway),
-            ("Stage 8",  self.stage_08_invalidate_cloudfront),
-            ("Stage 9",  self.stage_09_verify_route53),
-            ("Stage 10", self.stage_10_health_check_lambda_url),
-            ("Stage 11", self.stage_11_health_check_public_domain),
+            ("Stage 7",  self.stage_07_sync_static_assets_to_s3),
+            ("Stage 8",  self.stage_08_verify_api_gateway),
+            ("Stage 9",  self.stage_09_invalidate_cloudfront),
+            ("Stage 10", self.stage_10_verify_route53),
+            ("Stage 11", self.stage_11_health_check_lambda_url),
+            ("Stage 12", self.stage_12_health_check_public_domain),
         ]
 
 
