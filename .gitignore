@@ -17,6 +17,7 @@
 
 # build output
 dist/
+.docker-dist-client/
 
 # generated types
 .astro/
