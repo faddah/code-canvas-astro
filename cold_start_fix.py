@@ -506,7 +506,7 @@ def stage_5_sync_to_s3() -> bool:
             capture_output=True,
             text=True,
         )
-        if result.stdout.strip():Exception
+        if result.stdout.strip():
             for line in result.stdout.strip().split("\n")[:10]:
                 info(f"  {line}")
             remaining = result.stdout.strip().count("\n") - 10
