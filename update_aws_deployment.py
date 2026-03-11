@@ -1342,6 +1342,9 @@ class UpdateDeployer:
                 f"{C.GREEN}  Lambda Fn    : {LAMBDA_FUNCTION_NAME} → updated{C.ENDC}"
             )
             print(
+                f"{C.GREEN}  S3 Static    : {S3_STATIC_BUCKET} → synced{C.ENDC}"
+            )
+            print(
                 f"{C.GREEN}  API Gateway  : {API_GATEWAY_NAME} ({API_GATEWAY_ID}) → OK{C.ENDC}"
             )
             print(
