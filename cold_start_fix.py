@@ -35,7 +35,7 @@ import sys
 import time
 
 import boto3
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, WaiterError
 
 # ============================================================================
 # CONFIGURATION — Must match your update_aws_deployment.py values
