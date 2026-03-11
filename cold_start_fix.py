@@ -73,18 +73,22 @@ class C:
 
 
 def info(msg: str) -> None:
+    """Print an informational message with a cyan ℹ icon."""
     print(f"   {C.CYAN}ℹ{C.ENDC} {msg}")
 
 
 def success(msg: str) -> None:
+    """Print a success message with a green ✓ icon."""
     print(f"   {C.GREEN}✓{C.ENDC} {msg}")
 
 
 def warn(msg: str) -> None:
+    """Print a warning message with a yellow ⚠ icon."""
     print(f"   {C.YELLOW}⚠{C.ENDC} {msg}")
 
 
 def fail(msg: str) -> None:
+    """Print a failure message with a red ✗ icon."""
     print(f"   {C.RED}✗{C.ENDC} {msg}")
 
 
