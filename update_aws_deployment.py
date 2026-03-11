@@ -859,7 +859,17 @@ class UpdateDeployer:
     # ────────────────────────────────────────────────────────────────────────
 
     def stage_07_sync_static_assets_to_s3(self) -> bool:
-        """Upload dist/client/ to S3 so CloudFront serves /_astro/* from S3."""
+        """Extract dist/client/ from the Lambda Docker image and sync to S3.
+
+        WHY extract from Docker instead of using local dist/client/?
+        The Docker build (Linux/Alpine) and local build (macOS) can produce
+        different content hashes for CSS files (Tailwind processing differs
+        across platforms).  Lambda serves HTML referencing Docker-built
+        filenames, so S3 must have the exact same files from that Docker build.
+        """
+        local_tag = f"{ECR_REPO_NAME}:{self.image_tag}"
+        extract_dir = os.path.join(PROJECT_ROOT, ".docker-dist-client")
+
         self.reporter.start(
             f"Sync static assets to S3 bucket `{S3_STATIC_BUCKET}`"
         )
