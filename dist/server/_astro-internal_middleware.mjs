@@ -13,7 +13,7 @@ import * as path from "path";
 import { DEV_BROWSER_KEY, setDevBrowserInURL } from "@clerk/shared/devBrowser";
 import "@clerk/shared/pathMatcher";
 import "es-module-lexer";
-.import "./chunks/astro-designed-error-pages_gcJyMFG9.mjs";
+import "./chunks/astro-designed-error-pages_gcJyMFG9.mjs";
 import "piccolore";
 import "./chunks/astro/server_D_M58jvm.mjs";
 import "clsx";
