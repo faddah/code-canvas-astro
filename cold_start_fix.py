@@ -561,7 +561,7 @@ def stage_6_invalidate_cloudfront(cf_client) -> bool:
                 WaiterConfig={"Delay": 15, "MaxAttempts": 30},
             )
             success("CloudFront cache invalidated for /_astro/*")
-        except :
+        except WaiterError:
             warn(
                 f"Invalidation {inv_id} still in progress — "
                 "it will complete in the background"
