@@ -871,7 +871,7 @@ class UpdateDeployer:
         extract_dir = os.path.join(PROJECT_ROOT, ".docker-dist-client")
 
         self.reporter.start(
-            f"Sync static assets to S3 bucket `{S3_STATIC_BUCKET}`"
+            f"Extract static assets from Docker & sync to S3 `{S3_STATIC_BUCKET}`"
         )
 
         if not os.path.isdir(DIST_CLIENT_DIR):
