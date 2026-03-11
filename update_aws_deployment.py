@@ -13,10 +13,11 @@ Pipeline:
     5.  Build Lambda Docker image   (Dockerfile.lambda → ECR compatible)
     6.  Push Lambda image to AWS ECR (python-repl-container-lambda:v[VERSION])
     7.  Update AWS Lambda function  (code-canvas-astro-lambda) with new ECR image
-    8.  Verify AWS API Gateway      (pyrepl-api / pvh7sgwr49) is operational
-    9.  Invalidate AWS CloudFront   (E8UQ2BAGKYYM0) cache & wait for completion
-    10. Verify AWS Route 53         (pyrepl.dev / Z06161484WRKVMIQUBIG) DNS records
-    11. Final health check          (https://pyrepl.dev)
+    8.  Sync static assets          (dist/client/ → S3 pyrepl-static-assets)
+    9.  Verify AWS API Gateway      (pyrepl-api / pvh7sgwr49) is operational
+    10. Invalidate AWS CloudFront   (E8UQ2BAGKYYM0) cache & wait for completion
+    11. Verify AWS Route 53         (pyrepl.dev / Z06161484WRKVMIQUBIG) DNS records
+    12. Final health check          (https://pyrepl.dev)
 
 Usage:
     python3 update_aws_deployment.py
