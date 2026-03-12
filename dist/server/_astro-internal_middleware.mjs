@@ -13,17 +13,17 @@ import * as path from "path";
 import { DEV_BROWSER_KEY, setDevBrowserInURL } from "@clerk/shared/devBrowser";
 import "@clerk/shared/pathMatcher";
 import "es-module-lexer";
-import "./chunks/astro-designed-error-pages_iAuHBSMo.mjs";
+import "./chunks/astro-designed-error-pages_BS9RiYp3.mjs";
 import "piccolore";
 import "./chunks/astro/server_C9sFvLnE.mjs";
 import "clsx";
-import { s as sequence } from "./chunks/index_7i6TovOJ.mjs";
+import { s as sequence } from "./chunks/index_CqZjWHU3.mjs";
 async function createAsyncLocalStorage() {
   const { AsyncLocalStorage } = await import("async_hooks");
   return new AsyncLocalStorage();
 }
 var authAsyncStorage = await createAsyncLocalStorage();
-const __vite_import_meta_env__ = { "ASSETS_PREFIX": void 0, "BASE_URL": "/", "DEV": false, "MODE": "production", "PROD": true, "PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsucHlyZXBsLmRldiQ", "SITE": void 0, "SSR": true };
+const __vite_import_meta_env__ = { "ASSETS_PREFIX": void 0, "BASE_URL": "/", "DEV": false, "MODE": "production", "PROD": true, "SITE": void 0, "SSR": true };
 var KEYLESS_DISABLED = isTruthy(getEnvVariable("PUBLIC_CLERK_KEYLESS_DISABLED")) || isTruthy(getEnvVariable("CLERK_KEYLESS_DISABLED")) || false;
 var canUseKeyless = isDevelopmentEnvironment() && !KEYLESS_DISABLED;
 var cloudflareEnv;
@@ -56,7 +56,7 @@ function getContextEnvVar(envVarName, contextOrLocals) {
   if (typeof process !== "undefined" && process.env?.[envVarName]) {
     return process.env[envVarName];
   }
-  return Object.assign(__vite_import_meta_env__, { _: process.env._, CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY })[envVarName] || void 0;
+  return Object.assign(__vite_import_meta_env__, { _: process.env._ })[envVarName] || void 0;
 }
 function getSafeEnv(context) {
   const locals = "locals" in context ? context.locals : context;
@@ -152,7 +152,7 @@ var createClerkClientWithOptions = (context, options) => createClerkClient({
     name: "@clerk/astro",
     version: "3.0.4",
     // eslint-disable-next-line turbo/no-undeclared-env-vars
-    environment: Object.assign(__vite_import_meta_env__, { _: process.env._, CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY }).MODE
+    environment: Object.assign(__vite_import_meta_env__, { _: process.env._ }).MODE
   },
   telemetry: {
     disabled: getSafeEnv(context).telemetryDisabled,
