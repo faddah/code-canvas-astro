@@ -224,7 +224,7 @@ async function keyless(context) {
           }
         },
         framework: "astro",
-        frameworkVersion: "3.0.1"
+        frameworkVersion: "3.0.4"
       });
       keylessServiceInstance = service;
       return service;
