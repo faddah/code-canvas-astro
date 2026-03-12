@@ -41,7 +41,7 @@ export default function IDE() {
   // Data hooks
   const { data: starterFiles, isLoading: isLoadingStarter } = useStarterFiles();
   const { data: userFilesData, isLoading: isLoadingUser } = useUserFiles(isSignedIn);
-  const { data: profile, isLoading: isLoadingProfile } = useUserProfile(isSignedIn);
+  const { data: profile, isLoading: isLoadingProfile, isSuccess: isProfileSuccess } = useUserProfile(isSignedIn);
 
   const createFile = useCreateUserFile();
   const updateFile = useUpdateUserFile();
