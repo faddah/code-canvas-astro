@@ -23,7 +23,7 @@ async function createAsyncLocalStorage() {
   return new AsyncLocalStorage();
 }
 var authAsyncStorage = await createAsyncLocalStorage();
-const __vite_import_meta_env__ = { "ASSETS_PREFIX": void 0, "BASE_URL": "/", "DEV": false, "MODE": "production", "PROD": true, "SITE": void 0, "SSR": true };
+const __vite_import_meta_env__ = { "ASSETS_PREFIX": void 0, "BASE_URL": "/", "DEV": false, "MODE": "production", "PROD": true, "PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsucHlyZXBsLmRldiQ", "SITE": void 0, "SSR": true };
 var KEYLESS_DISABLED = isTruthy(getEnvVariable("PUBLIC_CLERK_KEYLESS_DISABLED")) || isTruthy(getEnvVariable("CLERK_KEYLESS_DISABLED")) || false;
 var canUseKeyless = isDevelopmentEnvironment() && !KEYLESS_DISABLED;
 var cloudflareEnv;
