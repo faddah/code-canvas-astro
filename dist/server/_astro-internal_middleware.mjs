@@ -56,7 +56,7 @@ function getContextEnvVar(envVarName, contextOrLocals) {
   if (typeof process !== "undefined" && process.env?.[envVarName]) {
     return process.env[envVarName];
   }
-  return Object.assign(__vite_import_meta_env__, { CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY, _: process.env._ })[envVarName] || void 0;
+  return Object.assign(__vite_import_meta_env__, { _: process.env._, CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY })[envVarName] || void 0;
 }
 function getSafeEnv(context) {
   const locals = "locals" in context ? context.locals : context;
@@ -152,7 +152,7 @@ var createClerkClientWithOptions = (context, options) => createClerkClient({
     name: "@clerk/astro",
     version: "3.0.4",
     // eslint-disable-next-line turbo/no-undeclared-env-vars
-    environment: Object.assign(__vite_import_meta_env__, { CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY, _: process.env._ }).MODE
+    environment: Object.assign(__vite_import_meta_env__, { _: process.env._, CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY }).MODE
   },
   telemetry: {
     disabled: getSafeEnv(context).telemetryDisabled,

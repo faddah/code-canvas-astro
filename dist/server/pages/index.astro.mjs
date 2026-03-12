@@ -1,0 +1,119 @@
+import { e as createComponent, r as renderTemplate, l as renderSlot, n as renderHead, g as addAttribute, h as createAstro, k as renderComponent } from "../chunks/astro/server_C9sFvLnE.mjs";
+import "piccolore";
+import "clsx";
+/* empty css                                 */
+import { renderers } from "../renderers.mjs";
+var __freeze = Object.freeze;
+var __defProp = Object.defineProperty;
+var __template = (cooked, raw) => __freeze(__defProp(cooked, "raw", { value: __freeze(cooked.slice()) }));
+var _a;
+const $$Astro = createAstro();
+const $$Layout = createComponent(($$result, $$props, $$slots) => {
+  const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);
+  Astro2.self = $$Layout;
+  const { title = "Python REPL IDE" } = Astro2.props;
+  return renderTemplate(_a || (_a = __template(['<html lang="en" data-astro-cid-sckkx6r4> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator"', "><title>", "</title>", `</head> <body data-astro-cid-sckkx6r4> <div id="app-loading" style="height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a0a0a;color:#e5e5e5;font-family:monospace;" data-astro-cid-sckkx6r4> <div style="width:2.5rem;height:2.5rem;border:3px solid #333;border-top-color:#2563eb;border-radius:50%;animation:spin 1s linear infinite;" data-astro-cid-sckkx6r4></div> <p style="margin-top:1rem;color:#999;" data-astro-cid-sckkx6r4>Loading Python REPL IDE...</p> </div>  <!--
+          Module retry script — catches failed JS chunk loads (503 during Lambda
+          cold start) and retries them up to 3 times with exponential backoff.
+          This runs BEFORE any module scripts, so it patches the import mechanism
+          early enough to catch Astro's dynamic imports.
+        --> <script>
+          (function () {
+            // How many times to retry a failed module import
+            var MAX_RETRIES = 3;
+            // Base delay in ms — doubles each retry (1s, 2s, 4s)
+            var BASE_DELAY = 1000;
+
+            // Store the browser's native dynamic import so we can wrap it
+            // We patch window.__import__ which Astro uses for chunk loading
+            var originalFetch = window.fetch;
+
+            // Wrap fetch() to retry /_astro/ requests that fail with 503
+            window.fetch = function (input, init) {
+              var url = typeof input === 'string' ? input : (input && input.url) || '';
+              var isAstroAsset = url.indexOf('/_astro/') !== -1;
+
+              if (!isAstroAsset) {
+                return originalFetch.call(this, input, init);
+              }
+
+              // Retry wrapper for /_astro/ assets
+              function attemptFetch(retriesLeft, delay) {
+                return originalFetch.call(window, input, init).then(function (response) {
+                  // 503 = service unavailable (Lambda cold start)
+                  if (response.status === 503 && retriesLeft > 0) {
+                    console.warn(
+                      '[retry] ' + url + ' returned 503, retrying in ' +
+                      delay + 'ms (' + retriesLeft + ' left)'
+                    );
+                    return new Promise(function (resolve) {
+                      setTimeout(function () {
+                        resolve(attemptFetch(retriesLeft - 1, delay * 2));
+                      }, delay);
+                    });
+                  }
+                  return response;
+                }).catch(function (err) {
+                  if (retriesLeft > 0) {
+                    console.warn(
+                      '[retry] ' + url + ' failed, retrying in ' +
+                      delay + 'ms (' + retriesLeft + ' left)'
+                    );
+                    return new Promise(function (resolve) {
+                      setTimeout(function () {
+                        resolve(attemptFetch(retriesLeft - 1, delay * 2));
+                      }, delay);
+                    });
+                  }
+                  throw err;
+                });
+              }
+
+              return attemptFetch(MAX_RETRIES, BASE_DELAY);
+            };
+
+            // Also handle failed <script type="module"> by listening for errors
+            // and reloading the page as a last resort after all chunks fail
+            var failedModules = 0;
+            var reloadScheduled = false;
+
+            window.addEventListener('error', function (event) {
+              // Module script load failures show up as error events on the window
+              if (
+                event.target &&
+                event.target.tagName === 'SCRIPT' &&
+                event.target.type === 'module'
+              ) {
+                failedModules++;
+                console.warn('[retry] Module script failed to load (' + failedModules + ')');
+
+                // If multiple modules fail and we haven't reloaded yet,
+                // schedule a reload after a delay to let retries finish
+                if (failedModules >= 2 && !reloadScheduled) {
+                  reloadScheduled = true;
+                  console.warn('[retry] Multiple modules failed — will reload in 5s');
+                  setTimeout(function () {
+                    window.location.reload();
+                  }, 5000);
+                }
+              }
+            }, true); // 'true' = capture phase, catches errors before they bubble
+          })();
+        <\/script> `, " </body></html>"])), addAttribute(Astro2.generator, "content"), title, renderHead(), renderSlot($$result, $$slots["default"]));
+}, "/Users/faddah/Documents/code/code - projects/code-canvas-astro/src/layouts/Layout.astro", void 0);
+const $$Index = createComponent(($$result, $$props, $$slots) => {
+  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": "Python REPL IDE" }, { "default": ($$result2) => renderTemplate` ${renderComponent($$result2, "App", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "@/components/App.tsx", "client:component-export": "default" })} ` })}`;
+}, "/Users/faddah/Documents/code/code - projects/code-canvas-astro/src/pages/index.astro", void 0);
+const $$file = "/Users/faddah/Documents/code/code - projects/code-canvas-astro/src/pages/index.astro";
+const $$url = "";
+const _page = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  default: $$Index,
+  file: $$file,
+  url: $$url
+}, Symbol.toStringTag, { value: "Module" }));
+const page = () => _page;
+export {
+  page,
+  renderers
+};
