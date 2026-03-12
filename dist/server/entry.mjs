@@ -12,6 +12,7 @@ const _page5 = () => import("./pages/api/starter-files.astro.mjs");
 const _page6 = () => import("./pages/api/user-files/create.astro.mjs");
 const _page7 = () => import("./pages/api/user-files/_id_.astro.mjs");
 const _page8 = () => import("./pages/api/user-files.astro.mjs");
+
 const _page9 = () => import("./pages/api/user-profile.astro.mjs");
 const _page10 = () => import("./pages/index.astro.mjs");
 const pageMap = /* @__PURE__ */ new Map([
