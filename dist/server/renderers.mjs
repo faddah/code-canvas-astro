@@ -1,8 +1,6 @@
 import React__default, { createElement } from "react";
 import ReactDOM from "react-dom/server";
-const opts = {
-  experimentalReactChildren: true
-};
+const opts = { experimentalReactChildren: true };
 const contexts = /* @__PURE__ */ new WeakMap();
 const ID_PREFIX = "r";
 function getContext(rendererContextResult) {
@@ -40,15 +38,15 @@ const StaticHtml = ({
 StaticHtml.shouldComponentUpdate = () => false;
 var static_html_default = StaticHtml;
 const slotName = (str) => str.trim().replace(/[-_]([a-z])/g, (_, w) => w.toUpperCase());
-const reactTypeof = Symbol.for("react.element");
-const reactTransitionalTypeof = Symbol.for("react.transitional.element");
-async function check(Component, props, children) {
+const reactTypeof = /* @__PURE__ */ Symbol.for("react.element");
+const reactTransitionalTypeof = /* @__PURE__ */ Symbol.for("react.transitional.element");
+async function check(Component, props, children, metadata) {
   if (typeof Component === "object") {
     return Component["$$typeof"].toString().slice("Symbol(".length).startsWith("react");
   }
   if (typeof Component !== "function") return false;
   if (Component.name === "QwikComponent") return false;
-  if (typeof Component === "function" && Component["$$typeof"] === Symbol.for("react.forward_ref"))
+  if (typeof Component === "function" && Component["$$typeof"] === /* @__PURE__ */ Symbol.for("react.forward_ref"))
     return false;
   if (Component.prototype != null && typeof Component.prototype.render === "function") {
     return React__default.Component.isPrototypeOf(Component) || React__default.PureComponent.isPrototypeOf(Component);
