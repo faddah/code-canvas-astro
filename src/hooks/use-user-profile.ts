@@ -44,8 +44,12 @@ export function useUserProfile(enabled: boolean) {
       if (!res.ok) throw new Error("Failed to fetch profile");
       return res.json();
     },
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
+    refetchOnMount: 'always',
   });
 }
+
 
 export function useCreateUserProfile() {
   const queryClient = useQueryClient();
