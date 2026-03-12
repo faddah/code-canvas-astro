@@ -35,9 +35,29 @@ export const POST: APIRoute = async ({ request, locals }) => {
         });
     }
 
+    const storage = new DatabaseStorage();
+
+    // Parse body — fail fast on invalid JSON
+    let body: any;
     try {
-        const body = await request.json();
-        const storage = new DatabaseStorage();
+        body = await request.json();
+    } catch {
+        return new Response(JSON.stringify({ message: "Invalid JSON" }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    // Idempotent: return existing profile if one already exists
+    const existing = await storage.getUserProfile(userId);
+    if (existing) {
+        return new Response(JSON.stringify(existing), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    try {
         const profile = await storage.createUserProfile({
             ...body,
             clerkUserId: userId,
@@ -47,7 +67,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
             headers: { 'Content-Type': 'application/json' }
         });
     } catch (err) {
-        return new Response(JSON.stringify({ message: "Invalid input or profile already exists" }), {
+        // UNIQUE constraint race (two concurrent requests) — return existing
+        const raceProfile = await storage.getUserProfile(userId);
+        if (raceProfile) {
+            return new Response(JSON.stringify(raceProfile), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+        return new Response(JSON.stringify({ message: "Invalid input" }), {
             status: 400,
             headers: { 'Content-Type': 'application/json' }
         });
