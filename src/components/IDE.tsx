@@ -75,10 +75,13 @@ export default function IDE() {
   // Show complete profile modal after first signup
   const [showCompleteProfile, setShowCompleteProfile] = useState(false);
   useEffect(() => {
-    if (isSignedIn && !isLoadingProfile && profile === null) {
-      setShowCompleteProfile(true);
-    }
-  }, [isSignedIn, isLoadingProfile, profile]);
+  if (isSignedIn && isProfileSuccess && profile === null) {
+    setShowCompleteProfile(true);
+  } else if (profile) {
+    setShowCompleteProfile(false);
+  }
+}, [isSignedIn, isProfileSuccess, profile]);
+
 
   const [activeFileId, setActiveFileId] = useState<number | null>(null);
   const [openFileIds, setOpenFileIds] = useState<number[]>([]);
