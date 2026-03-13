@@ -17,23 +17,35 @@ export function useStarterFiles() {
 
 // ─── User Files (auth-required, CRUD) ───
 
-export function useUserFiles(enabled: boolean) {
+export function useUserFiles(userId: string | null | undefined) {
+  const enabled = !!userId;
   return useQuery({
-    queryKey: [api.userFiles.list.path],
+    // Include userId in the key so React Query separates caches per user
+    // and automatically refetches when the userId changes (e.g. on login).
+    queryKey: [api.userFiles.list.path, userId],
     enabled,
     queryFn: async () => {
+      console.log(`[useUserFiles] Fetching user files for userId=${userId}`);
       const res = await fetch(api.userFiles.list.path);
-      if (!res.ok) throw new Error("Failed to fetch user files");
-      return res.json();
+      if (!res.ok) {
+        console.warn(`[useUserFiles] Server responded ${res.status}`);
+        throw new Error(`Failed to fetch user files (HTTP ${res.status})`);
+      }
+      const data = await res.json();
+      console.log(`[useUserFiles] Received ${Array.isArray(data) ? data.length : '?'} files`);
+      return data;
     },
     // On page refresh, Clerk's session token may be expired for the first
     // request(s) while the client SDK refreshes it.  Use a longer retry
-    // delay so the refreshed cookie is available by the time we retry.
-    retry: 3,
-    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
+    // window (5 attempts, up to ~62s total) so the refreshed cookie is
+    // available by the time we retry.
+    retry: 5,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 16000),
     // Always refetch when the query is re-enabled (e.g., after auth state
     // transitions from signed-out → signed-in during page refresh).
     refetchOnMount: 'always',
+    // Don't use stale data from a previous session — always fetch fresh.
+    staleTime: 0,
   });
 }
 

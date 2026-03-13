@@ -40,7 +40,13 @@ export default function IDE() {
 
   // Data hooks
   const { data: starterFiles, isLoading: isLoadingStarter } = useStarterFiles();
-  const { data: userFilesData, isLoading: isLoadingUser } = useUserFiles(isSignedIn);
+  const {
+    data: userFilesData,
+    isLoading: isLoadingUser,
+    isError: isUserFilesError,
+    error: userFilesError,
+    refetch: refetchUserFiles,
+  } = useUserFiles(userId);
   const { data: profile, isLoading: isLoadingProfile, isSuccess: isProfileSuccess } = useUserProfile(isSignedIn);
 
   const createFile = useCreateUserFile();
@@ -119,10 +125,11 @@ export default function IDE() {
       setActiveFileId(null);
       setOpenFileIds([]);
       setUnsavedChanges({});
-      // Invalidate & refetch user files to ensure fresh data after login
+      // Invalidate & refetch user files to ensure fresh data after login.
+      // Use the userId-scoped key so we target the right cache entry.
       queryClient.invalidateQueries({ queryKey: [api.userFiles.list.path] });
     }
-  }, [isSignedIn]);
+  }, [isSignedIn, queryClient]);
 
   // Initialize active file when files load
   useEffect(() => {
@@ -423,6 +430,29 @@ export default function IDE() {
           </div>
 
           <div className="flex-1 overflow-y-auto px-2">
+            {isSignedIn && isLoadingUser && (
+              <div className="flex flex-col items-center gap-2 py-6 text-xs text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Loading your files...</span>
+              </div>
+            )}
+            {isSignedIn && isUserFilesError && (
+              <div className="flex flex-col items-center gap-2 py-6 text-xs text-muted-foreground">
+                <p className="text-red-400">Could not load files</p>
+                <button
+                  onClick={() => refetchUserFiles()}
+                  className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+            {isSignedIn && !isLoadingUser && !isUserFilesError && (!files || files.length === 0) && (
+              <div className="flex flex-col items-center gap-2 py-6 text-xs text-muted-foreground">
+                <p>No files yet</p>
+                <p className="text-[10px]">Click + above to create one</p>
+              </div>
+            )}
             {files?.map((file: any) => (
               <div
                 key={file.id}
