@@ -592,7 +592,11 @@ export default function IDE() {
 
       {/* Complete Profile Modal */}
       {showCompleteProfile && (
-        <CompleteProfile onComplete={() => setShowCompleteProfile(false)} />
+        <CompleteProfile
+          onComplete={() => setShowCompleteProfile(false)}
+          onCancel={() => setShowCompleteProfile(false)}
+        />
+
       )}
 
       {/* User Profile Modal */}
