@@ -216,8 +216,15 @@ export function CompleteProfile({ onComplete, onCancel }: CompleteProfileProps) 
               <p className="text-sm text-red-600">{errors.postalCode.message}</p>
             )}
           </div>
-
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="border-gray-400 text-black hover:bg-gray-100"
+            >
+              Cancel
+            </Button>
             <Button
               type="submit"
               disabled={createProfile.isPending}
