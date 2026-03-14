@@ -129,7 +129,7 @@ export function CompleteProfile({ onComplete, onCancel }: CompleteProfileProps) 
   };
 
   return (
-    <Dialog open onOpenChange={() => {}}>
+    <Dialog open onOpenChange={(open) => { if (!open) onCancel(); }}>
       <DialogContent
         className="sm:max-w-md bg-white text-black rounded-xl"
         onPointerDownOutside={(e) => e.preventDefault()}
