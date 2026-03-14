@@ -91,9 +91,10 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 
 interface CompleteProfileProps {
   onComplete: () => void;
+  onCancel: () => void;
 }
 
-export function CompleteProfile({ onComplete }: CompleteProfileProps) {
+export function CompleteProfile({ onComplete, onCancel }: CompleteProfileProps) {
   const createProfile = useCreateUserProfile();
   const [selectedCountry, setSelectedCountry] = useState('US');
 
