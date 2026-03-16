@@ -52,7 +52,7 @@ export function ConsolePanel({ logs, onClear, isWaitingForInput, inputPrompt, on
         </button>
       </div>
       
-      <ScrollArea className="flex-1 p-4 font-mono text-sm">
+      <ScrollArea className="flex-1 overflow-auto p-4 font-mono text-sm">
         {logs.length === 0 ? (
           <div className="text-muted-foreground/40 italic select-none">
             Ready to execute. Output will appear here...
