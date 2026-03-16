@@ -13,6 +13,9 @@ export function usePyodide() {
   const [htmlOutput, setHtmlOutput] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const pyodideRef = useRef<any>(null);
+  const [isWaitingForInput, setIsWaitingForInput] = useState(false);
+  const inputResolverRef = useRef<((value: string) => void) | null>(null);
+
 
   useEffect(() => {
     let cancelled = false;
@@ -29,7 +32,8 @@ export function usePyodide() {
         try {
           console.log("Initializing Pyodide...");
           const pyodide = await window.loadPyodide({
-            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/",
+            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/",
+            enableRunUntilComplete: true,
           });
 
           if (cancelled) return;
@@ -40,20 +44,68 @@ export function usePyodide() {
 
           // Define a custom render function for HTML preview
           // Users can call render("<h1>Hello</h1>") in Python
-          await pyodide.runPythonAsync(`
-            import js
-            def render(html_content):
-                js.set_preview_content(html_content)
-          `);
+          // Detect JSPI support by trying to import run_sync in Python
+          let hasJSPI = false;
+          try {
+            await pyodide.runPythonAsync(`
+              from pyodide.ffi import run_sync as _test_run_sync
+              del _test_run_sync
+            `);
+            hasJSPI = true;
+            console.log("JSPI detection: run_sync import succeeded");
+          } catch {
+            console.log("JSPI detection: run_sync import failed, using prompt() fallback");
+          }
+
+          // Define render function + input override
+          if (hasJSPI) {
+            console.log("JSPI available — using inline console input");
+            await pyodide.runPythonAsync(`
+              import js
+              def render(html_content):
+                  js.set_preview_content(html_content)
+
+              import builtins
+              import sys
+              from pyodide.ffi import run_sync
+
+              def _jspi_input(prompt=""):
+                  result = run_sync(js.window.request_console_input(prompt or ""))
+                  return result
+              builtins.input = _jspi_input
+            `);
+          } else {
+            console.log("JSPI unavailable — using prompt() fallback");
+            await pyodide.runPythonAsync(`
+              import js
+              def render(html_content):
+                  js.set_preview_content(html_content)
+
+              import builtins
+              import sys
+              def _custom_input(prompt=""):
+                  if prompt:
+                      sys.stdout.write(prompt)
+                  result = js.window.prompt(prompt or "Python input:")
+                  if result is None:
+                      result = ""
+                  sys.stdout.write(result + "\\n")
+                  return result
+              builtins.input = _custom_input
+            `);
+          }
+
 
           // Expose the hook's setter to global scope for Pyodide to call
           (window as any).set_preview_content = (content: string) => {
             setHtmlOutput(content);
           };
 
+          (window as any).request_console_input = requestInput;
+
           pyodideRef.current = pyodide;
           setIsReady(true);
-          appendOutput("Pyodide v0.25.0 initialized ready.");
+          appendOutput("Pyodide v0.27.7 initialized ready.");
         } catch (err) {
           console.error("Pyodide init failed:", err);
           if (!cancelled) {
@@ -68,7 +120,7 @@ export function usePyodide() {
       load();
     } else {
       const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js";
+      script.src = "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js";
       script.async = true;
       script.onload = load;
       script.onerror = () => {
@@ -82,6 +134,8 @@ export function usePyodide() {
 
     return () => {
       cancelled = true;
+      delete (window as any).set_preview_content;
+      delete (window as any).request_console_input;
     };
   }, []);
 
@@ -92,6 +146,25 @@ export function usePyodide() {
   const clearConsole = () => {
     setOutput([]);
     setHtmlOutput(null);
+  };
+
+  const requestInput = (prompt: string): Promise<string> => {
+    if (prompt) {
+      appendOutput(prompt);
+    }
+    setIsWaitingForInput(true);
+    return new Promise((resolve) => {
+      inputResolverRef.current = resolve;
+    });
+  };
+
+  const submitInput = (text: string) => {
+    if (inputResolverRef.current) {
+      inputResolverRef.current(text);
+      inputResolverRef.current = null;
+    }
+    setIsWaitingForInput(false);
+    appendOutput(text);
   };
 
   const runCode = async (code: string, files: { name: string; content: string }[]) => {
@@ -115,5 +188,15 @@ export function usePyodide() {
     }
   };
 
-  return { isReady, isRunning, output, htmlOutput, runCode, clearConsole };
+    return {
+      isReady,
+      isRunning,
+      output,
+      htmlOutput,
+      runCode,
+      clearConsole,
+      isWaitingForInput,
+      submitInput 
+    };
+
 }

@@ -53,7 +53,7 @@ export default function IDE() {
   const updateFile = useUpdateUserFile();
   const deleteFile = useDeleteUserFile();
 
-  const { isReady, isRunning, output, htmlOutput, runCode, clearConsole } = usePyodide();
+  const { isReady, isRunning, output, htmlOutput, runCode, clearConsole, isWaitingForInput, submitInput } = usePyodide();
   const { toast } = useToast();
 
   const queryClient = useQueryClient();
@@ -580,7 +580,13 @@ export default function IDE() {
 
                 {/* Console */}
                 <ResizablePanel defaultSize={40} minSize={20}>
-                  <ConsolePanel logs={output} onClear={clearConsole} />
+                  <ConsolePanel
+                    logs={output}
+                    onClear={clearConsole}
+                    isWaitingForInput={isWaitingForInput}
+                    onSubmitInput={submitInput}
+                  />
+
                 </ResizablePanel>
 
               </ResizablePanelGroup>
