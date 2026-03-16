@@ -53,7 +53,7 @@ export default function IDE() {
   const updateFile = useUpdateUserFile();
   const deleteFile = useDeleteUserFile();
 
-  const { isReady, isRunning, output, htmlOutput, runCode, clearConsole } = usePyodide();
+  const { isReady, isRunning, output, htmlOutput, runCode, clearConsole, isWaitingForInput, inputPrompt, submitInput } = usePyodide();
   const { toast } = useToast();
 
   const queryClient = useQueryClient();
