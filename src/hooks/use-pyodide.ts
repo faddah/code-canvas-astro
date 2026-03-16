@@ -44,17 +44,21 @@ export function usePyodide() {
 
           // Define a custom render function for HTML preview
           // Users can call render("<h1>Hello</h1>") in Python
-          // Detect JSPI support by trying to import run_sync in Python
+          // Detect JSPI support by actually trying to use run_sync
           let hasJSPI = false;
           try {
+            (window as any)._jspi_test = () => Promise.resolve(true);
             await pyodide.runPythonAsync(`
-              from pyodide.ffi import run_sync as _test_run_sync
-              del _test_run_sync
+              from pyodide.ffi import run_sync
+              import js
+              result = run_sync(js.window._jspi_test())
             `);
             hasJSPI = true;
-            console.log("JSPI detection: run_sync import succeeded");
+            console.log("JSPI detection: run_sync works");
           } catch {
-            console.log("JSPI detection: run_sync import failed, using prompt() fallback");
+            console.log("JSPI detection: run_sync failed, using prompt() fallback");
+          } finally {
+            delete (window as any)._jspi_test;
           }
 
           // Define render function + input override
