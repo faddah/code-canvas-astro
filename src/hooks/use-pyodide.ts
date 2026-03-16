@@ -45,11 +45,58 @@ export function usePyodide() {
 
           // Define a custom render function for HTML preview
           // Users can call render("<h1>Hello</h1>") in Python
-          await pyodide.runPythonAsync(`
-            import js
-            def render(html_content):
-                js.set_preview_content(html_content)
-          `);
+          // Detect JSPI support by trying to import run_sync in Python
+          let hasJSPI = false;
+          try {
+            await pyodide.runPythonAsync(`
+              from pyodide.ffi import run_sync as _test_run_sync
+              del _test_run_sync
+            `);
+            hasJSPI = true;
+            console.log("JSPI detection: run_sync import succeeded");
+          } catch {
+            console.log("JSPI detection: run_sync import failed, using prompt() fallback");
+          }
+
+          // Define render function + input override
+          if (hasJSPI) {
+            console.log("JSPI available — using inline console input");
+            await pyodide.runPythonAsync(`
+              import js
+              def render(html_content):
+                  js.set_preview_content(html_content)
+
+              import builtins
+              import sys
+              from pyodide.ffi import run_sync
+
+              def _jspi_input(prompt=""):
+                  result = run_sync(js.window.request_console_input(prompt or ""))
+                  sys.stdout.write(result + "\\n")
+                  return result
+              builtins.input = _jspi_input
+            `);
+          } else {
+            console.log("JSPI unavailable — using prompt() fallback");
+            await pyodide.runPythonAsync(`
+              import js
+              def render(html_content):
+                  js.set_preview_content(html_content)
+
+              import builtins
+              import sys
+              def _custom_input(prompt=""):
+                  if prompt:
+                      sys.stdout.write(prompt)
+                  result = js.window.prompt(prompt or "Python input:")
+                  if result is None:
+                      result = ""
+                  sys.stdout.write(result + "\\n")
+                  return result
+              builtins.input = _custom_input
+            `);
+          }
+
 
           // Expose the hook's setter to global scope for Pyodide to call
           (window as any).set_preview_content = (content: string) => {
