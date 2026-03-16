@@ -13,6 +13,10 @@ export function usePyodide() {
   const [htmlOutput, setHtmlOutput] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const pyodideRef = useRef<any>(null);
+  const [isWaitingForInput, setIsWaitingForInput] = useState(false);
+  const [inputPrompt, setInputPrompt] = useState("");
+  const inputResolverRef = useRef<((value: string) => void) | null>(null);
+
 
   useEffect(() => {
     let cancelled = false;
