@@ -134,6 +134,8 @@ export function usePyodide() {
 
     return () => {
       cancelled = true;
+      delete (window as any).set_preview_content;
+      delete (window as any).request_console_input;
     };
   }, []);
 
