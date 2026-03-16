@@ -107,7 +107,7 @@ export function usePyodide() {
 
           pyodideRef.current = pyodide;
           setIsReady(true);
-          appendOutput("Pyodide v0.25.0 initialized ready.");
+          appendOutput("Pyodide v0.27.7 initialized ready.");
         } catch (err) {
           console.error("Pyodide init failed:", err);
           if (!cancelled) {
