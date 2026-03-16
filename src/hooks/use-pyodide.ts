@@ -33,7 +33,8 @@ export function usePyodide() {
         try {
           console.log("Initializing Pyodide...");
           const pyodide = await window.loadPyodide({
-            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/",
+            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/",
+            enableRunUntilComplete: true,
           });
 
           if (cancelled) return;
