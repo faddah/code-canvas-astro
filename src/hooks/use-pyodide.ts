@@ -103,6 +103,8 @@ export function usePyodide() {
             setHtmlOutput(content);
           };
 
+          (window as any).request_console_input = requestInput;
+
           pyodideRef.current = pyodide;
           setIsReady(true);
           appendOutput("Pyodide v0.25.0 initialized ready.");
