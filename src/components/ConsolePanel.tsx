@@ -69,7 +69,25 @@ export function ConsolePanel({ logs, onClear, isWaitingForInput, inputPrompt, on
             </div>
           ))
         )}
-      </ScrollArea>
+        {isWaitingForInput && (
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-green-400">{">>>"}</span>
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSubmit();
+                }
+              }}
+              className="flex-1 bg-transparent border-none outline-none text-foreground font-mono text-sm caret-green-400"
+              placeholder="Type your input and press Enter..."
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
