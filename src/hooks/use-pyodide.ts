@@ -71,7 +71,6 @@ export function usePyodide() {
 
               def _jspi_input(prompt=""):
                   result = run_sync(js.window.request_console_input(prompt or ""))
-                  sys.stdout.write(result + "\\n")
                   return result
               builtins.input = _jspi_input
             `);
