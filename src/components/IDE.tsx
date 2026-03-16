@@ -580,7 +580,14 @@ export default function IDE() {
 
                 {/* Console */}
                 <ResizablePanel defaultSize={40} minSize={20}>
-                  <ConsolePanel logs={output} onClear={clearConsole} />
+                  <ConsolePanel
+                    logs={output}
+                    onClear={clearConsole}
+                    isWaitingForInput={isWaitingForInput}
+                    inputPrompt={inputPrompt}
+                    onSubmitInput={submitInput}
+                  />
+
                 </ResizablePanel>
 
               </ResizablePanelGroup>
