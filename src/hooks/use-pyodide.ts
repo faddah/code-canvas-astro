@@ -14,7 +14,6 @@ export function usePyodide() {
   const [isRunning, setIsRunning] = useState(false);
   const pyodideRef = useRef<any>(null);
   const [isWaitingForInput, setIsWaitingForInput] = useState(false);
-  const [inputPrompt, setInputPrompt] = useState("");
   const inputResolverRef = useRef<((value: string) => void) | null>(null);
 
 
@@ -153,7 +152,6 @@ export function usePyodide() {
       appendOutput(prompt);
     }
     setIsWaitingForInput(true);
-    setInputPrompt(prompt);
     return new Promise((resolve) => {
       inputResolverRef.current = resolve;
     });
@@ -197,7 +195,6 @@ export function usePyodide() {
       runCode,
       clearConsole,
       isWaitingForInput,
-      inputPrompt,
       submitInput 
     };
 

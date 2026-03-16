@@ -6,11 +6,10 @@ interface ConsolePanelProps {
   logs: string[];
   onClear: () => void;
   isWaitingForInput?: boolean;
-  inputPrompt?: string;
   onSubmitInput?: (text: string) => void;
 }
 
-export function ConsolePanel({ logs, onClear, isWaitingForInput, inputPrompt, onSubmitInput }: ConsolePanelProps) {
+export function ConsolePanel({ logs, onClear, isWaitingForInput, onSubmitInput }: ConsolePanelProps) {
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
