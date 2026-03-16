@@ -122,7 +122,7 @@ export function usePyodide() {
       load();
     } else {
       const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js";
+      script.src = "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js";
       script.async = true;
       script.onload = load;
       script.onerror = () => {
