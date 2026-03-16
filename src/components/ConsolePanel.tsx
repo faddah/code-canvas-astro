@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from "react";
 import { ScrollArea } from "./ui/scroll-area";
 import { Trash2, Terminal } from "lucide-react";
 
