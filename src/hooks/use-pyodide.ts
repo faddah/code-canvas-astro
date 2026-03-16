@@ -148,6 +148,26 @@ export function usePyodide() {
     setHtmlOutput(null);
   };
 
+  const requestInput = (prompt: string): Promise<string> => {
+    if (prompt) {
+      appendOutput(prompt);
+    }
+    setIsWaitingForInput(true);
+    setInputPrompt(prompt);
+    return new Promise((resolve) => {
+      inputResolverRef.current = resolve;
+    });
+  };
+
+  const submitInput = (text: string) => {
+    if (inputResolverRef.current) {
+      inputResolverRef.current(text);
+      inputResolverRef.current = null;
+    }
+    setIsWaitingForInput(false);
+    appendOutput(text);
+  };
+
   const runCode = async (code: string, files: { name: string; content: string }[]) => {
     if (!pyodideRef.current) return;
 
