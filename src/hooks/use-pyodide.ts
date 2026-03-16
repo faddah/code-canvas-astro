@@ -189,5 +189,16 @@ export function usePyodide() {
     }
   };
 
-  return { isReady, isRunning, output, htmlOutput, runCode, clearConsole };
+    return {
+      isReady,
+      isRunning,
+      output,
+      htmlOutput,
+      runCode,
+      clearConsole,
+      isWaitingForInput,
+      inputPrompt,
+      submitInput 
+    };
+
 }
