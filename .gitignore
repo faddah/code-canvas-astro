@@ -8,12 +8,21 @@
 .vscode/extensions.json
 
 # Claude
+Claude.MD
 .claude/
 .claude/**
 .claude/**/*
 .claude/*.json
 .claude/settings.json
 .claude/settings.local.json
+
+# Claude & Gary's GStack
+.claude/skills/gstack/node_modules/
+.claude/skills/gstack/node_modules/**
+.claude/skills/gstack/node_modules/**/*
+.claude/skills/gstack/browse/dist/
+.claude/skills/gstack/browse/dist/**
+.claude/skills/gstack/browse/dist/**/*
 
 # build output
 dist/
