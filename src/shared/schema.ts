@@ -47,18 +47,40 @@ export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({
 export type UserProfile = typeof userProfiles.$inferSelect;
 export type InsertUserProfile = (typeof insertUserProfileSchema)["_output"];
 
+// Projects — groups of files owned by authenticated users
+export const projects = sqliteTable("projects", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  clerkUserId: text("clerk_user_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdAt: integer("created_at", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+});
+
+export const insertProjectSchema = createInsertSchema(projects).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type Project = typeof projects.$inferSelect;
+export type InsertProject = (typeof insertProjectSchema)["_output"];
+
 // User files — files owned by authenticated users
 export const userFiles = sqliteTable("user_files", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   clerkUserId: text("clerk_user_id").notNull(),
+  projectId: integer("project_id"),
   name: text("name").notNull(),
   content: text("content").notNull(),
   createdAt: integer("created_at", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
 
 export const insertUserFileSchema = createInsertSchema(userFiles).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
 });
 
 export type UserFile = typeof userFiles.$inferSelect;
@@ -124,6 +146,29 @@ export const api = {
     delete: {
       method: 'DELETE' as const,
       path: '/api/user-files/:id',
+    },
+  },
+  // Projects (auth-required)
+  projects: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/projects',
+    },
+    get: {
+      method: 'GET' as const,
+      path: '/api/projects/:id',
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/projects/create',
+    },
+    update: {
+      method: 'PUT' as const,
+      path: '/api/projects/:id',
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/projects/:id',
     },
   },
   // User profile (auth-required)
