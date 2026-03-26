@@ -28,7 +28,6 @@
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
     "paths": {
-      "*": ["./*"],
       "@/*": ["./src/*"],
       "@shared/*": ["./src/shared/*"]
     }
