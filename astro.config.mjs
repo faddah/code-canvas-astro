@@ -34,13 +34,23 @@ export default defineConfig({
 
   vite: {
     // @ts-ignore - Vite plugin version mismatch between Astro and @tailwindcss/vite
-    plugins: [tailwindcss()],
-    resolve: {
-      alias: {
-        '@': './src',
-        '@shared': './src/shared',
-        '@assets': './src/assets',
+    plugins: [
+      tailwindcss(),
+      // Workaround: Astro 6 + Vite 7 fails to resolve astro:middleware inside virtual
+      // modules during build, and the built-in alias plugin crashes on null-byte prefixed
+      // virtual module IDs. This plugin handles both issues.
+      {
+        name: 'fix-astro6-resolve',
+        enforce: 'pre',
+        resolveId(id) {
+          if (id === 'astro:middleware') {
+            return astroMiddlewarePath;
+          }
+        },
       },
+    ],
+    resolve: {
+      alias: [],
     },
   },
 
