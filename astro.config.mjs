@@ -9,6 +9,9 @@ import tailwindcss from '@tailwindcss/vite';
 
 import node from '@astrojs/node';
 
+const require = createRequire(import.meta.url);
+const astroMiddlewarePath = require.resolve('astro/virtual-modules/middleware.js');
+
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
