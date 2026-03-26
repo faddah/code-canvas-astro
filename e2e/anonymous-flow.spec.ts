@@ -46,9 +46,10 @@ test.describe("Anonymous User Flow", () => {
     const runButton = page.locator('button:has-text("Run")').first();
     await runButton.click();
 
-    // Verify output appears in the console
-    await expect(page.locator("text=hello from playwright")).toBeVisible({
-      timeout: 15_000,
-    });
+    // Verify output appears in the console — scope to .whitespace-pre-wrap to
+    // avoid also matching the same text inside the Monaco editor's syntax spans.
+    await expect(
+      page.locator(".whitespace-pre-wrap", { hasText: "hello from playwright" }).first()
+    ).toBeVisible({ timeout: 15_000 });
   });
 });
