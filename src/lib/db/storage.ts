@@ -3,6 +3,7 @@ import {
   starterFiles,
   userFiles,
   userProfiles,
+  projects,
   type File,
   type InsertFile,
   type StarterFile,
@@ -10,6 +11,8 @@ import {
   type InsertUserFile,
   type UserProfile,
   type InsertUserProfile,
+  type Project,
+  type InsertProject,
 } from "../../shared/schema";
 import { db } from "./index";
 import { eq, and } from "drizzle-orm";
@@ -39,8 +42,17 @@ export interface IStorage {
   updateUserProfile(clerkUserId: string, updates: Partial<InsertUserProfile>): Promise<UserProfile>;
   deleteUserProfile(clerkUserId: string): Promise<void>;
 
+  // Projects (scoped by clerkUserId)
+  getProjects(clerkUserId: string): Promise<Project[]>;
+  getProject(id: number, clerkUserId: string): Promise<Project | undefined>;
+  createProject(project: InsertProject): Promise<Project>;
+  updateProject(id: number, clerkUserId: string, updates: Partial<InsertProject>): Promise<Project>;
+  deleteProject(id: number, clerkUserId: string): Promise<void>;
+  getProjectFiles(projectId: number, clerkUserId: string): Promise<UserFile[]>;
+
   // Bulk operations
   deleteAllUserFiles(clerkUserId: string): Promise<void>;
+  deleteAllProjectFiles(projectId: number, clerkUserId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -107,7 +119,7 @@ export class DatabaseStorage implements IStorage {
   async updateUserFile(id: number, clerkUserId: string, updates: Partial<InsertUserFile>): Promise<UserFile> {
     const [updatedFile] = await db
       .update(userFiles)
-      .set(updates)
+      .set({ ...updates, updatedAt: new Date() })
       .where(and(eq(userFiles.id, id), eq(userFiles.clerkUserId, clerkUserId)))
       .returning();
     return updatedFile;
@@ -148,10 +160,62 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userProfiles.clerkUserId, clerkUserId));
   }
 
+  // Projects (always scoped by clerkUserId for security)
+  async getProjects(clerkUserId: string): Promise<Project[]> {
+    return await db
+      .select()
+      .from(projects)
+      .where(eq(projects.clerkUserId, clerkUserId))
+      .orderBy(projects.id);
+  }
+
+  async getProject(id: number, clerkUserId: string): Promise<Project | undefined> {
+    const [project] = await db
+      .select()
+      .from(projects)
+      .where(and(eq(projects.id, id), eq(projects.clerkUserId, clerkUserId)));
+    return project;
+  }
+
+  async createProject(project: InsertProject): Promise<Project> {
+    const [created] = await db.insert(projects).values(project).returning();
+    return created;
+  }
+
+  async updateProject(id: number, clerkUserId: string, updates: Partial<InsertProject>): Promise<Project> {
+    const [updated] = await db
+      .update(projects)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(and(eq(projects.id, id), eq(projects.clerkUserId, clerkUserId)))
+      .returning();
+    return updated;
+  }
+
+  async deleteProject(id: number, clerkUserId: string): Promise<void> {
+    await db
+      .delete(projects)
+      .where(and(eq(projects.id, id), eq(projects.clerkUserId, clerkUserId)));
+  }
+
+  async getProjectFiles(projectId: number, clerkUserId: string): Promise<UserFile[]> {
+    return await db
+      .select()
+      .from(userFiles)
+      .where(and(eq(userFiles.projectId, projectId), eq(userFiles.clerkUserId, clerkUserId)))
+      .orderBy(userFiles.id);
+  }
+
+  // Bulk operations
   async deleteAllUserFiles(clerkUserId: string): Promise<void> {
     await db
       .delete(userFiles)
       .where(eq(userFiles.clerkUserId, clerkUserId));
+  }
+
+  async deleteAllProjectFiles(projectId: number, clerkUserId: string): Promise<void> {
+    await db
+      .delete(userFiles)
+      .where(and(eq(userFiles.projectId, projectId), eq(userFiles.clerkUserId, clerkUserId)));
   }
 }
 
