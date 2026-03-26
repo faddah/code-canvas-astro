@@ -5,6 +5,7 @@ import {
   insertStarterFileSchema,
   insertUserFileSchema,
   insertUserProfileSchema,
+  insertProjectSchema,
 } from "@shared/schema";
 
 // ─── buildUrl ───
@@ -114,6 +115,60 @@ describe("insertUserProfileSchema", () => {
   });
 });
 
+describe("insertProjectSchema", () => {
+  it("accepts valid input with name and description", () => {
+    const result = insertProjectSchema.safeParse({
+      clerkUserId: "user_abc",
+      name: "My Python Project",
+      description: "A collection of Python scripts",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts input with only required fields (description is optional)", () => {
+    const result = insertProjectSchema.safeParse({
+      clerkUserId: "user_abc",
+      name: "My Project",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects missing clerkUserId", () => {
+    const result = insertProjectSchema.safeParse({
+      name: "My Project",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects missing name", () => {
+    const result = insertProjectSchema.safeParse({
+      clerkUserId: "user_abc",
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("insertUserFileSchema with projectId", () => {
+  it("accepts valid input with optional projectId", () => {
+    const result = insertUserFileSchema.safeParse({
+      clerkUserId: "user_abc",
+      name: "script.py",
+      content: "# code",
+      projectId: 1,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts valid input without projectId (standalone file)", () => {
+    const result = insertUserFileSchema.safeParse({
+      clerkUserId: "user_abc",
+      name: "script.py",
+      content: "# code",
+    });
+    expect(result.success).toBe(true);
+  });
+});
+
 // ─── API Endpoint Definitions ───
 
 describe("api endpoint definitions", () => {
@@ -131,10 +186,24 @@ describe("api endpoint definitions", () => {
     expect(api.userProfile.delete.path).toBe("/api/user-profile");
   });
 
+  it("has correct paths for project endpoints", () => {
+    expect(api.projects.list.path).toBe("/api/projects");
+    expect(api.projects.get.path).toBe("/api/projects/:id");
+    expect(api.projects.create.path).toBe("/api/projects/create");
+    expect(api.projects.update.path).toBe("/api/projects/:id");
+    expect(api.projects.delete.path).toBe("/api/projects/:id");
+  });
+
   it("has correct HTTP methods", () => {
     expect(api.userFiles.list.method).toBe("GET");
     expect(api.userFiles.create.method).toBe("POST");
     expect(api.userFiles.update.method).toBe("PUT");
     expect(api.userFiles.delete.method).toBe("DELETE");
+
+    expect(api.projects.list.method).toBe("GET");
+    expect(api.projects.get.method).toBe("GET");
+    expect(api.projects.create.method).toBe("POST");
+    expect(api.projects.update.method).toBe("PUT");
+    expect(api.projects.delete.method).toBe("DELETE");
   });
 });
