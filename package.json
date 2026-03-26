@@ -62,7 +62,7 @@
     "@tanstack/react-query": "^5.95.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "astro": "^6.1.0",
+    "astro": "^6.0.8",
     "autoprefixer": "^10.4.27",
     "aws-cdk": "^3.0.0",
     "class-variance-authority": "^0.7.1",
