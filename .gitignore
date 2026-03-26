@@ -59,5 +59,10 @@ pnpm-debug.log*
 *.db-shm
 *.db-wal
 
+# playwright / test artifacts
+playwright-report/
+test-results/
+
 # other
 distance.py
+.gstack/
