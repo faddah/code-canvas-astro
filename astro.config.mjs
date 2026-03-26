@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import { createRequire } from 'node:module';
 
 import clerk from '@clerk/astro';
 import react from '@astrojs/react';
