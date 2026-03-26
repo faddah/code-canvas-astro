@@ -5,7 +5,6 @@ import * as schema from "@shared/schema";
 /**
  * Creates an in-memory SQLite database via @libsql/client for testing.
  * Tables are created from the schema — no migration files needed.
- * Stage 2 will add the `projects` table and `projectId` FK here.
  */
 export function createTestDb() {
   const client = createClient({ url: ":memory:" });
@@ -37,12 +36,23 @@ export async function setupTestTables(client: ReturnType<typeof createClient>) {
       created_at INTEGER NOT NULL DEFAULT (unixepoch())
     );
 
-    CREATE TABLE IF NOT EXISTS user_files (
+    CREATE TABLE IF NOT EXISTS projects (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       clerk_user_id TEXT NOT NULL,
       name TEXT NOT NULL,
+      description TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+      updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+    );
+
+    CREATE TABLE IF NOT EXISTS user_files (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      clerk_user_id TEXT NOT NULL,
+      project_id INTEGER REFERENCES projects(id),
+      name TEXT NOT NULL,
       content TEXT NOT NULL,
-      created_at INTEGER NOT NULL DEFAULT (unixepoch())
+      created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+      updated_at INTEGER NOT NULL DEFAULT (unixepoch())
     );
   `);
 }
@@ -53,6 +63,7 @@ export async function setupTestTables(client: ReturnType<typeof createClient>) {
 export async function teardownTestTables(client: ReturnType<typeof createClient>) {
   await client.executeMultiple(`
     DROP TABLE IF EXISTS user_files;
+    DROP TABLE IF EXISTS projects;
     DROP TABLE IF EXISTS user_profiles;
     DROP TABLE IF EXISTS starter_files;
   `);
