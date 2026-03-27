@@ -4,6 +4,24 @@ A plain-language summary of what changed in each version of the app.
 
 ---
 
+## Version 2.1.0 — March 27, 2026
+
+### Save/Open dialogs, project management, and Explorer drag-and-drop
+
+- Added a Save Dialog that opens with Cmd+S (Mac) or Ctrl+S (Windows/Linux), with file name editing and project assignment
+- Added an Open/Import Dialog for importing .py and .txt files from your local filesystem into the IDE or into a specific project
+- Only .py and .txt files can be saved or imported (enforced in both dialogs)
+- Created full Project management: create projects in the Explorer, group files under projects, and delete projects
+- Explorer pane now shows projects as collapsible folders with nested files underneath
+- Drag-and-drop support: drag files into projects or out to the general Explorer area
+- Added "Open / Import" button in the toolbar (visible when signed in)
+- Built project API routes (list, create, update, delete) with full authentication
+- Created React Query hooks for project CRUD and file-to-project assignment
+- Wrote comprehensive unit tests (vitest) for all new hooks and components
+- Wrote end-to-end integration tests (Playwright) for explorer, dialogs, and project API routes
+
+---
+
 ## Version 2.0.1 — March 26, 2026
 
 ### Astro 6 & Vite 7 compatibility fixes
