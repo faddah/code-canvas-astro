@@ -1205,30 +1205,32 @@ class UpdateDeployer:
     # ────────────────────────────────────────────────────────────────────────
 
     def stage_11_health_check_lambda_url(self) -> bool:
-        """Smoke-test the Lambda function URL with retries to confirm it is reachable."""
+        """Smoke-test the Lambda function URL via /api/health with warm-up pings."""
+        health_url = LAMBDA_FUNCTION_URL.rstrip("/") + "/api/health"
         self.reporter.start(
-            f"Health check — Lambda Function URL: {LAMBDA_FUNCTION_URL}"
+            f"Health check + warm-up — Lambda Function URL: {health_url}"
         )
         max_retries = 5
         delay_secs  = 15
 
+        # Phase 1: wait for the first successful response (cold-start)
         for attempt in range(1, max_retries + 1):
             self.reporter.progress(
-                f"Attempt {attempt}/{max_retries}: GET {LAMBDA_FUNCTION_URL}"
+                f"Attempt {attempt}/{max_retries}: GET {health_url}"
             )
             try:
                 req = urllib.request.Request(
-                    LAMBDA_FUNCTION_URL,
+                    health_url,
                     headers={"User-Agent": "update-aws-deployment/1.0"},
                 )
-                with urllib.request.urlopen(req, timeout=20) as resp:
+                with urllib.request.urlopen(req, timeout=30) as resp:
                     status = resp.getcode()
-                    if status in (200, 301, 302):
-                        self.reporter.success(
-                            f"Lambda URL is reachable (HTTP {status}) — "
-                            f"{LAMBDA_FUNCTION_URL}"
+                    if status == 200:
+                        self.reporter.info(
+                            f"Lambda /api/health responded HTTP {status} — "
+                            "server is fully initialized."
                         )
-                        return True
+                        break
                     else:
                         self.reporter.info(f"HTTP {status} — will retry…")
 
@@ -1239,11 +1241,7 @@ class UpdateDeployer:
                         f"HTTP {exc.code} received — Lambda is running "
                         "(application-level response, not an infrastructure error)."
                     )
-                    self.reporter.success(
-                        f"Lambda URL is reachable (HTTP {exc.code}) — "
-                        f"{LAMBDA_FUNCTION_URL}"
-                    )
-                    return True
+                    break
                 self.reporter.info(f"HTTP error {exc.code}: {exc.reason} — will retry…")
 
             except urllib.error.URLError as exc:
@@ -1256,32 +1254,54 @@ class UpdateDeployer:
                     f"Waiting {delay_secs}s before next attempt…"
                 )
                 time.sleep(delay_secs)
+        else:
+            self.reporter.fail(
+                f"Lambda Function URL did not respond after {max_retries} attempts.",
+                fix_hint=(
+                    f"1. Check Lambda logs: aws logs tail /aws/lambda/{LAMBDA_FUNCTION_NAME} "
+                    f"--follow --region {AWS_REGION}\n"
+                    f"   2. Verify Function URL in AWS Console → Lambda → {LAMBDA_FUNCTION_NAME} "
+                    "→ Configuration → Function URL.\n"
+                    f"   3. Test manually: curl -I {health_url}"
+                ),
+            )
+            return False
 
-        self.reporter.fail(
-            f"Lambda Function URL did not respond after {max_retries} attempts.",
-            fix_hint=(
-                f"1. Check Lambda logs: aws logs tail /aws/lambda/{LAMBDA_FUNCTION_NAME} "
-                f"--follow --region {AWS_REGION}\n"
-                f"   2. Verify Function URL in AWS Console → Lambda → {LAMBDA_FUNCTION_NAME} "
-                "→ Configuration → Function URL.\n"
-                f"   3. Test manually: curl -I {LAMBDA_FUNCTION_URL}"
-            ),
+        # Phase 2: send 2 additional warm-up pings to ensure the container
+        # is fully warm (Turso connection pool, Clerk SDK, etc.)
+        for ping in range(1, 3):
+            self.reporter.progress(f"Warm-up ping {ping}/2 → {health_url}")
+            try:
+                req = urllib.request.Request(
+                    health_url,
+                    headers={"User-Agent": "update-aws-deployment/1.0"},
+                )
+                with urllib.request.urlopen(req, timeout=20) as resp:
+                    self.reporter.info(f"Warm-up ping {ping}/2 → HTTP {resp.getcode()}")
+            except Exception:                                                  # noqa: BLE001
+                self.reporter.info(f"Warm-up ping {ping}/2 — no response (non-fatal)")
+            time.sleep(1)
+
+        self.reporter.success(
+            f"Lambda URL is reachable and warm — {health_url}"
         )
-        return False
+        return True
 
     # ────────────────────────────────────────────────────────────────────────
     # STAGE 12 — Final health check of public domain https://pyrepl.dev
     # ────────────────────────────────────────────────────────────────────────
 
     def stage_12_health_check_public_domain(self) -> bool:
-        """Final smoke-test of the public domain (https://pyrepl.dev) with retries."""
+        """Final smoke-test of the public domain (https://pyrepl.dev) with warm-up."""
         self.reporter.start(
-            f"Final health check — public domain: https://{ROUTE53_DOMAIN}"
+            f"Final health check + warm-up — public domain: https://{ROUTE53_DOMAIN}"
         )
         target_url  = f"https://{ROUTE53_DOMAIN}/"
+        health_url  = f"https://{ROUTE53_DOMAIN}/api/health"
         max_retries = 5
         delay_secs  = 20
 
+        # Phase 1: confirm the public domain is reachable (root page)
         for attempt in range(1, max_retries + 1):
             self.reporter.progress(
                 f"Attempt {attempt}/{max_retries}: GET {target_url}"
@@ -1294,11 +1314,10 @@ class UpdateDeployer:
                 with urllib.request.urlopen(req, timeout=20) as resp:
                     status = resp.getcode()
                     if status in (200, 301, 302):
-                        self.reporter.success(
-                            f"https://{ROUTE53_DOMAIN} is live and reachable "
-                            f"(HTTP {status})"
+                        self.reporter.info(
+                            f"https://{ROUTE53_DOMAIN} is live (HTTP {status})"
                         )
-                        return True
+                        break
                     self.reporter.info(f"HTTP {status} — will retry…")
 
             except urllib.error.HTTPError as exc:
@@ -1307,10 +1326,7 @@ class UpdateDeployer:
                         f"HTTP {exc.code} — CloudFront/Lambda is responding "
                         "(application-level, not infrastructure failure)."
                     )
-                    self.reporter.success(
-                        f"https://{ROUTE53_DOMAIN} is reachable (HTTP {exc.code})"
-                    )
-                    return True
+                    break
                 self.reporter.info(f"HTTP error {exc.code}: {exc.reason} — will retry…")
 
             except urllib.error.URLError as exc:
@@ -1326,20 +1342,44 @@ class UpdateDeployer:
                     f"Waiting {delay_secs}s before next attempt…"
                 )
                 time.sleep(delay_secs)
+        else:
+            self.reporter.fail(
+                f"https://{ROUTE53_DOMAIN} did not respond after {max_retries} attempts.",
+                fix_hint=(
+                    f"1. DNS/CloudFront propagation can take 5–30 minutes after a fresh "
+                    "invalidation.\n"
+                    f"   2. Verify CloudFront distribution status: "
+                    "AWS Console → CloudFront → Distributions → "
+                    f"{CLOUDFRONT_DISTRIBUTION_ID}.\n"
+                    f"   3. Verify Route 53 records point to {CLOUDFRONT_DOMAIN}.\n"
+                    f"   4. Test manually: curl -I https://{ROUTE53_DOMAIN}"
+                ),
+            )
+            return False
 
-        self.reporter.fail(
-            f"https://{ROUTE53_DOMAIN} did not respond after {max_retries} attempts.",
-            fix_hint=(
-                f"1. DNS/CloudFront propagation can take 5–30 minutes after a fresh "
-                "invalidation.\n"
-                f"   2. Verify CloudFront distribution status: "
-                "AWS Console → CloudFront → Distributions → "
-                f"{CLOUDFRONT_DISTRIBUTION_ID}.\n"
-                f"   3. Verify Route 53 records point to {CLOUDFRONT_DOMAIN}.\n"
-                f"   4. Test manually: curl -I https://{ROUTE53_DOMAIN}"
-            ),
+        # Phase 2: warm up the CloudFront → API Gateway → Lambda path
+        # by hitting /api/health through the public domain 3 times
+        for ping in range(1, 4):
+            self.reporter.progress(
+                f"Warm-up ping {ping}/3 → {health_url}"
+            )
+            try:
+                req = urllib.request.Request(
+                    health_url,
+                    headers={"User-Agent": "update-aws-deployment/1.0"},
+                )
+                with urllib.request.urlopen(req, timeout=20) as resp:
+                    self.reporter.info(
+                        f"Warm-up ping {ping}/3 → HTTP {resp.getcode()}"
+                    )
+            except Exception:                                                  # noqa: BLE001
+                self.reporter.info(f"Warm-up ping {ping}/3 — no response (non-fatal)")
+            time.sleep(1)
+
+        self.reporter.success(
+            f"https://{ROUTE53_DOMAIN} is live, reachable, and warmed up"
         )
-        return False
+        return True
 
     # ────────────────────────────────────────────────────────────────────────
     # MAIN PIPELINE
