@@ -62,6 +62,7 @@ pnpm-debug.log*
 # playwright / test artifacts
 playwright-report/
 test-results/
+coverage/
 
 # other
 distance.py
