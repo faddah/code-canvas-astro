@@ -64,28 +64,51 @@ async function startAstroServer() {
 
 
 /**
- * Wait for server to be ready by polling
+ * Wait for server to be ready by polling the /api/health endpoint.
+ * This ensures the full Astro middleware stack (Clerk, routing) is
+ * initialized before we proxy real traffic — not just that the HTTP
+ * server is listening.
  */
 function waitForServer(port, timeout) {
   return new Promise((resolve, reject) => {
     const startTime = Date.now();
+    const FALLBACK_MS = 25000; // after 25s, accept any non-503 response
+    let fallbackWarned = false;
+
+    console.log('Waiting for Astro server readiness (deep check: /api/health)...');
 
     const checkServer = () => {
-      if (Date.now() - startTime > timeout) {
+      const elapsed = Date.now() - startTime;
+
+      if (elapsed > timeout) {
         reject(new Error('Server startup timeout'));
         return;
       }
 
-      const req = http.get(`http://localhost:${port}`, (res) => {
-        if (res.statusCode === 200 || res.statusCode === 404) {
+      const req = http.get(`http://localhost:${port}/api/health`, (res) => {
+        // Consume the response body to prevent socket hang-up
+        res.resume();
+
+        if (res.statusCode === 200) {
+          resolve();
+        } else if (elapsed > FALLBACK_MS && res.statusCode !== 503) {
+          // After 25s, accept any non-503 response so we don't block
+          // forever if the DB is unreachable but routes are loaded
+          if (!fallbackWarned) {
+            console.warn(
+              `[waitForServer] /api/health returned ${res.statusCode} after ${elapsed}ms — ` +
+              'accepting as ready (fallback mode)'
+            );
+            fallbackWarned = true;
+          }
           resolve();
         } else {
-          setTimeout(checkServer, 100);
+          setTimeout(checkServer, 200);
         }
       });
 
       req.on('error', () => {
-        setTimeout(checkServer, 100);
+        setTimeout(checkServer, 200);
       });
 
       req.end();
