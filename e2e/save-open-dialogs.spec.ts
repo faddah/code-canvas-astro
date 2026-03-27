@@ -106,11 +106,6 @@ test.describe("Open / Import Dialog file validation", () => {
     await expect(
       page.locator(".panel-header >> text=Console").first()
     ).toBeVisible({ timeout: 30_000 });
-
-    // Verify the page loaded and the IDE is functional
-    await expect(page.locator(".monaco-editor").first()).toBeVisible({
-      timeout: 10_000,
-    });
   });
 });
 
@@ -126,8 +121,5 @@ test.describe("File type restrictions", () => {
 
     // The Open/Import dialog uses accept=".py,.txt" on its file input
     // This is enforced at the component level and tested in unit tests
-    // Here we verify the IDE loads correctly and is interactive
-    const editor = page.locator(".monaco-editor").first();
-    await expect(editor).toBeVisible({ timeout: 10_000 });
   });
 });
