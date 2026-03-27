@@ -29,6 +29,119 @@ afterEach(async () => {
   await teardownTestTables(testClient);
 });
 
+// ─── Legacy File CRUD (backward compat — operates on starter_files) ───
+
+describe("Legacy File CRUD", () => {
+  it("createFile — persists name and content", async () => {
+    const file = await storage.createFile({
+      name: "main.py",
+      content: 'print("hello")',
+    });
+
+    expect(file.name).toBe("main.py");
+    expect(file.content).toBe('print("hello")');
+    expect(file.id).toBeDefined();
+    expect(file.createdAt).toBeDefined();
+  });
+
+  it("getFile — reads back created file by id", async () => {
+    const created = await storage.createFile({
+      name: "utils.py",
+      content: "# utilities",
+    });
+
+    const file = await storage.getFile(created.id);
+    expect(file).toBeDefined();
+    expect(file!.name).toBe("utils.py");
+    expect(file!.content).toBe("# utilities");
+  });
+
+  it("getFile — returns undefined for non-existent id", async () => {
+    const file = await storage.getFile(9999);
+    expect(file).toBeUndefined();
+  });
+
+  it("getFiles — returns all files ordered by id", async () => {
+    await storage.createFile({ name: "a.py", content: "# a" });
+    await storage.createFile({ name: "b.py", content: "# b" });
+    await storage.createFile({ name: "c.py", content: "# c" });
+
+    const files = await storage.getFiles();
+    expect(files).toHaveLength(3);
+    expect(files[0].name).toBe("a.py");
+    expect(files[1].name).toBe("b.py");
+    expect(files[2].name).toBe("c.py");
+  });
+
+  it("updateFile — modifies content, preserves unchanged fields", async () => {
+    const created = await storage.createFile({
+      name: "script.py",
+      content: "# original",
+    });
+
+    const updated = await storage.updateFile(created.id, {
+      content: "# updated",
+    });
+
+    expect(updated.content).toBe("# updated");
+    expect(updated.name).toBe("script.py");
+  });
+
+  it("deleteFile — removes the file", async () => {
+    const created = await storage.createFile({
+      name: "to_delete.py",
+      content: "# delete me",
+    });
+
+    await storage.deleteFile(created.id);
+
+    const file = await storage.getFile(created.id);
+    expect(file).toBeUndefined();
+  });
+
+  it("deleteFile selective — only targeted file is removed", async () => {
+    const f1 = await storage.createFile({ name: "keep.py", content: "# keep" });
+    const f2 = await storage.createFile({ name: "remove.py", content: "# remove" });
+
+    await storage.deleteFile(f2.id);
+
+    const files = await storage.getFiles();
+    expect(files).toHaveLength(1);
+    expect(files[0].name).toBe("keep.py");
+  });
+});
+
+// ─── Starter Files (read-only accessors) ───
+
+describe("Starter Files", () => {
+  it("getStarterFiles — returns all starter files ordered by id", async () => {
+    // Starter files and legacy files share the same table
+    await storage.createFile({ name: "main.py", content: "# main" });
+    await storage.createFile({ name: "utils.py", content: "# utils" });
+
+    const starters = await storage.getStarterFiles();
+    expect(starters).toHaveLength(2);
+    expect(starters[0].name).toBe("main.py");
+    expect(starters[1].name).toBe("utils.py");
+  });
+
+  it("getStarterFile — reads back a single starter file by id", async () => {
+    const created = await storage.createFile({
+      name: "demo.py",
+      content: "# demo",
+    });
+
+    const starter = await storage.getStarterFile(created.id);
+    expect(starter).toBeDefined();
+    expect(starter!.name).toBe("demo.py");
+  });
+
+  it("getStarterFile — returns undefined for non-existent id", async () => {
+    const starter = await storage.getStarterFile(9999);
+    expect(starter).toBeUndefined();
+  });
+});
+
 // ─── User Profile CRUD ───
 
 describe("User Profile CRUD", () => {
