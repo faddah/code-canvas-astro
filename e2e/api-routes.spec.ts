@@ -1,6 +1,23 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("API Routes", () => {
+  // ─── Health Endpoint (public, no auth, no DB) ───
+
+  test("GET /api/health returns 200 with status ok", async ({ request }) => {
+    const res = await request.get("/api/health");
+    expect(res.ok()).toBe(true);
+    expect(res.status()).toBe(200);
+    const data = await res.json();
+    expect(data.status).toBe("ok");
+    expect(typeof data.timestamp).toBe("number");
+  });
+
+  test("GET /api/health includes no-store cache header", async ({ request }) => {
+    const res = await request.get("/api/health");
+    const cacheControl = res.headers()["cache-control"];
+    expect(cacheControl).toBe("no-store");
+  });
+
   // ─── Starter Files (public, no auth) ───
 
   test("GET /api/starter-files returns array", async ({ request }) => {
