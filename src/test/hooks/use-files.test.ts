@@ -8,6 +8,11 @@ import {
   useUpdateUserFile,
   useDeleteUserFile,
   useStarterFiles,
+  useFiles,
+  useFile,
+  useCreateFile,
+  useUpdateFile,
+  useDeleteFile,
 } from "@/hooks/use-files";
 
 // Mock use-toast
@@ -185,6 +190,70 @@ describe("useDeleteUserFile", () => {
   });
 });
 
+// ─── useUserFiles (error path — hook has retry:5 with exponential backoff,
+//     so we skip testing the final isError state to avoid slow tests.
+//     The queryFn throw path is identical to useStarterFiles which IS tested.) ───
+
+// ─── useUpdateUserFile (error path) ───
+
+describe("useUpdateUserFile error handling", () => {
+  it("handles server error on update", async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
+
+    const { result } = renderHook(() => useUpdateUserFile(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      result.current.mutate({ id: 1, content: "# fail" });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+// ─── useDeleteUserFile (non-JSON error body) ───
+
+describe("useDeleteUserFile edge cases", () => {
+  it("falls back to HTTP status when error body is not JSON", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: () => Promise.reject(new Error("not JSON")),
+    });
+
+    const { result } = renderHook(() => useDeleteUserFile(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      result.current.mutate(42);
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("HTTP 503");
+  });
+
+  it("uses message field when error field is absent", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: () => Promise.resolve({ message: "File not found" }),
+    });
+
+    const { result } = renderHook(() => useDeleteUserFile(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      result.current.mutate(42);
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("File not found");
+  });
+});
+
 // ─── useStarterFiles ───
 
 describe("useStarterFiles", () => {
@@ -201,5 +270,269 @@ describe("useStarterFiles", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(starters);
+  });
+
+  it("throws on fetch failure", async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
+
+    const { result } = renderHook(() => useStarterFiles(), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Legacy hooks (backward compat — delegate to starter files)
+// ═══════════════════════════════════════════════════════════════
+
+// ─── useFiles ───
+
+describe("useFiles", () => {
+  it("fetches files from legacy endpoint", async () => {
+    const mockFiles = [
+      { id: 1, name: "main.py", content: "print('hello')" },
+      { id: 2, name: "utils.py", content: "# utils" },
+    ];
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockFiles),
+    });
+
+    const { result } = renderHook(() => useFiles(), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual(mockFiles);
+    expect(global.fetch).toHaveBeenCalledWith("/api/files");
+  });
+
+  it("throws on fetch failure", async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
+
+    const { result } = renderHook(() => useFiles(), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+// ─── useFile ───
+
+describe("useFile", () => {
+  it("fetches a single file by id", async () => {
+    const mockFile = { id: 5, name: "script.py", content: "# script" };
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockFile),
+    });
+
+    const { result } = renderHook(() => useFile(5), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual(mockFile);
+    expect(global.fetch).toHaveBeenCalledWith("/api/files/5");
+  });
+
+  it("does not fetch when id is null", () => {
+    const { result } = renderHook(() => useFile(null), {
+      wrapper: createWrapper(),
+    });
+
+    expect(result.current.fetchStatus).toBe("idle");
+  });
+
+  it("returns null on 404 response", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+    });
+
+    const { result } = renderHook(() => useFile(999), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toBeNull();
+  });
+
+  it("throws on non-404 error", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+    });
+
+    const { result } = renderHook(() => useFile(1), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+// ─── useCreateFile ───
+
+describe("useCreateFile", () => {
+  it("sends POST request to legacy create endpoint", async () => {
+    const newFile = { id: 3, name: "new.py", content: "# new file" };
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(newFile),
+    });
+
+    const { result } = renderHook(() => useCreateFile(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      result.current.mutate({ name: "new.py", content: "# new file" });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(global.fetch).toHaveBeenCalledWith(
+      "/api/files/create",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ name: "new.py", content: "# new file" }),
+      })
+    );
+  });
+
+  it("handles server error on create", async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
+
+    const { result } = renderHook(() => useCreateFile(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      result.current.mutate({ name: "fail.py", content: "# fail" });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+// ─── useUpdateFile ───
+
+describe("useUpdateFile", () => {
+  it("sends PUT request to legacy update endpoint", async () => {
+    const updated = { id: 1, name: "main.py", content: "# updated" };
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(updated),
+    });
+
+    const { result } = renderHook(() => useUpdateFile(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      result.current.mutate({ id: 1, content: "# updated" });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(global.fetch).toHaveBeenCalledWith(
+      "/api/files/1",
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({ content: "# updated" }),
+      })
+    );
+  });
+
+  it("handles server error on update", async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
+
+    const { result } = renderHook(() => useUpdateFile(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      result.current.mutate({ id: 1, content: "# fail" });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+// ─── useDeleteFile ───
+
+describe("useDeleteFile", () => {
+  it("sends DELETE request to legacy delete endpoint", async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 204 });
+
+    const { result } = renderHook(() => useDeleteFile(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      result.current.mutate(10);
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(global.fetch).toHaveBeenCalledWith("/api/files/10", { method: "DELETE" });
+  });
+
+  it("handles delete failure with JSON error body", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: () => Promise.resolve({ error: "Server error" }),
+    });
+
+    const { result } = renderHook(() => useDeleteFile(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      result.current.mutate(10);
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("Server error");
+  });
+
+  it("handles delete failure with message field in error body", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: () => Promise.resolve({ message: "File not found" }),
+    });
+
+    const { result } = renderHook(() => useDeleteFile(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      result.current.mutate(999);
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("File not found");
+  });
+
+  it("falls back to HTTP status when error body is not JSON", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: () => Promise.reject(new Error("not JSON")),
+    });
+
+    const { result } = renderHook(() => useDeleteFile(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      result.current.mutate(10);
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("HTTP 503");
   });
 });
