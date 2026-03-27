@@ -1,0 +1,131 @@
+import { test, expect } from "@playwright/test";
+
+test.describe("Explorer Pane Structure", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+    await expect(
+      page.locator(".panel-header >> text=Console").first()
+    ).toBeVisible({ timeout: 30_000 });
+  });
+
+  test("Explorer pane is visible on desktop viewports", async ({ page }) => {
+    await expect(page.locator("text=Explorer").first()).toBeVisible();
+  });
+
+  test("Explorer shows starter files for anonymous users", async ({ page }) => {
+    // Wait for starter files to load
+    await expect(
+      page.locator(".truncate.flex-1").first()
+    ).toBeVisible({ timeout: 10_000 });
+
+    // At least one file should be listed
+    const fileEntries = page.locator(".truncate.flex-1");
+    const count = await fileEntries.count();
+    expect(count).toBeGreaterThan(0);
+  });
+
+  test("clicking a file shows it in the editor", async ({ page }) => {
+    // Wait for files
+    const firstFile = page.locator(".truncate.flex-1").first();
+    await expect(firstFile).toBeVisible({ timeout: 10_000 });
+
+    // Click the file
+    await firstFile.click();
+
+    // Monaco editor should become visible with content
+    const editor = page.locator(".monaco-editor").first();
+    await expect(editor).toBeVisible({ timeout: 5_000 });
+  });
+
+  test("active file has highlighted styling", async ({ page }) => {
+    const firstFile = page.locator(".truncate.flex-1").first();
+    await expect(firstFile).toBeVisible({ timeout: 10_000 });
+    await firstFile.click();
+
+    // The parent div of the active file should have the primary color styling
+    const activeFileParent = firstFile.locator("..");
+    await expect(activeFileParent).toHaveClass(/bg-primary/, { timeout: 5_000 });
+  });
+
+  test("version number is displayed in the header", async ({ page }) => {
+    await expect(
+      page.locator("text=Version").first()
+    ).toBeVisible({ timeout: 10_000 });
+  });
+
+  test("Run button is present and clickable", async ({ page }) => {
+    const runButton = page.locator('button:has-text("Run")').first();
+    await expect(runButton).toBeVisible();
+  });
+
+  test("Environment status indicator is shown", async ({ page }) => {
+    // Should show either "Loading Python..." or "Environment Ready"
+    const statusBadge = page.locator("text=Loading Python").or(
+      page.locator("text=Environment Ready")
+    );
+    await expect(statusBadge.first()).toBeVisible({ timeout: 10_000 });
+  });
+});
+
+test.describe("Explorer file interactions (anonymous)", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+    await expect(
+      page.locator(".panel-header >> text=Console").first()
+    ).toBeVisible({ timeout: 30_000 });
+  });
+
+  test("files are NOT draggable for anonymous users", async ({ page }) => {
+    const firstFile = page.locator(".truncate.flex-1").first();
+    await expect(firstFile).toBeVisible({ timeout: 10_000 });
+
+    // The file container should not have draggable="true" for anonymous users
+    const fileContainer = firstFile.locator("..");
+    const draggable = await fileContainer.getAttribute("draggable");
+    // Anonymous users should not have draggable files
+    expect(draggable).not.toBe("true");
+  });
+});
+
+test.describe("API Routes - Projects", () => {
+  test("GET /api/projects returns 401 for unauthenticated request", async ({
+    request,
+  }) => {
+    const response = await request.get("/api/projects");
+    expect(response.status()).toBe(401);
+    const body = await response.json();
+    expect(body.error).toBe("Unauthorized");
+  });
+
+  test("POST /api/projects/create returns 401 for unauthenticated request", async ({
+    request,
+  }) => {
+    const response = await request.post("/api/projects/create", {
+      data: { name: "Test Project" },
+    });
+    expect(response.status()).toBe(401);
+  });
+
+  test("DELETE /api/projects/1 returns 401 for unauthenticated request", async ({
+    request,
+  }) => {
+    const response = await request.delete("/api/projects/1");
+    expect(response.status()).toBe(401);
+  });
+
+  test("PUT /api/projects/1 returns 401 for unauthenticated request", async ({
+    request,
+  }) => {
+    const response = await request.put("/api/projects/1", {
+      data: { name: "Updated" },
+    });
+    expect(response.status()).toBe(401);
+  });
+
+  test("GET /api/projects/1 returns 401 for unauthenticated request", async ({
+    request,
+  }) => {
+    const response = await request.get("/api/projects/1");
+    expect(response.status()).toBe(401);
+  });
+});
