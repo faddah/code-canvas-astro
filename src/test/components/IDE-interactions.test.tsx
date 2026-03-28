@@ -46,6 +46,11 @@ vi.mock("@/hooks/use-pyodide", () => ({
   }),
 }));
 
+const defaultUserFiles = [
+  { id: 10, name: "app.py", content: "print('app')", projectId: null },
+  { id: 11, name: "lib.py", content: "# lib", projectId: null },
+];
+let mockUserFilesData: typeof defaultUserFiles | [] = defaultUserFiles;
 vi.mock("@/hooks/use-files", () => ({
   useStarterFiles: () => ({ data: [], isLoading: false }),
   useUserFiles: () => ({
