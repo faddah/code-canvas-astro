@@ -67,3 +67,4 @@ coverage/
 # other
 distance.py
 .gstack/
+cpu_ram_monitor.py
