@@ -99,6 +99,44 @@ describe("Legacy File CRUD", () => {
     expect(file).toBeUndefined();
   });
 
+  it("updateFile — can set projectId on a starter file", async () => {
+    const project = await storage.createProject({
+      clerkUserId: "user_abc",
+      name: "Test Project",
+    });
+
+    const created = await storage.createFile({
+      name: "script.py",
+      content: "# code",
+    });
+
+    const updated = await storage.updateFile(created.id, {
+      projectId: project.id,
+    });
+
+    expect(updated.projectId).toBe(project.id);
+    expect(updated.name).toBe("script.py");
+  });
+
+  it("updateFile — can clear projectId back to null", async () => {
+    const project = await storage.createProject({
+      clerkUserId: "user_abc",
+      name: "Test Project",
+    });
+
+    const created = await storage.createFile({
+      name: "script.py",
+      content: "# code",
+      projectId: project.id,
+    });
+
+    const updated = await storage.updateFile(created.id, {
+      projectId: null,
+    });
+
+    expect(updated.projectId).toBeNull();
+  });
+
   it("deleteFile selective — only targeted file is removed", async () => {
     const f1 = await storage.createFile({ name: "keep.py", content: "# keep" });
     const f2 = await storage.createFile({ name: "remove.py", content: "# remove" });
