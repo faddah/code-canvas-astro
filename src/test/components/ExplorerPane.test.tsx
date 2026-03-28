@@ -125,6 +125,14 @@ describe("ExplorerPane", () => {
     expect(yellowDots.length).toBeGreaterThan(0);
   });
 
+  it("highlights the active file", () => {
+    renderExplorer({ activeFileId: 1 });
+    const fileRow = screen.getByText("main.py").closest("div[class*='cursor-pointer']");
+    expect(fileRow?.className).toContain("bg-primary/10");
+  });
+
+  // ── Loading / Error / Empty states ──
+
   it("shows loading state", () => {
     render(
       <ExplorerPane
