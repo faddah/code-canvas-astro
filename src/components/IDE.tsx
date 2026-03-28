@@ -16,7 +16,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { usePyodide } from "@/hooks/use-pyodide";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { Loader2, Play, Save, FolderOpen, Code2, LogOut, LogIn, UserPlus, User } from "lucide-react";
+import { Loader2, Play, Save, SaveAll, FolderOpen, Code2, LogOut, LogIn, UserPlus, User } from "lucide-react";
 import Editor from "@monaco-editor/react";
 import { FileTab } from "@/components/FileTab";
 import { ConsolePanel } from "@/components/ConsolePanel";
