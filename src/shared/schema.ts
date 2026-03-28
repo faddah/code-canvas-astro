@@ -9,6 +9,7 @@ export const starterFiles = sqliteTable("starter_files", {
   name: text("name").notNull(),
   content: text("content").notNull(),
   createdAt: integer("created_at", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+  projectId: integer("project_id").references(() => projects.id),
 });
 
 // Backward-compatible alias (used by old /api/files/ routes during transition)
