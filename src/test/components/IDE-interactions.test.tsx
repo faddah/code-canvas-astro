@@ -239,8 +239,14 @@ describe("IDE interactions (signed-in)", () => {
     fireEvent.keyDown(window, { key: "s", metaKey: true });
 
     await waitFor(() => {
-      expect(screen.getByTestId("save-dialog")).toBeInTheDocument();
+      expect(mockUpdateMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 10, content: "modified" })
+      );
     });
+
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: "Saved" })
+    );
   });
 
   it("Cmd+S with no unsaved changes toasts 'No changes'", async () => {
