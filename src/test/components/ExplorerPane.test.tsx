@@ -197,4 +197,353 @@ describe("ExplorerPane", () => {
     const fileEl = screen.getByText("main.py").closest("div[class*='cursor-pointer']");
     expect(fileEl?.getAttribute("draggable")).not.toBe("true");
   });
+
+  // ── Trash2Btn: delete confirmation ──
+
+  it("calls onDeleteFile after trash click + Confirm", () => {
+    const { handlers } = renderExplorer({
+      files: [
+        { id: 1, name: "main.py", projectId: null, content: "# main" },
+        { id: 2, name: "other.py", projectId: null, content: "# other" },
+      ],
+      projects: [],
+    });
+
+    // Each file row renders a Trash2Btn. Find the trash button in the first file row.
+    const mainRow = screen.getByText("main.py").closest("div[class*='cursor-pointer']") as HTMLElement;
+    const trashBtn = within(mainRow).getAllByRole("button").pop()!;
+    fireEvent.click(trashBtn);
+
+    // Confirm button should appear
+    expect(screen.getByText("Confirm")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Confirm"));
+    expect(handlers.onDeleteFile).toHaveBeenCalledWith(1);
+  });
+
+  it("dismisses delete confirmation when X cancel is clicked", () => {
+    const { handlers } = renderExplorer({
+      files: [
+        { id: 1, name: "main.py", projectId: null, content: "# main" },
+        { id: 2, name: "other.py", projectId: null, content: "# other" },
+      ],
+      projects: [],
+    });
+
+    const mainRow = screen.getByText("main.py").closest("div[class*='cursor-pointer']") as HTMLElement;
+    const trashBtn = within(mainRow).getAllByRole("button").pop()!;
+    fireEvent.click(trashBtn);
+
+    // Confirm row appears — find the X/cancel button (sibling of Confirm)
+    const confirmContainer = screen.getByText("Confirm").parentElement!;
+    const cancelBtn = within(confirmContainer).getAllByRole("button")[1]; // Second button is X
+    fireEvent.click(cancelBtn);
+
+    // Confirm should disappear and onDeleteFile should NOT be called
+    expect(screen.queryByText("Confirm")).not.toBeInTheDocument();
+    expect(handlers.onDeleteFile).not.toHaveBeenCalled();
+  });
+
+  it("does not show trash button when only one file exists", () => {
+    renderExplorer({
+      files: [{ id: 1, name: "main.py", projectId: null, content: "# main" }],
+      projects: [],
+    });
+    // Trash2Btn returns null when disabled (files.length <= 1)
+    const mainRow = screen.getByText("main.py").closest("div[class*='cursor-pointer']") as HTMLElement;
+    // Only the grip icon button should not appear as a trash button
+    const buttons = within(mainRow).queryAllByRole("button");
+    // No trash buttons — Trash2Btn renders null
+    buttons.forEach((btn) => {
+      expect(btn.querySelector(".lucide-trash-2")).toBeNull();
+    });
+  });
+
+  // ── Trash2Btn on projects ──
+
+  it("calls onDeleteProject after project trash click + Confirm", () => {
+    const { handlers } = renderExplorer();
+    const projectRow = screen.getByText("My Project").closest("div[class*='cursor-pointer']") as HTMLElement;
+    const trashBtn = within(projectRow).getAllByRole("button").pop()!;
+    fireEvent.click(trashBtn);
+
+    expect(screen.getByText("Confirm")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Confirm"));
+    expect(handlers.onDeleteProject).toHaveBeenCalledWith(1);
+  });
+
+  // ── Drag and drop ──
+
+  it("handleDragStart sets effectAllowed and dataTransfer data", () => {
+    renderExplorer();
+    const fileEl = getDraggableFile("main.py");
+    const dataTransfer = { effectAllowed: "", setData: vi.fn(), dropEffect: "" };
+    fireEvent.dragStart(fileEl, { dataTransfer });
+    expect(dataTransfer.setData).toHaveBeenCalledWith("text/plain", "1");
+    expect(dataTransfer.effectAllowed).toBe("move");
+  });
+
+  it("dragged file gets opacity-40 class", () => {
+    renderExplorer();
+    const fileEl = getDraggableFile("main.py");
+    const dataTransfer = { effectAllowed: "", setData: vi.fn(), dropEffect: "" };
+    fireEvent.dragStart(fileEl, { dataTransfer });
+    // After dragStart, the component re-renders the file with opacity-40
+    expect(fileEl.className).toContain("opacity-40");
+  });
+
+  it("handleDragEnd resets opacity", () => {
+    renderExplorer();
+    const fileEl = getDraggableFile("main.py");
+    const dataTransfer = { effectAllowed: "", setData: vi.fn(), dropEffect: "" };
+    fireEvent.dragStart(fileEl, { dataTransfer });
+    expect(fileEl.className).toContain("opacity-40");
+    fireEvent.dragEnd(fileEl);
+    expect(fileEl.className).not.toContain("opacity-40");
+  });
+
+  it("handleDropOnProject calls onMoveFile and auto-expands", () => {
+    const { handlers } = renderExplorer();
+    const fileEl = getDraggableFile("main.py");
+    const dataTransfer = { effectAllowed: "", setData: vi.fn(), dropEffect: "" };
+    fireEvent.dragStart(fileEl, { dataTransfer });
+
+    const projectRow = screen.getByText("My Project").closest("div[class*='cursor-pointer']") as HTMLElement;
+    fireEvent.dragOver(projectRow, { dataTransfer: { ...dataTransfer, dropEffect: "" }, preventDefault: vi.fn() });
+    fireEvent.drop(projectRow, { dataTransfer, preventDefault: vi.fn() });
+
+    expect(handlers.onMoveFile).toHaveBeenCalledWith(1, 1);
+    // Project should auto-expand after drop
+    expect(screen.getByText("utils.py")).toBeInTheDocument();
+  });
+
+  it("handleDropOnRoot calls onMoveFile with null projectId", () => {
+    const { container, handlers } = renderExplorer();
+    // First expand the project to access a project file
+    fireEvent.click(screen.getByText("My Project"));
+    const fileEl = getDraggableFile("utils.py");
+    const dataTransfer = { effectAllowed: "", setData: vi.fn(), dropEffect: "" };
+    fireEvent.dragStart(fileEl, { dataTransfer });
+
+    // Drop on the root file list area
+    const rootArea = container.querySelector(".flex-1.overflow-y-auto")!;
+    fireEvent.drop(rootArea, { dataTransfer, preventDefault: vi.fn() });
+
+    expect(handlers.onMoveFile).toHaveBeenCalledWith(2, null);
+  });
+
+  it("dragOver on root area shows drop target highlight", () => {
+    const { container } = renderExplorer();
+    const rootArea = container.querySelector(".flex-1.overflow-y-auto")!;
+    const dataTransfer = { effectAllowed: "", dropEffect: "" };
+    fireEvent.dragOver(rootArea, { dataTransfer, preventDefault: vi.fn() });
+    expect(rootArea.className).toContain("bg-blue-500/10");
+  });
+
+  it("dragLeave on root area clears drop target highlight", () => {
+    const { container } = renderExplorer();
+    const rootArea = container.querySelector(".flex-1.overflow-y-auto")!;
+    const dataTransfer = { effectAllowed: "", dropEffect: "" };
+    fireEvent.dragOver(rootArea, { dataTransfer, preventDefault: vi.fn() });
+    expect(rootArea.className).toContain("bg-blue-500/10");
+    fireEvent.dragLeave(rootArea);
+    expect(rootArea.className).not.toContain("bg-blue-500/10");
+  });
+
+  // Note: dragOver/dragLeave highlight tests for project rows are skipped because
+  // jsdom does not properly construct DragEvent.dataTransfer, causing the handler
+  // to throw when setting dropEffect. The drop handler is tested above via
+  // "handleDropOnProject calls onMoveFile" which validates the core functionality.
+
+  it("drop on expanded project file area calls onMoveFile", () => {
+    const { handlers } = renderExplorer();
+    // Expand project
+    fireEvent.click(screen.getByText("My Project"));
+
+    // Start drag on a loose file
+    const fileEl = getDraggableFile("main.py");
+    const dataTransfer = { effectAllowed: "", setData: vi.fn(), dropEffect: "" };
+    fireEvent.dragStart(fileEl, { dataTransfer });
+
+    // The expanded project file area is the ml-2 border-l div
+    const expandedArea = screen.getByText("utils.py").closest("div[class*='border-l']") as HTMLElement;
+    fireEvent.dragOver(expandedArea, { dataTransfer: { effectAllowed: "", dropEffect: "" }, preventDefault: vi.fn() });
+    fireEvent.drop(expandedArea, { dataTransfer, preventDefault: vi.fn() });
+
+    expect(handlers.onMoveFile).toHaveBeenCalledWith(1, 1);
+  });
+
+  // ── New File Dialog (uses Radix Dialog) ──
+
+  it("opens New File dialog via dropdown menu and creates file", async () => {
+    const user = userEvent.setup();
+    const { handlers } = renderExplorer();
+
+    // The Plus (+) button opens a DropdownMenu
+    const plusButtons = screen.getAllByRole("button");
+    const plusBtn = plusButtons.find((btn) => btn.querySelector(".lucide-plus"));
+    expect(plusBtn).toBeTruthy();
+    await user.click(plusBtn!);
+
+    // Click "New File" in the dropdown
+    const newFileItem = await screen.findByText("New File");
+    await user.click(newFileItem);
+
+    // Dialog should open
+    expect(await screen.findByText("Create New File")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("script.py")).toBeInTheDocument();
+
+    // Type a file name and click Add
+    await user.type(screen.getByPlaceholderText("script.py"), "myfile");
+    await user.click(screen.getByText("Add"));
+
+    expect(handlers.onCreateFile).toHaveBeenCalledWith("myfile.py", null);
+  });
+
+  it("creates .txt file without auto-appending .py", async () => {
+    const user = userEvent.setup();
+    const { handlers } = renderExplorer();
+
+    const plusBtn = screen.getAllByRole("button").find((btn) => btn.querySelector(".lucide-plus"))!;
+    await user.click(plusBtn);
+    await user.click(await screen.findByText("New File"));
+    await user.type(screen.getByPlaceholderText("script.py"), "readme.txt");
+    await user.click(screen.getByText("Add"));
+
+    expect(handlers.onCreateFile).toHaveBeenCalledWith("readme.txt", null);
+  });
+
+  it("Add button is disabled when file name is empty", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const plusBtn = screen.getAllByRole("button").find((btn) => btn.querySelector(".lucide-plus"))!;
+    await user.click(plusBtn);
+    await user.click(await screen.findByText("New File"));
+
+    const addBtn = screen.getByText("Add");
+    expect(addBtn).toBeDisabled();
+  });
+
+  it("creates file in project via dropdown", async () => {
+    const user = userEvent.setup();
+    const { handlers } = renderExplorer();
+
+    const plusBtn = screen.getAllByRole("button").find((btn) => btn.querySelector(".lucide-plus"))!;
+    await user.click(plusBtn);
+
+    const inProjectItem = await screen.findByText(/New File in "My Project"/);
+    await user.click(inProjectItem);
+
+    expect(await screen.findByText(/Create New File in Project/)).toBeInTheDocument();
+    await user.type(screen.getByPlaceholderText("script.py"), "app");
+    await user.click(screen.getByText("Add"));
+
+    expect(handlers.onCreateFile).toHaveBeenCalledWith("app.py", 1);
+  });
+
+  it("submits new file via Enter key", async () => {
+    const user = userEvent.setup();
+    const { handlers } = renderExplorer();
+
+    const plusBtn = screen.getAllByRole("button").find((btn) => btn.querySelector(".lucide-plus"))!;
+    await user.click(plusBtn);
+    await user.click(await screen.findByText("New File"));
+    const input = screen.getByPlaceholderText("script.py");
+    await user.type(input, "quick{Enter}");
+
+    expect(handlers.onCreateFile).toHaveBeenCalledWith("quick.py", null);
+  });
+
+  it("Cancel button closes new file dialog without creating", async () => {
+    const user = userEvent.setup();
+    const { handlers } = renderExplorer();
+
+    const plusBtn = screen.getAllByRole("button").find((btn) => btn.querySelector(".lucide-plus"))!;
+    await user.click(plusBtn);
+    await user.click(await screen.findByText("New File"));
+    expect(screen.getByText("Create New File")).toBeInTheDocument();
+
+    await user.type(screen.getByPlaceholderText("script.py"), "temp");
+    // Click Cancel in the dialog
+    const cancelBtns = screen.getAllByText("Cancel");
+    const dialogCancel = cancelBtns.find((btn) => btn.closest("[role='dialog']"));
+    await user.click(dialogCancel || cancelBtns[0]);
+
+    expect(handlers.onCreateFile).not.toHaveBeenCalled();
+  });
+
+  // ── New Project Dialog ──
+
+  it("opens New Project dialog and creates project", async () => {
+    const user = userEvent.setup();
+    const { handlers } = renderExplorer();
+
+    // FolderOpen button with title "New Project"
+    const newProjectBtn = screen.getAllByRole("button").find(
+      (btn) => btn.getAttribute("title") === "New Project" || btn.querySelector(".lucide-folder-open")
+    );
+    expect(newProjectBtn).toBeTruthy();
+    await user.click(newProjectBtn!);
+
+    expect(await screen.findByText("Create New Project")).toBeInTheDocument();
+    await user.type(screen.getByPlaceholderText("My Project"), "Test Project");
+    await user.click(screen.getByText("Create"));
+
+    expect(handlers.onCreateProject).toHaveBeenCalledWith("Test Project");
+  });
+
+  it("Create button disabled when project name is empty", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    const newProjectBtn = screen.getAllByRole("button").find(
+      (btn) => btn.getAttribute("title") === "New Project" || btn.querySelector(".lucide-folder-open")
+    )!;
+    await user.click(newProjectBtn);
+
+    await screen.findByText("Create New Project");
+    const createBtn = screen.getByText("Create");
+    expect(createBtn).toBeDisabled();
+  });
+
+  it("submits project via Enter key", async () => {
+    const user = userEvent.setup();
+    const { handlers } = renderExplorer();
+
+    const newProjectBtn = screen.getAllByRole("button").find(
+      (btn) => btn.getAttribute("title") === "New Project" || btn.querySelector(".lucide-folder-open")
+    )!;
+    await user.click(newProjectBtn);
+    await screen.findByText("Create New Project");
+
+    await user.type(screen.getByPlaceholderText("My Project"), "Quick Project{Enter}");
+    expect(handlers.onCreateProject).toHaveBeenCalledWith("Quick Project");
+  });
+
+  it("Cancel button closes project dialog without creating", async () => {
+    const user = userEvent.setup();
+    const { handlers } = renderExplorer();
+
+    const newProjectBtn = screen.getAllByRole("button").find(
+      (btn) => btn.getAttribute("title") === "New Project" || btn.querySelector(".lucide-folder-open")
+    )!;
+    await user.click(newProjectBtn);
+    await screen.findByText("Create New Project");
+
+    await user.type(screen.getByPlaceholderText("My Project"), "temp");
+    const cancelBtns = screen.getAllByText("Cancel");
+    const dialogCancel = cancelBtns.find((btn) => btn.closest("[role='dialog']"));
+    await user.click(dialogCancel || cancelBtns[0]);
+
+    expect(handlers.onCreateProject).not.toHaveBeenCalled();
+  });
+
+  it("New Project button not shown when not signed in", () => {
+    renderExplorer({ isSignedIn: false });
+    const buttons = screen.getAllByRole("button");
+    const newProjectBtn = buttons.find(
+      (btn) => btn.getAttribute("title") === "New Project"
+    );
+    expect(newProjectBtn).toBeUndefined();
+  });
 });
