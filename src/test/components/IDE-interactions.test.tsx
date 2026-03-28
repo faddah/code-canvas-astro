@@ -351,6 +351,40 @@ describe("IDE interactions (signed-in)", () => {
     expect(mockUpdateMutateAsync).not.toHaveBeenCalled();
   });
 
+  it("handleQuickSave early-returns when user is not signed in", async () => {
+    // Render as signed-out user — Save button and editor are hidden
+    mockUserId = null;
+    render(<IDE />, { wrapper: Wrapper });
+
+    // Verify signed-out state: auth banner shows instead of Save button
+    expect(screen.queryByText("Save")).not.toBeInTheDocument();
+
+    // Simulate Cmd+S — the keyboard shortcut guards on isSignedIn
+    // and handleQuickSave also guards on isSignedIn (line 169)
+    fireEvent.keyDown(window, { key: "s", metaKey: true });
+
+    // Neither mutateAsync nor a "Saved" toast should fire
+    expect(mockUpdateMutateAsync).not.toHaveBeenCalled();
+    expect(mockToast).not.toHaveBeenCalled();
+  });
+
+  it("handleQuickSave early-returns when no activeFileId (no files)", async () => {
+    // Signed in but no user files → activeFileId stays null
+    mockUserFilesData = [];
+    render(<IDE />, { wrapper: Wrapper });
+
+    // Save button renders but is disabled when no activeFileId
+    const saveBtn = screen.getByText("Save").closest("button")!;
+    expect(saveBtn).toBeDisabled();
+
+    // Simulate Cmd+S — keyboard handler guards on activeFileId (line 240)
+    // and handleQuickSave also guards on !activeFileId (line 170)
+    fireEvent.keyDown(window, { key: "s", metaKey: true });
+
+    expect(mockUpdateMutateAsync).not.toHaveBeenCalled();
+    expect(mockToast).not.toHaveBeenCalled();
+  });
+
   // ── handleSaveDialog (via SaveDialog mock) ──
 
   it("SaveDialog onSave calls updateFile and shows toast", async () => {
