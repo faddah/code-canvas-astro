@@ -401,18 +401,21 @@ export default function IDE() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    if (activeFileId && unsavedChanges[activeFileId] !== undefined) {
-                      setIsSaveDialogOpen(true);
-                    } else {
-                      handleQuickSave();
-                    }
-                  }}
+                  onClick={() => handleQuickSave()}
                   disabled={!activeFileId}
                   className={unsavedChanges[activeFileId || 0] ? "border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10" : ""}
                 >
                   <Save className="w-4 h-4 mr-2" />
                   Save
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsSaveDialogOpen(true)}
+                  disabled={!activeFileId}
+                >
+                  <SaveAll className="w-4 h-4 mr-2" />
+                  Save As
                 </Button>
                 <Button
                   variant="outline"
