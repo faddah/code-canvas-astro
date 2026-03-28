@@ -38,6 +38,14 @@ export async function setupTestTables(client: ReturnType<typeof createClient>) {
       updated_at INTEGER NOT NULL DEFAULT (unixepoch())
     );
 
+    CREATE TABLE IF NOT EXISTS starter_files (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+      project_id INTEGER REFERENCES projects(id)
+    );
+
     CREATE TABLE IF NOT EXISTS user_files (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       clerk_user_id TEXT NOT NULL,
