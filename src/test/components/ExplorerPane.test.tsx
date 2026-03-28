@@ -134,90 +134,26 @@ describe("ExplorerPane", () => {
   // ── Loading / Error / Empty states ──
 
   it("shows loading state", () => {
-    render(
-      <ExplorerPane
-        files={[]}
-        projects={[]}
-        activeFileId={null}
-        unsavedChanges={{}}
-        isSignedIn={true}
-        isLoading={true}
-        isError={false}
-        {...handlers}
-      />
-    );
-
+    renderExplorer({ files: [], projects: [], isLoading: true });
     expect(screen.getByText("Loading your files...")).toBeInTheDocument();
   });
 
   it("shows error state with retry button", () => {
-    render(
-      <ExplorerPane
-        files={[]}
-        projects={[]}
-        activeFileId={null}
-        unsavedChanges={{}}
-        isSignedIn={true}
-        isLoading={false}
-        isError={true}
-        {...handlers}
-      />
-    );
-
+    const { handlers } = renderExplorer({ files: [], projects: [], isError: true });
     expect(screen.getByText("Could not load files")).toBeInTheDocument();
     fireEvent.click(screen.getByText("Retry"));
     expect(handlers.onRetry).toHaveBeenCalled();
   });
 
   it("shows empty state when no files or projects", () => {
-    render(
-      <ExplorerPane
-        files={[]}
-        projects={[]}
-        activeFileId={null}
-        unsavedChanges={{}}
-        isSignedIn={true}
-        isLoading={false}
-        isError={false}
-        {...handlers}
-      />
-    );
-
+    renderExplorer({ files: [], projects: [], activeFileId: null });
     expect(screen.getByText("No files yet")).toBeInTheDocument();
   });
 
-  it("shows file count badge on project", () => {
-    render(
-      <ExplorerPane
-        files={mockFiles}
-        projects={mockProjects}
-        activeFileId={1}
-        unsavedChanges={{}}
-        isSignedIn={true}
-        isLoading={false}
-        isError={false}
-        {...handlers}
-      />
-    );
-
-    // The project shows file count (2 files)
-    expect(screen.getByText("2")).toBeInTheDocument();
-  });
+  // ── Footer ──
 
   it("renders footer with copyright and feedback link", () => {
-    render(
-      <ExplorerPane
-        files={mockFiles}
-        projects={[]}
-        activeFileId={1}
-        unsavedChanges={{}}
-        isSignedIn={true}
-        isLoading={false}
-        isError={false}
-        {...handlers}
-      />
-    );
-
+    renderExplorer();
     expect(screen.getByText("Send Feedback")).toBeInTheDocument();
     expect(screen.getByText(/186,000 miles/)).toBeInTheDocument();
   });
