@@ -83,49 +83,17 @@ describe("ExplorerPane", () => {
   // ── Project expand/collapse ──
 
   it("expands project to show nested files", () => {
-    render(
-      <ExplorerPane
-        files={mockFiles}
-        projects={mockProjects}
-        activeFileId={1}
-        unsavedChanges={{}}
-        isSignedIn={true}
-        isLoading={false}
-        isError={false}
-        {...handlers}
-      />
-    );
-
-    // Files in project should not be visible initially
+    renderExplorer();
     expect(screen.queryByText("utils.py")).not.toBeInTheDocument();
-
-    // Click to expand project
     fireEvent.click(screen.getByText("My Project"));
-
-    // Now project files should be visible
     expect(screen.getByText("utils.py")).toBeInTheDocument();
     expect(screen.getByText("helper.py")).toBeInTheDocument();
   });
 
   it("collapses expanded project", () => {
-    render(
-      <ExplorerPane
-        files={mockFiles}
-        projects={mockProjects}
-        activeFileId={1}
-        unsavedChanges={{}}
-        isSignedIn={true}
-        isLoading={false}
-        isError={false}
-        {...handlers}
-      />
-    );
-
-    // Expand
+    renderExplorer();
     fireEvent.click(screen.getByText("My Project"));
     expect(screen.getByText("utils.py")).toBeInTheDocument();
-
-    // Collapse
     fireEvent.click(screen.getByText("My Project"));
     expect(screen.queryByText("utils.py")).not.toBeInTheDocument();
   });
