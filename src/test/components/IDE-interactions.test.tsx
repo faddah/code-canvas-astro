@@ -26,8 +26,9 @@ let capturedImportDialogProps: any = null;
 // ── Mocks ──
 
 const stableUser = { primaryEmailAddress: { emailAddress: "test@test.com" } };
+let mockUserId: string | null = "user_123";
 vi.mock("@clerk/astro/react", () => ({
-  useAuth: () => ({ userId: "user_123", signOut: mockSignOut }),
+  useAuth: () => ({ userId: mockUserId, signOut: mockSignOut }),
   SignInButton: ({ children }: any) => <div>{children}</div>,
   SignUpButton: ({ children }: any) => <div>{children}</div>,
   SignOutButton: ({ children }: any) => <div data-testid="sign-out">{children}</div>,
