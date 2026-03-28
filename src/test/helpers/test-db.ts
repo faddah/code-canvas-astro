@@ -64,8 +64,8 @@ export async function setupTestTables(client: ReturnType<typeof createClient>) {
 export async function teardownTestTables(client: ReturnType<typeof createClient>) {
   await client.executeMultiple(`
     DROP TABLE IF EXISTS user_files;
+    DROP TABLE IF EXISTS starter_files;
     DROP TABLE IF EXISTS projects;
     DROP TABLE IF EXISTS user_profiles;
-    DROP TABLE IF EXISTS starter_files;
   `);
 }
