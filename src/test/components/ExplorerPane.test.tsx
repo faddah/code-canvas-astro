@@ -65,6 +65,23 @@ describe("ExplorerPane", () => {
     expect(screen.getByText("My Project")).toBeInTheDocument();
   });
 
+  it("renders file with default icon for unknown extension", () => {
+    renderExplorer({
+      files: [
+        { id: 1, name: "data.json", projectId: null, content: "{}" },
+        { id: 2, name: "other.py", projectId: null, content: "# x" },
+      ],
+    });
+    expect(screen.getByText("data.json")).toBeInTheDocument();
+  });
+
+  it("renders .txt file", () => {
+    renderExplorer();
+    expect(screen.getByText("notes.txt")).toBeInTheDocument();
+  });
+
+  // ── Project expand/collapse ──
+
   it("expands project to show nested files", () => {
     render(
       <ExplorerPane
