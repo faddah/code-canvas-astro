@@ -180,6 +180,8 @@ function Wrapper({ children }: { children: React.ReactNode }) {
 describe("IDE interactions (signed-in)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUserId = "user_123";
+    mockUserFilesData = defaultUserFiles;
     capturedOnChange = null;
     capturedOnMount = null;
     capturedSaveDialogProps = null;
