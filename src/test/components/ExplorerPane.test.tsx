@@ -114,38 +114,13 @@ describe("ExplorerPane", () => {
   // ── File interactions ──
 
   it("calls onOpenFile when clicking a file", () => {
-    render(
-      <ExplorerPane
-        files={mockFiles}
-        projects={mockProjects}
-        activeFileId={null}
-        unsavedChanges={{}}
-        isSignedIn={true}
-        isLoading={false}
-        isError={false}
-        {...handlers}
-      />
-    );
-
+    const { handlers } = renderExplorer({ activeFileId: null });
     fireEvent.click(screen.getByText("main.py"));
     expect(handlers.onOpenFile).toHaveBeenCalledWith(1);
   });
 
   it("shows unsaved indicator for modified files", () => {
-    const { container } = render(
-      <ExplorerPane
-        files={mockFiles}
-        projects={mockProjects}
-        activeFileId={1}
-        unsavedChanges={{ 1: "# modified" }}
-        isSignedIn={true}
-        isLoading={false}
-        isError={false}
-        {...handlers}
-      />
-    );
-
-    // Yellow dot indicator
+    const { container } = renderExplorer({ unsavedChanges: { 1: "# modified" } });
     const yellowDots = container.querySelectorAll(".bg-yellow-500");
     expect(yellowDots.length).toBeGreaterThan(0);
   });
