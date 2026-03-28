@@ -61,19 +61,7 @@ describe("ExplorerPane", () => {
   });
 
   it("renders project names", () => {
-    render(
-      <ExplorerPane
-        files={mockFiles}
-        projects={mockProjects}
-        activeFileId={1}
-        unsavedChanges={{}}
-        isSignedIn={true}
-        isLoading={false}
-        isError={false}
-        {...handlers}
-      />
-    );
-
+    renderExplorer();
     expect(screen.getByText("My Project")).toBeInTheDocument();
   });
 
