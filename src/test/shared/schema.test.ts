@@ -66,6 +66,23 @@ describe("insertStarterFileSchema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("accepts optional projectId", () => {
+    const result = insertStarterFileSchema.safeParse({
+      name: "hello.py",
+      content: 'print("hello")',
+      projectId: 1,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts input without projectId (defaults to null)", () => {
+    const result = insertStarterFileSchema.safeParse({
+      name: "hello.py",
+      content: 'print("hello")',
+    });
+    expect(result.success).toBe(true);
+  });
 });
 
 describe("insertUserFileSchema", () => {
