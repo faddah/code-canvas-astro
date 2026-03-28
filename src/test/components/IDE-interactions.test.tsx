@@ -540,14 +540,12 @@ describe("IDE interactions (signed-in)", () => {
       expect.any(Function)
     );
 
-    // Execute the Cmd+S callback to cover line 555
+    // Execute the Cmd+S callback — now calls handleQuickSave
     const cmdSCallback = mockEditor.addCommand.mock.calls[0][1];
     act(() => { cmdSCallback(); });
 
-    // Save dialog should open
-    await waitFor(() => {
-      expect(screen.getByTestId("save-dialog")).toBeInTheDocument();
-    });
+    // No unsaved changes exist so handleQuickSave early-returns — no API call
+    expect(mockUpdateMutateAsync).not.toHaveBeenCalled();
   });
 
   // ── User Profile Modal ──
