@@ -152,6 +152,58 @@ describe("useUpdateUserFile", () => {
   });
 });
 
+// ─── useUpdateUserFile with projectId ───
+
+describe("useUpdateUserFile with projectId", () => {
+  it("sends PUT request with projectId in body", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ id: 1, name: "a.py", content: "# code", projectId: 5 }),
+    });
+
+    const { result } = renderHook(() => useUpdateUserFile(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      result.current.mutate({ id: 1, content: "# code", projectId: 5 });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(global.fetch).toHaveBeenCalledWith(
+      "/api/user-files/1",
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({ content: "# code", projectId: 5 }),
+      })
+    );
+  });
+
+  it("sends PUT request with null projectId to unassign from project", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ id: 1, name: "a.py", content: "# code", projectId: null }),
+    });
+
+    const { result } = renderHook(() => useUpdateUserFile(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      result.current.mutate({ id: 1, projectId: null });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(global.fetch).toHaveBeenCalledWith(
+      "/api/user-files/1",
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({ projectId: null }),
+      })
+    );
+  });
+});
+
 // ─── useDeleteUserFile ───
 
 describe("useDeleteUserFile", () => {
