@@ -50,19 +50,7 @@ describe("ExplorerPane", () => {
   // ── Basic rendering ──
 
   it("renders Explorer header", () => {
-    render(
-      <ExplorerPane
-        files={mockFiles}
-        projects={mockProjects}
-        activeFileId={1}
-        unsavedChanges={{}}
-        isSignedIn={true}
-        isLoading={false}
-        isError={false}
-        {...handlers}
-      />
-    );
-
+    renderExplorer();
     expect(screen.getByText("Explorer")).toBeInTheDocument();
   });
 
