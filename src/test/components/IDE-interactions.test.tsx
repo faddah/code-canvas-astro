@@ -262,12 +262,50 @@ describe("IDE interactions (signed-in)", () => {
 
   // ── Save button ──
 
-  it("Save button opens dialog when unsaved changes exist", async () => {
+  it("Save button calls handleQuickSave: mutateAsync, clears unsaved state, and toasts", async () => {
     render(<IDE />, { wrapper: Wrapper });
     await waitFor(() => expect(screen.getByTestId("monaco-editor")).toBeInTheDocument());
 
     act(() => { capturedOnChange?.("modified"); });
 
+    // Verify unsaved indicator appears (yellow border)
+    await waitFor(() => {
+      const saveBtn = screen.getByText("Save").closest("button")!;
+      expect(saveBtn.className).toContain("border-yellow-500");
+    });
+
+    fireEvent.click(screen.getByText("Save"));
+
+    // handleQuickSave calls mutateAsync with correct id and content
+    await waitFor(() => {
+      expect(mockUpdateMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 10, content: "modified" })
+      );
+    });
+
+    // Shows "Saved" toast
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: "Saved", description: "Changes saved to disk." })
+    );
+
+    // Unsaved indicator is cleared (yellow border removed)
+    await waitFor(() => {
+      const saveBtn = screen.getByText("Save").closest("button")!;
+      expect(saveBtn.className).not.toContain("border-yellow-500");
+    });
+  });
+
+  it("handleQuickSave error path: mutateAsync throws, unsaved state preserved, no toast", async () => {
+    // Make mutateAsync reject
+    mockUpdateMutateAsync.mockRejectedValueOnce(new Error("Network error"));
+
+    render(<IDE />, { wrapper: Wrapper });
+    await waitFor(() => expect(screen.getByTestId("monaco-editor")).toBeInTheDocument());
+
+    // Create unsaved changes
+    act(() => { capturedOnChange?.("modified"); });
+
+    // Verify unsaved indicator appears (yellow border)
     await waitFor(() => {
       const saveBtn = screen.getByText("Save").closest("button")!;
       expect(saveBtn.className).toContain("border-yellow-500");
