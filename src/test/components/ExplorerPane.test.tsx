@@ -182,40 +182,19 @@ describe("ExplorerPane", () => {
   // ── Draggable files ──
 
   it("supports drag start on files when signed in", () => {
-    render(
-      <ExplorerPane
-        files={mockFiles}
-        projects={mockProjects}
-        activeFileId={1}
-        unsavedChanges={{}}
-        isSignedIn={true}
-        isLoading={false}
-        isError={false}
-        {...handlers}
-      />
-    );
-
-    const fileEl = screen.getByText("main.py").closest("[draggable]");
+    renderExplorer();
+    const fileEl = getDraggableFile("main.py");
     expect(fileEl).toBeTruthy();
-    expect(fileEl?.getAttribute("draggable")).toBe("true");
+    expect(fileEl.getAttribute("draggable")).toBe("true");
   });
 
   it("files are not draggable when not signed in", () => {
-    render(
-      <ExplorerPane
-        files={[{ id: 1, name: "main.py", projectId: null, content: "# main" }]}
-        projects={[]}
-        activeFileId={1}
-        unsavedChanges={{}}
-        isSignedIn={false}
-        isLoading={false}
-        isError={false}
-        {...handlers}
-      />
-    );
-
+    renderExplorer({
+      files: [{ id: 1, name: "main.py", projectId: null, content: "# main" }],
+      projects: [],
+      isSignedIn: false,
+    });
     const fileEl = screen.getByText("main.py").closest("div[class*='cursor-pointer']");
-    // Should not have draggable=true when not signed in
     expect(fileEl?.getAttribute("draggable")).not.toBe("true");
   });
 });
