@@ -391,9 +391,9 @@ describe("IDE interactions (signed-in)", () => {
     render(<IDE />, { wrapper: Wrapper });
     await waitFor(() => expect(screen.getByTestId("monaco-editor")).toBeInTheDocument());
 
-    // Create unsaved changes and open dialog
+    // Create unsaved changes and open dialog via Save As
     act(() => { capturedOnChange?.("new content"); });
-    fireEvent.click(screen.getByText("Save"));
+    fireEvent.click(screen.getByText("Save As"));
 
     await waitFor(() => expect(screen.getByTestId("save-dialog")).toBeInTheDocument());
 
