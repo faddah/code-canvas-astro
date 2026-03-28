@@ -232,14 +232,14 @@ export default function IDE() {
     }
   };
 
-  // Cmd+S / Ctrl+S keyboard shortcut (opens Save dialog or quick-saves)
+  // Cmd+S / Ctrl+S keyboard shortcut — quick-saves in place
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
         if (isSignedIn && activeFileId) {
           if (unsavedChanges[activeFileId] !== undefined) {
-            setIsSaveDialogOpen(true);
+            handleQuickSave();
           } else {
             toast({ title: "No changes", description: "File is already saved." });
           }
@@ -248,7 +248,7 @@ export default function IDE() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isSignedIn, activeFileId, unsavedChanges, toast]);
+  }, [isSignedIn, activeFileId, unsavedChanges, toast, handleQuickSave]);
 
   const handleRun = async () => {
     if (!activeContent) return;
