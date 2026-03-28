@@ -98,6 +98,21 @@ describe("ExplorerPane", () => {
     expect(screen.queryByText("utils.py")).not.toBeInTheDocument();
   });
 
+  it("shows empty project message when expanded project has no files", () => {
+    renderExplorer({
+      files: [{ id: 1, name: "main.py", projectId: null, content: "# main" }],
+    });
+    fireEvent.click(screen.getByText("My Project"));
+    expect(screen.getByText(/No files — drag files here/)).toBeInTheDocument();
+  });
+
+  it("shows file count badge on project", () => {
+    renderExplorer();
+    expect(screen.getByText("2")).toBeInTheDocument();
+  });
+
+  // ── File interactions ──
+
   it("calls onOpenFile when clicking a file", () => {
     render(
       <ExplorerPane
