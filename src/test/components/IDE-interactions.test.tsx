@@ -313,6 +313,29 @@ describe("IDE interactions (signed-in)", () => {
 
     fireEvent.click(screen.getByText("Save"));
 
+    // mutateAsync was called (the attempt was made)
+    await waitFor(() => {
+      expect(mockUpdateMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 10, content: "modified" })
+      );
+    });
+
+    // "Saved" toast should NOT have been called — error was caught silently
+    expect(mockToast).not.toHaveBeenCalledWith(
+      expect.objectContaining({ title: "Saved" })
+    );
+
+    // Unsaved indicator should still be present (yellow border preserved)
+    const saveBtn = screen.getByText("Save").closest("button")!;
+    expect(saveBtn.className).toContain("border-yellow-500");
+  });
+
+  it("Save As button opens save dialog", async () => {
+    render(<IDE />, { wrapper: Wrapper });
+    await waitFor(() => expect(screen.getByTestId("monaco-editor")).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText("Save As"));
+
     await waitFor(() => {
       expect(screen.getByTestId("save-dialog")).toBeInTheDocument();
     });
