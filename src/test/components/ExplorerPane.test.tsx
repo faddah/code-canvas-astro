@@ -55,19 +55,7 @@ describe("ExplorerPane", () => {
   });
 
   it("renders loose files (no project)", () => {
-    render(
-      <ExplorerPane
-        files={mockFiles}
-        projects={mockProjects}
-        activeFileId={1}
-        unsavedChanges={{}}
-        isSignedIn={true}
-        isLoading={false}
-        isError={false}
-        {...handlers}
-      />
-    );
-
+    renderExplorer();
     expect(screen.getByText("main.py")).toBeInTheDocument();
     expect(screen.getByText("notes.txt")).toBeInTheDocument();
   });
