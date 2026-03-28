@@ -555,7 +555,7 @@ export default function IDE() {
                         onMount={(editor) => {
                           if (isSignedIn) {
                             editor.addCommand(2048 | 49, () => {
-                              setIsSaveDialogOpen(true);
+                              handleQuickSave();
                             });
                           }
                         }}
