@@ -15,28 +15,39 @@ const mockProjects: Project[] = [
   { id: 1, clerkUserId: "u1", name: "My Project", description: null, createdAt: new Date(), updatedAt: new Date() },
 ];
 
-describe("ExplorerPane", () => {
-  let handlers: {
-    onOpenFile: ReturnType<typeof vi.fn>;
-    onDeleteFile: ReturnType<typeof vi.fn>;
-    onCreateFile: ReturnType<typeof vi.fn>;
-    onCreateProject: ReturnType<typeof vi.fn>;
-    onDeleteProject: ReturnType<typeof vi.fn>;
-    onMoveFile: ReturnType<typeof vi.fn>;
-    onRetry: ReturnType<typeof vi.fn>;
+// Helper to render ExplorerPane with common defaults
+function renderExplorer(overrides: Record<string, any> = {}, handlersOverride?: Record<string, any>) {
+  const handlers = {
+    onOpenFile: vi.fn(),
+    onDeleteFile: vi.fn(),
+    onCreateFile: vi.fn(),
+    onCreateProject: vi.fn(),
+    onDeleteProject: vi.fn(),
+    onMoveFile: vi.fn(),
+    onRetry: vi.fn(),
+    ...handlersOverride,
   };
+  const props = {
+    files: mockFiles,
+    projects: mockProjects,
+    activeFileId: 1 as number | null,
+    unsavedChanges: {} as Record<number, string>,
+    isSignedIn: true,
+    isLoading: false,
+    isError: false,
+    ...overrides,
+  };
+  const result = render(<ExplorerPane {...props} {...handlers} />);
+  return { ...result, handlers };
+}
 
-  beforeEach(() => {
-    handlers = {
-      onOpenFile: vi.fn(),
-      onDeleteFile: vi.fn(),
-      onCreateFile: vi.fn(),
-      onCreateProject: vi.fn(),
-      onDeleteProject: vi.fn(),
-      onMoveFile: vi.fn(),
-      onRetry: vi.fn(),
-    };
-  });
+// Helper to find a draggable file element by name
+function getDraggableFile(name: string) {
+  return screen.getByText(name).closest("[draggable]") as HTMLElement;
+}
+
+describe("ExplorerPane", () => {
+  // ── Basic rendering ──
 
   it("renders Explorer header", () => {
     render(
