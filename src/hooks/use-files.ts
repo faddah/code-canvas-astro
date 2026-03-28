@@ -85,7 +85,7 @@ export function useUpdateUserFile() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: number; name?: string; content?: string }) => {
+    mutationFn: async ({ id, ...updates }: { id: number; name?: string; content?: string; projectId?: number | null }) => {
       const url = buildUrl(api.userFiles.update.path, { id });
       const res = await fetch(url, {
         method: 'PUT',
