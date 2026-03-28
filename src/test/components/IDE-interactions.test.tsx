@@ -228,14 +228,14 @@ describe("IDE interactions (signed-in)", () => {
 
   // ── Cmd+S keyboard handler ──
 
-  it("Cmd+S with unsaved changes opens save dialog", async () => {
+  it("Cmd+S with unsaved changes calls handleQuickSave", async () => {
     render(<IDE />, { wrapper: Wrapper });
     await waitFor(() => expect(screen.getByTestId("monaco-editor")).toBeInTheDocument());
 
     // Create unsaved changes
     act(() => { capturedOnChange?.("modified"); });
 
-    // Press Cmd+S
+    // Press Cmd+S — now quick-saves in place
     fireEvent.keyDown(window, { key: "s", metaKey: true });
 
     await waitFor(() => {
