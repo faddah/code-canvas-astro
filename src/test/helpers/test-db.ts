@@ -18,13 +18,6 @@ export function createTestDb() {
  */
 export async function setupTestTables(client: ReturnType<typeof createClient>) {
   await client.executeMultiple(`
-    CREATE TABLE IF NOT EXISTS starter_files (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      content TEXT NOT NULL,
-      created_at INTEGER NOT NULL DEFAULT (unixepoch())
-    );
-
     CREATE TABLE IF NOT EXISTS user_profiles (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       clerk_user_id TEXT NOT NULL UNIQUE,
