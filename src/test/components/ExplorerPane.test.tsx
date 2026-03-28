@@ -158,6 +158,29 @@ describe("ExplorerPane", () => {
     expect(screen.getByText(/186,000 miles/)).toBeInTheDocument();
   });
 
+  it("Send Feedback link sets window.location.href to mailto", () => {
+    renderExplorer();
+    const link = screen.getByText("Send Feedback");
+    // The click handler sets window.location.href
+    const hrefSetter = vi.fn();
+    Object.defineProperty(window, "location", {
+      value: { href: "" },
+      writable: true,
+      configurable: true,
+    });
+    Object.defineProperty(window.location, "href", {
+      set: hrefSetter,
+      get: () => "",
+      configurable: true,
+    });
+    fireEvent.click(link);
+    expect(hrefSetter).toHaveBeenCalledWith(
+      expect.stringContaining("mailto:")
+    );
+  });
+
+  // ── Draggable files ──
+
   it("supports drag start on files when signed in", () => {
     render(
       <ExplorerPane
