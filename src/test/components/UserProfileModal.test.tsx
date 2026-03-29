@@ -406,4 +406,103 @@ describe("UserProfileModal", () => {
     const phoneInput = screen.getByLabelText("Phone Number") as HTMLInputElement;
     expect(phoneInput.value).toBe("5551234567");
   });
+
+  it("Cancel in view mode calls handleClose (setIsEditing false + onClose)", () => {
+    render(
+      <UserProfileModal
+        open={true}
+        onClose={onClose}
+        onDeleteProfile={onDeleteProfile}
+        user={mockUser}
+        profile={mockProfile}
+      />
+    );
+
+    // In view mode, clicking Cancel calls handleClose
+    fireEvent.click(screen.getByText("Cancel"));
+
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it("changing country in edit mode calls handleCountryChange", async () => {
+    render(
+      <UserProfileModal
+        open={true}
+        onClose={onClose}
+        onDeleteProfile={onDeleteProfile}
+        user={mockUser}
+        profile={mockProfile}
+      />
+    );
+
+    // Switch to edit mode
+    fireEvent.click(screen.getByText("Edit Profile"));
+
+    // The phone code prefix should show +1 (US default)
+    expect(screen.getByText("+1")).toBeInTheDocument();
+
+    // Change country via the hidden native select (Radix UI)
+    const nativeSelect = document.querySelector("select[aria-hidden='true']") as HTMLSelectElement;
+    expect(nativeSelect).toBeTruthy();
+    fireEvent.change(nativeSelect, { target: { value: "DE" } });
+
+    // The phone code prefix should now show +49
+    await waitFor(() => {
+      expect(screen.getByText("+49")).toBeInTheDocument();
+    });
+  });
+
+  it("closing dialog via overlay calls handleClose", () => {
+    render(
+      <UserProfileModal
+        open={true}
+        onClose={onClose}
+        onDeleteProfile={onDeleteProfile}
+        user={mockUser}
+        profile={mockProfile}
+      />
+    );
+
+    // The Dialog's close button (X) triggers onOpenChange which calls handleClose
+    const closeButton = screen.getByRole("button", { name: /close/i });
+    fireEvent.click(closeButton);
+
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it("submitting edit form without password only updates profile", async () => {
+    const user = userEvent.setup();
+    render(
+      <UserProfileModal
+        open={true}
+        onClose={onClose}
+        onDeleteProfile={onDeleteProfile}
+        user={mockUser}
+        profile={mockProfile}
+      />
+    );
+
+    await user.click(screen.getByText("Edit Profile"));
+
+    // Modify city without touching password fields
+    const cityInput = screen.getByLabelText("City");
+    await user.clear(cityInput);
+    await user.type(cityInput, "Seattle");
+
+    await user.click(screen.getByText("Save Changes"));
+
+    await waitFor(() => {
+      expect(mockUpdateMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ city: "Seattle" })
+      );
+    });
+
+    // updatePassword should NOT have been called (no password entered)
+    expect(mockUser.updatePassword).not.toHaveBeenCalled();
+
+    // Should return to view mode
+    await waitFor(() => {
+      expect(screen.getByText("Edit Profile")).toBeInTheDocument();
+    });
+  });
 });
