@@ -4,12 +4,15 @@ import fs from "fs";
 import os from "os";
 
 test.describe("Explorer Pane & Dialogs (Anonymous)", () => {
+  // Firefox needs extra time — IDE hydration + asset loading can exceed 30s
+  test.setTimeout(60_000);
+
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
     // Wait for IDE to fully load
     await expect(
       page.locator(".panel-header >> text=Console").first()
-    ).toBeVisible({ timeout: 30_000 });
+    ).toBeVisible({ timeout: 45_000 });
   });
 
   test("shows Explorer pane with files", async ({ page }) => {
@@ -39,8 +42,8 @@ test.describe("Explorer Pane & Dialogs (Anonymous)", () => {
       // FileTab may not have that class — check tab bar area
     });
 
-    // Monaco editor should be visible
-    await expect(page.locator(".monaco-editor").first()).toBeVisible();
+    // Monaco editor should be visible — Firefox can be slow to init Monaco's web workers
+    await expect(page.locator(".monaco-editor").first()).toBeVisible({ timeout: 45_000 });
   });
 
   test("shows Create An Account and Log In buttons when not signed in", async ({
@@ -78,10 +81,11 @@ test.describe("Keyboard Shortcut (Cmd+S / Ctrl+S)", () => {
   test("Ctrl+S / Cmd+S is captured and does not trigger browser save", async ({
     page,
   }) => {
+    test.setTimeout(60_000);
     await page.goto("/");
     await expect(
       page.locator(".panel-header >> text=Console").first()
-    ).toBeVisible({ timeout: 30_000 });
+    ).toBeVisible({ timeout: 45_000 });
 
     // Press Ctrl+S (or Meta+S on Mac) — should not cause browser save dialog
     // We verify by checking that no error occurs and the page remains stable
@@ -99,13 +103,14 @@ test.describe("Open / Import Dialog file validation", () => {
   test("only accepts .py and .txt files via file input accept attribute", async ({
     page,
   }) => {
+    test.setTimeout(60_000);
     // This test verifies the file input has the correct accept attribute
     // The actual dialog is only available for signed-in users,
     // so we test the component's constraint via DOM inspection
     await page.goto("/");
     await expect(
       page.locator(".panel-header >> text=Console").first()
-    ).toBeVisible({ timeout: 30_000 });
+    ).toBeVisible({ timeout: 45_000 });
   });
 });
 
@@ -113,11 +118,12 @@ test.describe("File type restrictions", () => {
   test("file input accept attribute restricts to .py and .txt", async ({
     page,
   }) => {
+    test.setTimeout(60_000);
     // Navigate and wait for load
     await page.goto("/");
     await expect(
       page.locator(".panel-header >> text=Console").first()
-    ).toBeVisible({ timeout: 30_000 });
+    ).toBeVisible({ timeout: 45_000 });
 
     // The Open/Import dialog uses accept=".py,.txt" on its file input
     // This is enforced at the component level and tested in unit tests
