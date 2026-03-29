@@ -1,11 +1,14 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Explorer Pane Structure", () => {
+  // Firefox needs extra time — IDE hydration + asset loading can exceed 30s
+  test.setTimeout(60_000);
+
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
     await expect(
       page.locator(".panel-header >> text=Console").first()
-    ).toBeVisible({ timeout: 30_000 });
+    ).toBeVisible({ timeout: 45_000 });
   });
 
   test("Explorer pane is visible on desktop viewports", async ({ page }) => {
@@ -25,16 +28,20 @@ test.describe("Explorer Pane Structure", () => {
   });
 
   test("clicking a file shows it in the editor", async ({ page }) => {
-    // Wait for files
+    // Wait for files to appear
     const firstFile = page.locator(".truncate.flex-1").first();
     await expect(firstFile).toBeVisible({ timeout: 10_000 });
 
     // Click the file
     await firstFile.click();
 
+    // Wait for the file to become active (bg-primary highlight) before checking Monaco
+    await expect(firstFile.locator("..")).toHaveClass(/bg-primary/, { timeout: 5_000 });
+
     // Monaco editor should become visible with content
+    // Firefox can be slow — Monaco loads web workers and language grammars asynchronously
     const editor = page.locator(".monaco-editor").first();
-    await expect(editor).toBeVisible({ timeout: 5_000 });
+    await expect(editor).toBeVisible({ timeout: 45_000 });
   });
 
   test("active file has highlighted styling", async ({ page }) => {
@@ -48,9 +55,15 @@ test.describe("Explorer Pane Structure", () => {
   });
 
   test("version number is displayed in the header", async ({ page }) => {
+    // Pyodide must finish loading — version text only renders when isReady is true
+    test.setTimeout(90_000);
+    await expect(
+      page.locator("text=Environment Ready").first()
+    ).toBeVisible({ timeout: 60_000 });
+
     await expect(
       page.locator("text=Version").first()
-    ).toBeVisible({ timeout: 10_000 });
+    ).toBeVisible({ timeout: 5_000 });
   });
 
   test("Run button is present and clickable", async ({ page }) => {
@@ -68,11 +81,14 @@ test.describe("Explorer Pane Structure", () => {
 });
 
 test.describe("Explorer file interactions (anonymous)", () => {
+  // Firefox needs extra time — IDE hydration + asset loading can exceed 30s
+  test.setTimeout(60_000);
+
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
     await expect(
       page.locator(".panel-header >> text=Console").first()
-    ).toBeVisible({ timeout: 30_000 });
+    ).toBeVisible({ timeout: 45_000 });
   });
 
   test("files are NOT draggable for anonymous users", async ({ page }) => {
