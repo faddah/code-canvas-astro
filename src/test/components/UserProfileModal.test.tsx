@@ -509,4 +509,86 @@ describe("UserProfileModal", () => {
       expect(screen.getByText("Edit Profile")).toBeInTheDocument();
     });
   });
+
+  it("shows password validation error when password is too short", async () => {
+    const user = userEvent.setup();
+    render(
+      <UserProfileModal
+        open={true}
+        onClose={onClose}
+        onDeleteProfile={onDeleteProfile}
+        user={mockUser}
+        profile={mockProfile}
+      />
+    );
+
+    await user.click(screen.getByText("Edit Profile"));
+
+    const passwordInput = screen.getByLabelText("New Password");
+    await user.type(passwordInput, "short");
+
+    await waitFor(() => {
+      expect(screen.getByText("Password must be at least 8 characters")).toBeInTheDocument();
+    });
+  });
+
+  it("shows confirm password mismatch error", async () => {
+    const user = userEvent.setup();
+    render(
+      <UserProfileModal
+        open={true}
+        onClose={onClose}
+        onDeleteProfile={onDeleteProfile}
+        user={mockUser}
+        profile={mockProfile}
+      />
+    );
+
+    await user.click(screen.getByText("Edit Profile"));
+
+    const passwordInput = screen.getByLabelText("New Password");
+    const confirmInput = screen.getByLabelText("Confirm Password");
+    await user.type(passwordInput, "validpassword1");
+    await user.type(confirmInput, "differentpass1");
+
+    await waitFor(() => {
+      expect(screen.getByText("Passwords do not match")).toBeInTheDocument();
+    });
+  });
+
+  it("shows 'Saving...' when updateProfile.isPending is true", () => {
+    mockUpdateIsPending = true;
+    render(
+      <UserProfileModal
+        open={true}
+        onClose={onClose}
+        onDeleteProfile={onDeleteProfile}
+        user={mockUser}
+        profile={mockProfile}
+      />
+    );
+
+    fireEvent.click(screen.getByText("Edit Profile"));
+    expect(screen.getByText("Saving...")).toBeInTheDocument();
+    expect(screen.queryByText("Save Changes")).not.toBeInTheDocument();
+  });
+
+  it("shows 'Deleting...' when deleteProfile.isPending is true", () => {
+    mockDeleteIsPending = true;
+    render(
+      <UserProfileModal
+        open={true}
+        onClose={onClose}
+        onDeleteProfile={onDeleteProfile}
+        user={mockUser}
+        profile={mockProfile}
+      />
+    );
+
+    // Open the delete confirmation dialog
+    fireEvent.click(screen.getByText("Delete Profile"));
+
+    // The confirm button in the alert dialog should show "Deleting..."
+    expect(screen.getByText("Deleting...")).toBeInTheDocument();
+  });
 });
