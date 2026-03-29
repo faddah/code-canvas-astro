@@ -273,4 +273,142 @@ describe("usePyodide", () => {
     // isReady should NOT have become true since the hook was unmounted
     expect(result.current.isReady).toBe(false);
   });
+
+  // ─── Error Handling Paths ───
+
+  it("outputs error message when loadPyodide() throws during init", async () => {
+    // Make loadPyodide reject to exercise the catch block (lines 113-117)
+    mockLoadPyodide.mockRejectedValueOnce(new Error("WASM load failed"));
+
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { result } = renderHook(() => usePyodide());
+
+    await waitFor(() => {
+      expect(result.current.output).toContainEqual(
+        "[Error] Failed to initialize Python environment."
+      );
+    });
+
+    expect(consoleSpy).toHaveBeenCalledWith("Pyodide init failed:", expect.any(Error));
+    // isReady should remain false
+    expect(result.current.isReady).toBe(false);
+
+    consoleSpy.mockRestore();
+  });
+
+  it("outputs error message when script fails to load (onerror)", async () => {
+    // Remove loadPyodide so the hook creates a <script> element
+    uninstallPyodideMock();
+
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const appendSpy = vi.spyOn(document.head, "appendChild").mockImplementation((el) => {
+      // Simulate script load failure by immediately calling onerror
+      if (el instanceof HTMLScriptElement && el.src.includes("pyodide")) {
+        setTimeout(() => el.onerror?.(new Event("error")), 0);
+      }
+      return el;
+    });
+
+    const { result } = renderHook(() => usePyodide());
+
+    await waitFor(() => {
+      expect(result.current.output).toContainEqual(
+        "[Error] Failed to load Python environment script."
+      );
+    });
+
+    expect(consoleSpy).toHaveBeenCalledWith("Failed to load Pyodide script");
+    expect(result.current.isReady).toBe(false);
+
+    consoleSpy.mockRestore();
+    appendSpy.mockRestore();
+    installPyodideMock();
+  });
+
+  // ─── set_preview_content (HTML Preview) ───
+
+  it("set_preview_content updates htmlOutput", async () => {
+    const { result } = renderHook(() => usePyodide());
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+
+    // The hook registers window.set_preview_content during init
+    expect((window as any).set_preview_content).toBeDefined();
+
+    act(() => {
+      (window as any).set_preview_content("<h1>Hello World</h1>");
+    });
+
+    expect(result.current.htmlOutput).toBe("<h1>Hello World</h1>");
+  });
+
+  // ─── requestInput / submitInput edge cases ───
+
+  it("requestInput with empty prompt does not append to output", async () => {
+    const { result } = renderHook(() => usePyodide());
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+
+    act(() => {
+      result.current.clearConsole();
+    });
+
+    // Request input with empty string — should NOT append prompt to output
+    act(() => {
+      (window as any).request_console_input("");
+    });
+
+    expect(result.current.isWaitingForInput).toBe(true);
+    // Output should be empty since prompt was ""
+    expect(result.current.output).toEqual([]);
+  });
+
+  it("retries loading when script.onload fires but loadPyodide is not yet on window", async () => {
+    // Remove loadPyodide so the hook creates a <script> element with an onload handler
+    uninstallPyodideMock();
+
+    let capturedScript: HTMLScriptElement | null = null;
+    const appendSpy = vi.spyOn(document.head, "appendChild").mockImplementation((el) => {
+      if (el instanceof HTMLScriptElement && el.src.includes("pyodide")) {
+        capturedScript = el;
+      }
+      return el;
+    });
+
+    const { result } = renderHook(() => usePyodide());
+
+    // Script element should have been created
+    expect(capturedScript).toBeTruthy();
+
+    // Simulate script.onload firing, but loadPyodide is NOT yet on window
+    // This triggers load() → !window.loadPyodide → setTimeout(load, 100) retry
+    capturedScript!.onload?.(new Event("load"));
+
+    // Now install the mock so the retry (after 100ms) finds loadPyodide
+    installPyodideMock();
+
+    await waitFor(() => expect(result.current.isReady).toBe(true), { timeout: 3000 });
+
+    appendSpy.mockRestore();
+  });
+
+  it("submitInput without pending input request does not throw", async () => {
+    const { result } = renderHook(() => usePyodide());
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+
+    act(() => {
+      result.current.clearConsole();
+    });
+
+    // Call submitInput when there is no pending input — should not throw
+    act(() => {
+      result.current.submitInput("orphaned input");
+    });
+
+    expect(result.current.isWaitingForInput).toBe(false);
+    // The text should still be appended to output
+    expect(result.current.output).toContainEqual("orphaned input");
+  });
 });
