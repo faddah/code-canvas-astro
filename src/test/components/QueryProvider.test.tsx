@@ -36,4 +36,33 @@ describe("QueryProvider", () => {
     expect(screen.getByTestId("stale").textContent).toBe("10000");
     expect(screen.getByTestId("retry").textContent).toBe("3");
   });
+
+  it("retryDelay uses exponential backoff capped at 8000ms", () => {
+    let retryDelayFn: ((attempt: number) => number) | undefined;
+
+    function RetryDelayExtractor() {
+      const client = useQueryClient();
+      const defaults = client.getDefaultOptions();
+      retryDelayFn = defaults.queries?.retryDelay as (attempt: number) => number;
+      return null;
+    }
+
+    render(
+      <QueryProvider>
+        <RetryDelayExtractor />
+      </QueryProvider>
+    );
+
+    expect(retryDelayFn).toBeDefined();
+    // attempt 0: min(1000 * 2^0, 8000) = 1000
+    expect(retryDelayFn!(0)).toBe(1000);
+    // attempt 1: min(1000 * 2^1, 8000) = 2000
+    expect(retryDelayFn!(1)).toBe(2000);
+    // attempt 2: min(1000 * 2^2, 8000) = 4000
+    expect(retryDelayFn!(2)).toBe(4000);
+    // attempt 3: min(1000 * 2^3, 8000) = 8000
+    expect(retryDelayFn!(3)).toBe(8000);
+    // attempt 4: min(1000 * 2^4, 8000) = 8000 (capped)
+    expect(retryDelayFn!(4)).toBe(8000);
+  });
 });
