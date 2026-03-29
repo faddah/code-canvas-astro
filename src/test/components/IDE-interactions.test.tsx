@@ -41,9 +41,10 @@ vi.mock("@clerk/astro/client", () => ({
   $userStore: { get: () => stableUser, listen: () => () => {} },
 }));
 
+let mockIsReady = true;
 vi.mock("@/hooks/use-pyodide", () => ({
   usePyodide: () => ({
-    isReady: true, isRunning: false, output: [], htmlOutput: "",
+    isReady: mockIsReady, isRunning: false, output: [], htmlOutput: "",
     runCode: mockRunCode, clearConsole: mockClearConsole,
     isWaitingForInput: false, submitInput: vi.fn(),
   }),
@@ -186,6 +187,7 @@ describe("IDE interactions (signed-in)", () => {
     mockUserFilesData = defaultUserFiles;
     mockUserFilesError = false;
     mockProjectsData = [];
+    mockIsReady = true;
     capturedOnChange = null;
     capturedOnMount = null;
     capturedSaveDialogProps = null;
@@ -759,4 +761,37 @@ describe("IDE interactions (signed-in)", () => {
       expect(mockMoveFileMutate).toHaveBeenCalledWith({ fileId: 10, projectId: 5 });
     });
   });
+
+  // ── closeTab on the ACTIVE tab (lines 306-308) ──
+
+  it("closing the active tab switches to the last remaining tab", async () => {
+    render(<IDE />, { wrapper: Wrapper });
+    await waitFor(() => expect(screen.getByTestId("monaco-editor")).toBeInTheDocument());
+
+    // Open lib.py so we have 2 tabs: [app.py (active initially), lib.py]
+    fireEvent.click(screen.getByText("lib.py"));
+
+    // After clicking lib.py in explorer, lib.py becomes active.
+    await waitFor(() => {
+      const editor = screen.getByTestId("monaco-editor") as HTMLTextAreaElement;
+      expect(editor.value).toBe("# lib");
+    });
+
+    // Find the close button on the ACTIVE tab (lib.py).
+    // The active tab has "border-t-primary" class; its close button has "opacity-100".
+    const activeTab = Array.from(document.querySelectorAll("[class*='min-w-30']"))
+      .find(el => el.className.includes("border-t-primary"));
+    expect(activeTab).toBeTruthy();
+
+    const closeBtn = activeTab!.querySelector("button");
+    expect(closeBtn).toBeTruthy();
+    fireEvent.click(closeBtn!);
+
+    // After closing the active tab (lib.py), the remaining tab (app.py) should become active.
+    await waitFor(() => {
+      const editor = screen.getByTestId("monaco-editor") as HTMLTextAreaElement;
+      expect(editor.value).toBe("print('app')");
+    });
+  });
+
 });
