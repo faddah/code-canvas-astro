@@ -86,10 +86,6 @@ export function OpenImportDialog({
   };
 
   const handleImport = () => {
-    if (selectedFiles.length === 0) {
-      setError("Please select at least one file to import.");
-      return;
-    }
     const projId = selectedProjectId === "none" ? null : Number(selectedProjectId);
     onImport(selectedFiles, projId);
     onOpenChange(false);
