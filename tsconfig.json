@@ -27,6 +27,7 @@
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
+    "types": ["vitest/globals"],
     "paths": {
       "@/*": ["./src/*"],
       "@shared/*": ["./src/shared/*"]
