@@ -54,22 +54,24 @@ const defaultUserFiles = [
   { id: 11, name: "lib.py", content: "# lib", projectId: null },
 ];
 let mockUserFilesData: typeof defaultUserFiles | [] = defaultUserFiles;
+let mockUserFilesError = false;
 vi.mock("@/hooks/use-files", () => ({
   useStarterFiles: () => ({ data: [], isLoading: false }),
   useUserFiles: () => ({
-    data: mockUserFilesData,
-    isLoading: false, isError: false, error: null, refetch: mockRefetchUserFiles,
+    data: mockUserFilesError ? undefined : mockUserFilesData,
+    isLoading: false, isError: mockUserFilesError, error: mockUserFilesError ? new Error("fetch failed") : null, refetch: mockRefetchUserFiles,
   }),
   useCreateUserFile: () => ({ mutateAsync: mockCreateMutateAsync, mutate: vi.fn() }),
   useUpdateUserFile: () => ({ mutateAsync: mockUpdateMutateAsync, mutate: vi.fn() }),
   useDeleteUserFile: () => ({ mutateAsync: vi.fn(), mutate: mockDeleteMutate }),
 }));
 
+let mockProjectsData: any[] = [];
 vi.mock("@/hooks/use-projects", () => ({
-  useProjects: () => ({ data: [] }),
-  useCreateProject: () => ({ mutate: vi.fn() }),
-  useDeleteProject: () => ({ mutate: vi.fn() }),
-  useMoveFileToProject: () => ({ mutate: vi.fn() }),
+  useProjects: () => ({ data: mockProjectsData }),
+  useCreateProject: () => ({ mutate: mockCreateProjectMutate }),
+  useDeleteProject: () => ({ mutate: mockDeleteProjectMutate }),
+  useMoveFileToProject: () => ({ mutate: mockMoveFileMutate }),
 }));
 
 vi.mock("@/hooks/use-user-profile", () => ({
@@ -182,6 +184,8 @@ describe("IDE interactions (signed-in)", () => {
     vi.clearAllMocks();
     mockUserId = "user_123";
     mockUserFilesData = defaultUserFiles;
+    mockUserFilesError = false;
+    mockProjectsData = [];
     capturedOnChange = null;
     capturedOnMount = null;
     capturedSaveDialogProps = null;
@@ -621,5 +625,138 @@ describe("IDE interactions (signed-in)", () => {
         );
       });
     }
+  });
+
+  // ── onCreateProject (line 495) ──
+
+  it("creating a new project via explorer calls createProject.mutate", async () => {
+    const user = (await import("@testing-library/user-event")).default.setup();
+    render(<IDE />, { wrapper: Wrapper });
+    await waitFor(() => expect(screen.getByText("Explorer")).toBeInTheDocument());
+
+    // The "New Project" button is a separate FolderOpen icon button (not in the Plus dropdown)
+    const newProjectBtn = screen.getAllByRole("button").find((btn) => btn.getAttribute("title") === "New Project");
+    if (newProjectBtn) {
+      await user.click(newProjectBtn);
+
+      // The dialog opens with a "My Project" placeholder input
+      const input = await screen.findByPlaceholderText("My Project");
+      await user.type(input, "Test Project");
+
+      // Click "Create" to submit
+      const createBtn = screen.getByRole("button", { name: /create/i });
+      await user.click(createBtn);
+
+      await waitFor(() => {
+        expect(mockCreateProjectMutate).toHaveBeenCalledWith({ name: "Test Project" });
+      });
+    }
+  });
+
+  // ── onDeleteProject (line 496) ──
+
+  it("deleting a project via explorer calls deleteProject.mutate", async () => {
+    mockProjectsData = [{ id: 5, name: "Old Project", clerkUserId: "user_123", description: null, createdAt: new Date(), updatedAt: new Date() }];
+    render(<IDE />, { wrapper: Wrapper });
+    await waitFor(() => expect(screen.getByText("Old Project")).toBeInTheDocument());
+
+    // Find the project header and its delete (trash) button
+    const projectHeader = screen.getByText("Old Project").closest("div");
+    const trashBtn = projectHeader?.querySelector("button");
+    if (trashBtn) {
+      fireEvent.click(trashBtn);
+
+      // Look for confirm dialog
+      const confirmBtn = await screen.findByText("Confirm");
+      fireEvent.click(confirmBtn);
+
+      await waitFor(() => {
+        expect(mockDeleteProjectMutate).toHaveBeenCalledWith(5);
+      });
+    }
+  });
+
+  // ── onRetry (line 498) ──
+
+  it("error state shows retry button that calls refetchUserFiles", async () => {
+    mockUserFilesError = true;
+    render(<IDE />, { wrapper: Wrapper });
+
+    // ExplorerPane should show "Could not load files" and a Retry button
+    await waitFor(() => {
+      expect(screen.getByText("Could not load files")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("Retry"));
+
+    expect(mockRefetchUserFiles).toHaveBeenCalled();
+  });
+
+  // ── FileTab onClick (line 519) — setActiveFileId ──
+
+  it("clicking a FileTab in the tab bar switches the active file", async () => {
+    render(<IDE />, { wrapper: Wrapper });
+    await waitFor(() => expect(screen.getByTestId("monaco-editor")).toBeInTheDocument());
+
+    // First file (app.py) is active by default. Open lib.py via explorer.
+    const explorerLibPy = screen.getByText("lib.py");
+    fireEvent.click(explorerLibPy);
+
+    // Now both tabs are open. The editor should show lib.py content.
+    await waitFor(() => {
+      const editor = screen.getByTestId("monaco-editor") as HTMLTextAreaElement;
+      expect(editor.value).toBe("# lib");
+    });
+
+    // Click the app.py FileTab in the tab bar to switch back.
+    // FileTab renders inside a div with class "min-w-30" — unique to FileTab, not ExplorerPane.
+    const appPyTab = screen.getAllByText("app.py")
+      .find(el => el.closest("[class*='min-w-30']"));
+    expect(appPyTab).toBeTruthy();
+    fireEvent.click(appPyTab!.closest("[class*='cursor-pointer']")!);
+
+    // Editor should now show app.py content again
+    await waitFor(() => {
+      const editor = screen.getByTestId("monaco-editor") as HTMLTextAreaElement;
+      expect(editor.value).toBe("print('app')");
+    });
+  });
+
+  // ── onMoveFile (line 497) — via drag-and-drop ──
+
+  it("dragging a file to a project calls moveFileToProject.mutate", async () => {
+    // Provide a project to drop onto
+    mockProjectsData = [{ id: 5, name: "My Project", clerkUserId: "user_123", description: null, createdAt: new Date(), updatedAt: new Date() }];
+    render(<IDE />, { wrapper: Wrapper });
+    await waitFor(() => expect(screen.getByText("My Project")).toBeInTheDocument());
+
+    // Find the draggable file row for app.py (in ExplorerPane, not in the tab bar)
+    const appPyRow = screen.getAllByText("app.py")
+      .find(el => !el.closest("[class*='min-w-30']"))
+      ?.closest("[draggable='true']");
+    expect(appPyRow).toBeTruthy();
+
+    // Find the project header — it's the div containing "My Project" text with onDrop
+    const projectHeader = screen.getByText("My Project").closest("div[class*='cursor-pointer']");
+    expect(projectHeader).toBeTruthy();
+
+    // Simulate drag start on the file row — sets draggedFileId in ExplorerPane state
+    const mockDataTransfer = {
+      setData: vi.fn(),
+      getData: vi.fn(),
+      effectAllowed: "",
+      dropEffect: "",
+    };
+
+    fireEvent.dragStart(appPyRow!, { dataTransfer: mockDataTransfer });
+
+    // Simulate drop on the project header
+    fireEvent.drop(projectHeader!, {
+      dataTransfer: mockDataTransfer,
+    });
+
+    await waitFor(() => {
+      expect(mockMoveFileMutate).toHaveBeenCalledWith({ fileId: 10, projectId: 5 });
+    });
   });
 });
