@@ -7,14 +7,16 @@ import { UserProfileModal } from "@/components/UserProfileModal";
 const mockUpdateMutateAsync = vi.fn();
 const mockDeleteMutateAsync = vi.fn();
 
+let mockUpdateIsPending = false;
+let mockDeleteIsPending = false;
 vi.mock("@/hooks/use-user-profile", () => ({
   useUpdateUserProfile: () => ({
     mutateAsync: mockUpdateMutateAsync,
-    isPending: false,
+    isPending: mockUpdateIsPending,
   }),
   useDeleteUserProfile: () => ({
     mutateAsync: mockDeleteMutateAsync,
-    isPending: false,
+    isPending: mockDeleteIsPending,
   }),
 }));
 
@@ -66,6 +68,8 @@ describe("UserProfileModal", () => {
     mockUpdateMutateAsync.mockReset().mockResolvedValue({});
     mockDeleteMutateAsync.mockReset().mockResolvedValue({});
     mockUser.updatePassword.mockReset();
+    mockUpdateIsPending = false;
+    mockDeleteIsPending = false;
   });
 
   it("renders dialog with User Profile title", () => {
