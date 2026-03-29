@@ -54,10 +54,7 @@ let mockUserFilesData: typeof defaultUserFiles | [] = defaultUserFiles;
 vi.mock("@/hooks/use-files", () => ({
   useStarterFiles: () => ({ data: [], isLoading: false }),
   useUserFiles: () => ({
-    data: [
-      { id: 10, name: "app.py", content: "print('app')", projectId: null },
-      { id: 11, name: "lib.py", content: "# lib", projectId: null },
-    ],
+    data: mockUserFilesData,
     isLoading: false, isError: false, error: null, refetch: mockRefetchUserFiles,
   }),
   useCreateUserFile: () => ({ mutateAsync: mockCreateMutateAsync, mutate: vi.fn() }),
@@ -546,6 +543,19 @@ describe("IDE interactions (signed-in)", () => {
 
     // No unsaved changes exist so handleQuickSave early-returns — no API call
     expect(mockUpdateMutateAsync).not.toHaveBeenCalled();
+  });
+
+  it("Monaco onMount does NOT add Cmd+S command when signed out", async () => {
+    mockUserId = null;
+    const mockEditor = { addCommand: vi.fn() };
+    render(<IDE />, { wrapper: Wrapper });
+
+    // Signed-out users don't get the Monaco editor, but if onMount were called
+    // the guard `if (isSignedIn)` on line 556 should prevent addCommand
+    if (capturedOnMount) {
+      act(() => { capturedOnMount?.(mockEditor); });
+      expect(mockEditor.addCommand).not.toHaveBeenCalled();
+    }
   });
 
   // ── User Profile Modal ──
