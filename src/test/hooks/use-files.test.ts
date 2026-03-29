@@ -593,20 +593,28 @@ describe("useDeleteFile", () => {
 
 describe("useUserFiles (branch coverage)", () => {
   it("throws on non-OK HTTP response", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 403,
     });
 
     const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     const { result } = renderHook(() => useUserFiles("user_err"), {
       wrapper: createWrapper(),
     });
 
+    // Advance past all retry delays (1s + 2s + 4s + 8s + 16s = 31s)
+    await vi.advanceTimersByTimeAsync(35000);
+
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error?.message).toBe("Failed to fetch user files (HTTP 403)");
     consoleSpy.mockRestore();
+    consoleLogSpy.mockRestore();
+    vi.useRealTimers();
   });
 
 });
