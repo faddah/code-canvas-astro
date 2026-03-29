@@ -9,12 +9,12 @@ const mockProjects: Project[] = [
 ];
 
 describe("SaveDialog", () => {
-  let onSave: ReturnType<typeof vi.fn>;
-  let onOpenChange: ReturnType<typeof vi.fn>;
+  let onSave: ReturnType<typeof vi.fn<(fileName: string, content: string, projectId: number | null) => void>>;
+  let onOpenChange: ReturnType<typeof vi.fn<(open: boolean) => void>>;
 
   beforeEach(() => {
-    onSave = vi.fn();
-    onOpenChange = vi.fn();
+    onSave = vi.fn<(fileName: string, content: string, projectId: number | null) => void>();
+    onOpenChange = vi.fn<(open: boolean) => void>();
   });
 
   it("renders when open", () => {
@@ -233,5 +233,47 @@ describe("SaveDialog", () => {
     const input = screen.getByDisplayValue("bad.png");
     fireEvent.change(input, { target: { value: "good.py" } });
     expect(screen.queryByText("Only .py and .txt files are allowed.")).not.toBeInTheDocument();
+  });
+
+  it("Enter key with empty filename shows error and does not save", () => {
+    render(
+      <SaveDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        fileName="test.py"
+        fileContent="print('hi')"
+        projects={[]}
+        currentProjectId={null}
+        onSave={onSave}
+      />
+    );
+
+    // Clear the filename
+    const input = screen.getByDisplayValue("test.py");
+    fireEvent.change(input, { target: { value: "" } });
+
+    // Press Enter — should trigger handleSave which hits the empty-name guard
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    expect(screen.getByText("File name is required.")).toBeInTheDocument();
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it("initializes with currentProjectId and saves with numeric project ID", () => {
+    render(
+      <SaveDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        fileName="test.py"
+        fileContent="print('hi')"
+        projects={mockProjects}
+        currentProjectId={2}
+        onSave={onSave}
+      />
+    );
+
+    // Save — should pass the numeric project ID (not "none")
+    fireEvent.click(screen.getByRole("button", { name: /save/i }));
+    expect(onSave).toHaveBeenCalledWith("test.py", "print('hi')", 2);
   });
 });
