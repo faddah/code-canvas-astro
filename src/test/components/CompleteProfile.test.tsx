@@ -5,10 +5,11 @@ import { CompleteProfile } from "@/components/CompleteProfile";
 
 // Mock the useCreateUserProfile hook
 const mockMutateAsync = vi.fn();
+let mockIsPending = false;
 vi.mock("@/hooks/use-user-profile", () => ({
   useCreateUserProfile: () => ({
     mutateAsync: mockMutateAsync,
-    isPending: false,
+    isPending: mockIsPending,
   }),
 }));
 
@@ -26,6 +27,7 @@ describe("CompleteProfile", () => {
     onCancel = vi.fn();
     mockMutateAsync.mockReset();
     mockMutateAsync.mockResolvedValue({});
+    mockIsPending = false;
   });
 
   it("renders dialog with title and description", () => {
