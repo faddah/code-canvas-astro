@@ -147,4 +147,71 @@ describe("CompleteProfile", () => {
     // The phone code prefix for default country US should be +1
     expect(screen.getByText("+1")).toBeInTheDocument();
   });
+
+  it("updates phone code prefix when country is changed", async () => {
+    render(<CompleteProfile onComplete={onComplete} onCancel={onCancel} />);
+
+    // Default is US (+1)
+    expect(screen.getByText("+1")).toBeInTheDocument();
+
+    // Radix Select renders a hidden native <select> for accessibility.
+    // In jsdom, we interact with it via fireEvent.change on that native element.
+    const nativeSelect = document.querySelector("select[aria-hidden='true']") as HTMLSelectElement;
+    expect(nativeSelect).toBeTruthy();
+
+    // Fire change to DE — this triggers the onValueChange callback
+    fireEvent.change(nativeSelect, { target: { value: "DE" } });
+
+    // The phone code prefix should now show +49
+    await waitFor(() => {
+      expect(screen.getByText("+49")).toBeInTheDocument();
+    });
+  });
+
+  it("calls onCancel when dialog is closed via overlay/escape", () => {
+    render(<CompleteProfile onComplete={onComplete} onCancel={onCancel} />);
+
+    // The Dialog's close button (X) triggers onOpenChange(false) which calls onCancel
+    const closeButton = screen.getByRole("button", { name: /close/i });
+    fireEvent.click(closeButton);
+
+    expect(onCancel).toHaveBeenCalled();
+  });
+
+  it("submits with changed country and correct phone prefix", async () => {
+    const user = userEvent.setup();
+    render(<CompleteProfile onComplete={onComplete} onCancel={onCancel} />);
+
+    // Change country to GB via the hidden native select
+    const nativeSelect = document.querySelector("select[aria-hidden='true']") as HTMLSelectElement;
+    fireEvent.change(nativeSelect, { target: { value: "GB" } });
+
+    await waitFor(() => {
+      expect(screen.getByText("+44")).toBeInTheDocument();
+    });
+
+    // Fill in the rest of the form
+    await user.type(screen.getByLabelText("Phone Number"), "2071234567");
+    await user.type(screen.getByLabelText("City"), "London");
+    await user.type(screen.getByLabelText("State / Province"), "England");
+    await user.type(screen.getByLabelText("Postal Code"), "SW1A 1AA");
+
+    fireEvent.click(screen.getByText("Save Profile"));
+
+    await waitFor(() => {
+      expect(mockMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          phone: "+44 2071234567",
+          city: "London",
+          state: "England",
+          postalCode: "SW1A 1AA",
+          country: "GB",
+        })
+      );
+    });
+
+    await waitFor(() => {
+      expect(onComplete).toHaveBeenCalled();
+    });
+  });
 });
