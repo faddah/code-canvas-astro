@@ -1,7 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,  // add this
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { OpenImportDialog } from "@/components/OpenImportDialog";
 import type { Project } from "@shared/schema";
+import type { Mock } from "vitest";
 
 const mockProjects: Project[] = [
   { id: 1, clerkUserId: "u1", name: "Project A", description: null, createdAt: new Date(), updatedAt: new Date() },
