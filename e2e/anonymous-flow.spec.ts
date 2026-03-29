@@ -1,23 +1,29 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Anonymous User Flow", () => {
-  test("loads the page and shows the IDE", async ({ page }) => {
+  // Firefox needs extra time — IDE hydration + asset loading can exceed 30s
+  test.setTimeout(60_000);
+
+  test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    // Wait for React hydration + IDE to appear
-    await expect(page.locator(".panel-header >> text=Console").first()).toBeVisible({ timeout: 30_000 });
+    await expect(
+      page.locator(".panel-header >> text=Console").first()
+    ).toBeVisible({ timeout: 45_000 });
+  });
+
+  test("loads the page and shows the IDE", async ({ page }) => {
+    // beforeEach already verified the Console panel is visible
+    await expect(page.locator(".panel-header >> text=Console").first()).toBeVisible();
   });
 
   test("shows starter files in the explorer", async ({ page }) => {
-    await page.goto("/");
-    // Wait for the IDE to load
-    await expect(page.locator(".panel-header >> text=Console").first()).toBeVisible({ timeout: 30_000 });
     // Starter files should be visible (e.g., main.py) — target the explorer sidebar entry
     await expect(page.locator(".truncate.flex-1", { hasText: "main.py" }).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("can write code and run it — sees console output", async ({ page }) => {
-    await page.goto("/");
-    await expect(page.locator(".panel-header >> text=Console").first()).toBeVisible({ timeout: 30_000 });
+    // Pyodide is a ~15MB WASM bundle — Firefox needs extra time to download and init
+    test.setTimeout(90_000);
 
     // Wait for Pyodide to initialize
     await expect(page.locator("text=Pyodide v0.27.7 initialized ready.")).toBeVisible({
