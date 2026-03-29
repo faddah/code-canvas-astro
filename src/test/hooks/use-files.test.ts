@@ -588,3 +588,25 @@ describe("useDeleteFile", () => {
     expect(result.current.error?.message).toBe("HTTP 503");
   });
 });
+
+// ─── useUserFiles: HTTP error and retryDelay branches ───
+
+describe("useUserFiles (branch coverage)", () => {
+  it("throws on non-OK HTTP response", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 403,
+    });
+
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const { result } = renderHook(() => useUserFiles("user_err"), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("Failed to fetch user files (HTTP 403)");
+    consoleSpy.mockRestore();
+  });
+
+});
