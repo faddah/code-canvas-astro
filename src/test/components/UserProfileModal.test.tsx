@@ -296,4 +296,114 @@ describe("UserProfileModal", () => {
     );
     expect(screen.getByText("Test")).toBeInTheDocument();
   });
+
+  it("submitting edit form with password calls user.updatePassword", async () => {
+    const user = userEvent.setup();
+    render(
+      <UserProfileModal
+        open={true}
+        onClose={onClose}
+        onDeleteProfile={onDeleteProfile}
+        user={mockUser}
+        profile={mockProfile}
+      />
+    );
+
+    // Switch to edit mode
+    await user.click(screen.getByText("Edit Profile"));
+
+    // Fill in a valid password (>= 8 chars)
+    const passwordInput = screen.getByLabelText("New Password");
+    const confirmInput = screen.getByLabelText("Confirm Password");
+    await user.clear(passwordInput);
+    await user.type(passwordInput, "newpass123");
+    await user.clear(confirmInput);
+    await user.type(confirmInput, "newpass123");
+
+    // Submit the form
+    await user.click(screen.getByText("Save Changes"));
+
+    await waitFor(() => {
+      expect(mockUpdateMutateAsync).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect(mockUser.updatePassword).toHaveBeenCalledWith({ newPassword: "newpass123" });
+    });
+  });
+
+  it("password update error does not crash and profile still saves", async () => {
+    mockUser.updatePassword.mockRejectedValueOnce(new Error("Clerk error"));
+    const user = userEvent.setup();
+    render(
+      <UserProfileModal
+        open={true}
+        onClose={onClose}
+        onDeleteProfile={onDeleteProfile}
+        user={mockUser}
+        profile={mockProfile}
+      />
+    );
+
+    await user.click(screen.getByText("Edit Profile"));
+
+    const passwordInput = screen.getByLabelText("New Password");
+    const confirmInput = screen.getByLabelText("Confirm Password");
+    await user.clear(passwordInput);
+    await user.type(passwordInput, "newpass123");
+    await user.clear(confirmInput);
+    await user.type(confirmInput, "newpass123");
+
+    await user.click(screen.getByText("Save Changes"));
+
+    // Profile update should still have been called
+    await waitFor(() => {
+      expect(mockUpdateMutateAsync).toHaveBeenCalled();
+    });
+
+    // updatePassword was called but threw — no crash
+    expect(mockUser.updatePassword).toHaveBeenCalled();
+  });
+
+  it("shows empty name and email when user fields are null", () => {
+    const nullUser = {
+      primaryEmailAddress: null,
+      fullName: null,
+      firstName: null,
+      externalAccounts: [],
+      passwordEnabled: true,
+      updatePassword: vi.fn(),
+    };
+    render(
+      <UserProfileModal
+        open={true}
+        onClose={onClose}
+        onDeleteProfile={onDeleteProfile}
+        user={nullUser}
+        profile={mockProfile}
+      />
+    );
+    // With no name or email, those fields should show empty or fallback text
+    // The "Not set" label appears for missing profile data, but name/email render as empty strings
+    expect(screen.queryByText("Test User")).not.toBeInTheDocument();
+    expect(screen.queryByText("test@example.com")).not.toBeInTheDocument();
+  });
+
+  it("phone without country code prefix shows full number in edit mode", () => {
+    const profileNoCode = { ...mockProfile, phone: "5551234567" };
+    render(
+      <UserProfileModal
+        open={true}
+        onClose={onClose}
+        onDeleteProfile={onDeleteProfile}
+        user={mockUser}
+        profile={profileNoCode}
+      />
+    );
+    fireEvent.click(screen.getByText("Edit Profile"));
+
+    // The regex replace finds no country code prefix, so full number is used
+    const phoneInput = screen.getByLabelText("Phone Number") as HTMLInputElement;
+    expect(phoneInput.value).toBe("5551234567");
+  });
 });
