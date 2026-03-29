@@ -231,4 +231,46 @@ describe("OpenImportDialog", () => {
     const importBtn = screen.getByRole("button", { name: /open \/ import/i });
     expect(importBtn).toBeDisabled();
   });
+
+  it("shows error for rejected files while keeping valid files", async () => {
+    render(
+      <OpenImportDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        projects={[]}
+        onImport={onImport}
+      />
+    );
+
+    const input = screen.getByTestId("file-input") as HTMLInputElement;
+    const validFile = createMockFile("app.py", "print('hi')");
+    const invalidFile = createMockFile("image.png", "binary");
+
+    await fireEvent.change(input, { target: { files: [validFile, invalidFile] } });
+
+    await waitFor(() => {
+      // Error shows the rejected file
+      expect(screen.getByText(/Skipped non-.py\/.txt files: image.png/)).toBeInTheDocument();
+      // Valid file is still listed
+      expect(screen.getByText("app.py")).toBeInTheDocument();
+    });
+  });
+
+  it("shows error when clicking import with no files selected", () => {
+    render(
+      <OpenImportDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        projects={[]}
+        onImport={onImport}
+      />
+    );
+
+    // Force-click the disabled import button
+    const importBtn = screen.getByRole("button", { name: /open \/ import/i });
+    fireEvent.click(importBtn);
+
+    // onImport should not have been called
+    expect(onImport).not.toHaveBeenCalled();
+  });
 });
