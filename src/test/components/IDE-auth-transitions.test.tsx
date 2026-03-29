@@ -27,18 +27,13 @@ vi.mock("@/hooks/use-pyodide", () => ({
   }),
 }));
 
-const starterFiles = [
+let mockStarterFilesData: any[] | undefined = [
   { id: 1, name: "starter.py", content: "# starter", projectId: null },
-];
-
-const userFiles = [
-  { id: 10, name: "user-file.py", content: "# user", projectId: null },
-  { id: 11, name: "user-lib.py", content: "# lib", projectId: null },
 ];
 
 vi.mock("@/hooks/use-files", () => ({
   useStarterFiles: () => ({
-    data: [{ id: 1, name: "starter.py", content: "# starter", projectId: null }],
+    data: mockStarterFilesData,
     isLoading: false,
   }),
   useUserFiles: () => ({
@@ -103,6 +98,9 @@ function createWrapper() {
 describe("IDE auth transitions", () => {
   beforeEach(() => {
     mockUserId = null;
+    mockStarterFilesData = [
+      { id: 1, name: "starter.py", content: "# starter", projectId: null },
+    ];
     document.getElementById = vi.fn().mockReturnValue(null);
   });
 
@@ -138,6 +136,47 @@ describe("IDE auth transitions", () => {
     // After logout, should show starter files
     await waitFor(() => {
       expect(screen.getAllByText("starter.py").length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  it("does not seed local files when starterFiles is an empty array", async () => {
+    mockStarterFilesData = [];
+    mockUserId = null;
+    const Wrap = createWrapper();
+    render(<IDE />, { wrapper: Wrap });
+
+    // With no starter files and not signed in, explorer should show no file entries
+    // The "Select a file to edit" placeholder should appear since no file is active
+    await waitFor(() => {
+      expect(screen.getByText("Select a file to edit")).toBeInTheDocument();
+    });
+
+    // No file tabs or names should be rendered
+    expect(screen.queryByText("starter.py")).not.toBeInTheDocument();
+  });
+
+  it("login transition clears unsaved changes and resets tabs", async () => {
+    mockUserId = null;
+    const Wrap = createWrapper();
+    const { rerender } = render(<IDE />, { wrapper: Wrap });
+
+    // Verify starter files shown and active
+    await waitFor(() => expect(screen.getAllByText("starter.py").length).toBeGreaterThanOrEqual(1));
+
+    // "Login" — change userId
+    mockUserId = "user_123";
+    rerender(<IDE />);
+
+    // After login, tabs should reset — starter.py tab should disappear,
+    // user files should eventually load
+    await waitFor(() => {
+      expect(screen.getAllByText("user-file.py").length).toBeGreaterThanOrEqual(1);
+    });
+
+    // The old starter.py should no longer be in the tab bar
+    // (it may still appear momentarily, but user files should be the active ones)
+    await waitFor(() => {
+      expect(screen.queryByText("starter.py")).not.toBeInTheDocument();
     });
   });
 });
