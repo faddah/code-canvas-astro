@@ -117,6 +117,26 @@ describe("useCreateUserProfile", () => {
       })
     );
   });
+
+  it("handles create failure (onError path)", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: () => Promise.resolve({ message: "Create failed" }),
+    });
+
+    const { result } = renderHook(() => useCreateUserProfile(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      result.current.mutate({
+        phone: "555", city: "X", state: "Y", postalCode: "Z", country: "US",
+      });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
 });
 
 // ─── useUpdateUserProfile ───
@@ -144,6 +164,24 @@ describe("useUpdateUserProfile", () => {
         body: JSON.stringify({ city: "Seattle" }),
       })
     );
+  });
+
+  it("handles update failure (onError path)", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: () => Promise.resolve({ message: "Update failed" }),
+    });
+
+    const { result } = renderHook(() => useUpdateUserProfile(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      result.current.mutate({ city: "Seattle" });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });
 
@@ -182,5 +220,24 @@ describe("useDeleteUserProfile", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error?.message).toBe("Server error");
+  });
+
+  it("falls back to default message when error body is not JSON", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: () => Promise.reject(new Error("not JSON")),
+    });
+
+    const { result } = renderHook(() => useDeleteUserProfile(), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      result.current.mutate();
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("Failed to delete profile");
   });
 });
