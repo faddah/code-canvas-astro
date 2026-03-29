@@ -101,4 +101,36 @@ describe("ConsolePanel", () => {
     // onSubmitInput should NOT have been called (no Enter pressed)
     expect(onSubmitInput).not.toHaveBeenCalled();
   });
+
+  it("Enter does not crash when onSubmitInput is not provided", async () => {
+    render(
+      <ConsolePanel
+        logs={[]}
+        onClear={vi.fn()}
+        isWaitingForInput={true}
+        // no onSubmitInput prop
+      />
+    );
+
+    const input = screen.getByPlaceholderText("Type your input and press Enter...");
+    // Should not throw
+    await userEvent.type(input, "test{Enter}");
+    expect(input).toBeInTheDocument();
+  });
+
+  it("shows both logs and input field simultaneously", () => {
+    render(
+      <ConsolePanel
+        logs={["existing output"]}
+        onClear={vi.fn()}
+        isWaitingForInput={true}
+        onSubmitInput={vi.fn()}
+      />
+    );
+
+    // Both logs and input should be visible — placeholder should NOT show
+    expect(screen.getByText("existing output")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Type your input and press Enter...")).toBeInTheDocument();
+    expect(screen.queryByText(/Ready to execute/)).not.toBeInTheDocument();
+  });
 });
