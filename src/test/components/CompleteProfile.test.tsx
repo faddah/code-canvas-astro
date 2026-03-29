@@ -100,4 +100,51 @@ describe("CompleteProfile", () => {
     expect(screen.getByText("State/Province is required")).toBeInTheDocument();
     expect(screen.getByText("Postal code is required")).toBeInTheDocument();
   });
+
+  it("shows errors only for unfilled fields when some fields are filled", async () => {
+    const user = userEvent.setup();
+    render(<CompleteProfile onComplete={onComplete} onCancel={onCancel} />);
+
+    // Fill phone and city, leave state and postalCode empty
+    await user.type(screen.getByLabelText("Phone Number"), "5551234567");
+    await user.type(screen.getByLabelText("City"), "Portland");
+
+    fireEvent.click(screen.getByText("Save Profile"));
+
+    await waitFor(() => {
+      // State and postal code errors should appear
+      expect(screen.getByText("State/Province is required")).toBeInTheDocument();
+      expect(screen.getByText("Postal code is required")).toBeInTheDocument();
+    });
+
+    // Phone and city errors should NOT appear
+    expect(screen.queryByText("Phone number must be at least 7 digits")).not.toBeInTheDocument();
+    expect(screen.queryByText("City is required")).not.toBeInTheDocument();
+  });
+
+  it("shows errors only for phone and city when state and postal are filled", async () => {
+    const user = userEvent.setup();
+    render(<CompleteProfile onComplete={onComplete} onCancel={onCancel} />);
+
+    // Fill state and postal, leave phone and city empty
+    await user.type(screen.getByLabelText("State / Province"), "OR");
+    await user.type(screen.getByLabelText("Postal Code"), "97201");
+
+    fireEvent.click(screen.getByText("Save Profile"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Phone number must be at least 7 digits")).toBeInTheDocument();
+      expect(screen.getByText("City is required")).toBeInTheDocument();
+    });
+
+    // State and postal code errors should NOT appear
+    expect(screen.queryByText("State/Province is required")).not.toBeInTheDocument();
+    expect(screen.queryByText("Postal code is required")).not.toBeInTheDocument();
+  });
+
+  it("default country US shows +1 prefix", () => {
+    render(<CompleteProfile onComplete={onComplete} onCancel={onCancel} />);
+    // The phone code prefix for default country US should be +1
+    expect(screen.getByText("+1")).toBeInTheDocument();
+  });
 });
