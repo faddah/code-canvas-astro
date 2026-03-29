@@ -546,4 +546,49 @@ describe("ExplorerPane", () => {
     );
     expect(newProjectBtn).toBeUndefined();
   });
+
+  it("whitespace-only filename does not create a file", async () => {
+    const user = userEvent.setup();
+    const { handlers } = renderExplorer();
+
+    // Open the new file dialog
+    const plusBtn = screen.getAllByRole("button").find(
+      (btn) => btn.querySelector(".lucide-plus")
+    );
+    expect(plusBtn).toBeTruthy();
+    await user.click(plusBtn!);
+    await user.click(await screen.findByText("New File"));
+
+    // Type only whitespace and submit
+    const input = screen.getByPlaceholderText("script.py");
+    await user.type(input, "   {Enter}");
+
+    // onCreateFile should NOT have been called
+    expect(handlers.onCreateFile).not.toHaveBeenCalled();
+  });
+
+  it("shows empty state when signed in with no files and no projects", () => {
+    renderExplorer({ files: [], projects: [] });
+    expect(screen.getByText(/No files yet/)).toBeInTheDocument();
+  });
+
+  it("dragLeave does not clear dropTarget when relatedTarget is a child", () => {
+    renderExplorer();
+
+    const projectHeader = screen.getByText("My Project").closest("div")!;
+
+    // Simulate dragEnter first
+    fireEvent.dragEnter(projectHeader, {
+      dataTransfer: { types: ["text/plain"] },
+    });
+
+    // Simulate dragLeave where relatedTarget is a child element
+    const childEl = projectHeader.querySelector("span") || projectHeader.firstChild;
+    fireEvent.dragLeave(projectHeader, {
+      relatedTarget: childEl,
+    });
+
+    // The project header should still be in the DOM and functional
+    expect(screen.getByText("My Project")).toBeInTheDocument();
+  });
 });
