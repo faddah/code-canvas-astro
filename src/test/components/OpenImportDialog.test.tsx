@@ -22,7 +22,7 @@ function createMockFile(name: string, content: string): File {
 
 describe("OpenImportDialog", () => {
   let onImport: Mock<(files: { name: string; content: string }[], projectId: number | null) => void>;
-  let onOpenChange: (open: boolean) => void;
+  let onOpenChange: Mock<(open: boolean) => void>;
 
   beforeEach(() => {
     onImport = vi.fn();
