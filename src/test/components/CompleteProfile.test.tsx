@@ -180,6 +180,13 @@ describe("CompleteProfile", () => {
     expect(onCancel).toHaveBeenCalled();
   });
 
+  it("shows 'Saving...' text when isPending is true", () => {
+    mockIsPending = true;
+    render(<CompleteProfile onComplete={onComplete} onCancel={onCancel} />);
+    expect(screen.getByText("Saving...")).toBeInTheDocument();
+    expect(screen.queryByText("Save Profile")).not.toBeInTheDocument();
+  });
+
   it("submits with changed country and correct phone prefix", async () => {
     const user = userEvent.setup();
     render(<CompleteProfile onComplete={onComplete} onCancel={onCancel} />);
