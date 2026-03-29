@@ -3,6 +3,7 @@
   "include": ["src/test/**/*"],
   "exclude": ["node_modules"],
   "compilerOptions": {
+    "types": ["vitest/globals"],
     "paths": {
       "@/*": ["./src/*"],
       "@shared/*": ["./src/shared/*"]
