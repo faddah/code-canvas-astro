@@ -256,7 +256,7 @@ describe("OpenImportDialog", () => {
     });
   });
 
-  it("shows error when clicking import with no files selected", () => {
+  it("click-to-select button triggers file input click", () => {
     render(
       <OpenImportDialog
         open={true}
@@ -266,11 +266,44 @@ describe("OpenImportDialog", () => {
       />
     );
 
-    // Force-click the disabled import button
-    const importBtn = screen.getByRole("button", { name: /open \/ import/i });
-    fireEvent.click(importBtn);
+    // The hidden file input
+    const fileInput = screen.getByTestId("file-input") as HTMLInputElement;
+    const clickSpy = vi.spyOn(fileInput, "click");
 
-    // onImport should not have been called
-    expect(onImport).not.toHaveBeenCalled();
+    // Click the "Click to select .py or .txt files" button
+    const selectBtn = screen.getByText(/Click to select/).closest("button")!;
+    fireEvent.click(selectBtn);
+
+    expect(clickSpy).toHaveBeenCalled();
+    clickSpy.mockRestore();
+  });
+
+  it("imports files and closes dialog on success", async () => {
+    render(
+      <OpenImportDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        projects={[]}
+        onImport={onImport}
+      />
+    );
+
+    // Add a file
+    const input = screen.getByTestId("file-input") as HTMLInputElement;
+    const file = createMockFile("app.py", "x = 1");
+    await fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByText("app.py")).toBeInTheDocument();
+    });
+
+    // Click import — should call onImport and close via onOpenChange(false)
+    fireEvent.click(screen.getByRole("button", { name: /open \/ import/i }));
+
+    expect(onImport).toHaveBeenCalledWith(
+      [{ name: "app.py", content: "x = 1" }],
+      null
+    );
+    expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 });
