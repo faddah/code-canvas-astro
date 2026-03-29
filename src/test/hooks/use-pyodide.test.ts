@@ -228,4 +228,49 @@ describe("usePyodide", () => {
     expect(result.current.isWaitingForInput).toBe(false);
     expect(result.current.output).toContainEqual("Alice");
   });
+
+  it("creates a script element when window.loadPyodide is not present", async () => {
+    // Remove the mock so loadPyodide is not on window
+    uninstallPyodideMock();
+
+    const appendSpy = vi.spyOn(document.head, "appendChild");
+
+    const { result, unmount } = renderHook(() => usePyodide());
+
+    // A script element should have been appended to document.head
+    await waitFor(() => {
+      const scriptCall = appendSpy.mock.calls.find(
+        ([el]) => el instanceof HTMLScriptElement && el.src.includes("pyodide")
+      );
+      expect(scriptCall).toBeDefined();
+    });
+
+    // isReady should still be false since the script won't actually load in jsdom
+    expect(result.current.isReady).toBe(false);
+
+    unmount();
+    appendSpy.mockRestore();
+    // Reinstall for other tests
+    installPyodideMock();
+  });
+
+  it("cancellation on unmount prevents isReady from becoming true", async () => {
+    // Make loadPyodide hang (never resolve) to test the cancellation path
+    let resolveLoad: (value: any) => void;
+    (window as any).loadPyodide = () => new Promise((resolve) => { resolveLoad = resolve; });
+
+    const { result, unmount } = renderHook(() => usePyodide());
+
+    // Unmount immediately before loadPyodide resolves
+    unmount();
+
+    // Now resolve — the cancelled flag should prevent state updates
+    resolveLoad!(mockPyodide);
+
+    // Small delay to allow any pending promises
+    await new Promise((r) => setTimeout(r, 50));
+
+    // isReady should NOT have become true since the hook was unmounted
+    expect(result.current.isReady).toBe(false);
+  });
 });
