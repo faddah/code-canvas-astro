@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -100,8 +101,11 @@ export function OpenImportDialog({
         <DialogHeader>
           <DialogTitle className="text-black font-bold text-xl flex items-center gap-2">
             <FolderOpen className="w-5 h-5" />
-            Open / Import Files
+              Open / Import Files
           </DialogTitle>
+          <DialogDescription>
+            Select .py or .txt files to open or import into your project.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
