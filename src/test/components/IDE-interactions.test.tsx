@@ -13,6 +13,9 @@ const mockCreateMutateAsync = vi.fn().mockResolvedValue({ id: 99, name: "new.py"
 const mockDeleteMutate = vi.fn((id: number, opts?: any) => opts?.onSuccess?.());
 const mockSignOut = vi.fn();
 const mockRefetchUserFiles = vi.fn();
+const mockCreateProjectMutate = vi.fn();
+const mockDeleteProjectMutate = vi.fn();
+const mockMoveFileMutate = vi.fn();
 
 // Track Monaco onMount / onChange
 let capturedOnChange: ((value: string | undefined) => void) | null = null;
