@@ -22,9 +22,11 @@ vi.mock("@/hooks/use-pyodide", () => ({
   }),
 }));
 
-// Return loading state for starter files
+// Return loading state for starter files (mutable for transition tests)
+let mockStarterLoading = true;
+let mockStarterData: any = undefined;
 vi.mock("@/hooks/use-files", () => ({
-  useStarterFiles: () => ({ data: undefined, isLoading: true }),
+  useStarterFiles: () => ({ data: mockStarterData, isLoading: mockStarterLoading }),
   useUserFiles: () => ({ data: undefined, isLoading: false, isError: false, error: null, refetch: vi.fn() }),
   useCreateUserFile: () => ({ mutateAsync: vi.fn(), mutate: vi.fn() }),
   useUpdateUserFile: () => ({ mutateAsync: vi.fn(), mutate: vi.fn() }),
@@ -73,6 +75,8 @@ function Wrapper({ children }: { children: React.ReactNode }) {
 
 describe("IDE loading state", () => {
   beforeEach(() => {
+    mockStarterLoading = true;
+    mockStarterData = undefined;
     document.getElementById = vi.fn().mockReturnValue(null);
   });
 
@@ -121,5 +125,24 @@ describe("IDE loading state", () => {
     document.getElementById = vi.fn().mockReturnValue(mockEl);
     render(<IDE />, { wrapper: Wrapper });
     expect(mockEl.remove).toHaveBeenCalled();
+  });
+
+  it("clears loadingTooLong when loading finishes", () => {
+    vi.useFakeTimers();
+    const { rerender } = render(<IDE />, { wrapper: Wrapper });
+
+    // Advance past the 10s timeout so loadingTooLong becomes true
+    act(() => { vi.advanceTimersByTime(10_000); });
+    expect(screen.getByText(/Taking too long/)).toBeInTheDocument();
+
+    // Now transition to not-loading
+    mockStarterLoading = false;
+    mockStarterData = [{ id: 1, name: "main.py", content: "print('hi')", projectId: null }];
+    rerender(<IDE />);
+
+    // The loading screen and retry button should disappear
+    expect(screen.queryByText(/Taking too long/)).not.toBeInTheDocument();
+    expect(screen.queryByText("Initializing Environment...")).not.toBeInTheDocument();
+    vi.useRealTimers();
   });
 });
