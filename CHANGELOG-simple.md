@@ -4,6 +4,22 @@ A plain-language summary of what changed in each version of the app.
 
 ---
 
+## Version 2.1.1 — March 30, 2026
+
+### Playwright test reliability fix & dependency updates
+
+- Fixed Playwright end-to-end tests stalling indefinitely — the root cause was a stale Astro dev server on port 4321 that was returning 500/504 errors, preventing Playwright from ever starting its test run
+- Added a `pretest:e2e` npm script that automatically kills any existing process on port 4321 before running e2e tests, so you always get a clean server
+- Changed Playwright's `reuseExistingServer` from `true` (local) to `false` — Playwright now always starts a fresh Astro dev server instead of reusing a potentially broken one
+- Refactored `astro.config.mjs` to use the new `defineConfig` import from `astro/config` (replacing the old `createRequire` from `node:module`), matching Astro 6.1.1's updated API
+- Updated Astro to v6.1.2 (was v6.1.1)
+- Updated drizzle-orm to v0.45.2 and drizzle-kit to v0.31.10 (was v0.18.1)
+- Corrected aws-cdk to v2.1115.0 (was incorrectly set to v3.0.0)
+- Updated react-resizable-panels to v4.8.0
+- Updated lucide-react to v1.7.0
+
+---
+
 ## Version 2.1.0 — March 27, 2026
 
 ### Save/Open dialogs, project management, and Explorer drag-and-drop
