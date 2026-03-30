@@ -1,14 +1,14 @@
 import { test, expect } from "@playwright/test";
+import { mockStarterFilesAPI, waitForIDEShell } from "./helpers";
 
 test.describe("Explorer Pane Structure", () => {
   // Firefox needs extra time — IDE hydration + asset loading can exceed 30s
   test.setTimeout(60_000);
 
   test.beforeEach(async ({ page }) => {
+    await mockStarterFilesAPI(page);
     await page.goto("/");
-    await expect(
-      page.locator(".panel-header >> text=Console").first()
-    ).toBeVisible({ timeout: 45_000 });
+    await waitForIDEShell(page);
   });
 
   test("Explorer pane is visible on desktop viewports", async ({ page }) => {
@@ -85,10 +85,9 @@ test.describe("Explorer file interactions (anonymous)", () => {
   test.setTimeout(60_000);
 
   test.beforeEach(async ({ page }) => {
+    await mockStarterFilesAPI(page);
     await page.goto("/");
-    await expect(
-      page.locator(".panel-header >> text=Console").first()
-    ).toBeVisible({ timeout: 45_000 });
+    await waitForIDEShell(page);
   });
 
   test("files are NOT draggable for anonymous users", async ({ page }) => {
