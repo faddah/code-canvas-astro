@@ -2,17 +2,16 @@ import { test, expect } from "@playwright/test";
 import path from "path";
 import fs from "fs";
 import os from "os";
+import { mockStarterFilesAPI, waitForIDEShell } from "./helpers";
 
 test.describe("Explorer Pane & Dialogs (Anonymous)", () => {
   // Firefox needs extra time — IDE hydration + asset loading can exceed 30s
   test.setTimeout(60_000);
 
   test.beforeEach(async ({ page }) => {
+    await mockStarterFilesAPI(page);
     await page.goto("/");
-    // Wait for IDE to fully load
-    await expect(
-      page.locator(".panel-header >> text=Console").first()
-    ).toBeVisible({ timeout: 45_000 });
+    await waitForIDEShell(page);
   });
 
   test("shows Explorer pane with files", async ({ page }) => {
@@ -82,10 +81,9 @@ test.describe("Keyboard Shortcut (Cmd+S / Ctrl+S)", () => {
     page,
   }) => {
     test.setTimeout(60_000);
+    await mockStarterFilesAPI(page);
     await page.goto("/");
-    await expect(
-      page.locator(".panel-header >> text=Console").first()
-    ).toBeVisible({ timeout: 45_000 });
+    await waitForIDEShell(page);
 
     // Press Ctrl+S (or Meta+S on Mac) — should not cause browser save dialog
     // We verify by checking that no error occurs and the page remains stable
@@ -107,10 +105,9 @@ test.describe("Open / Import Dialog file validation", () => {
     // This test verifies the file input has the correct accept attribute
     // The actual dialog is only available for signed-in users,
     // so we test the component's constraint via DOM inspection
+    await mockStarterFilesAPI(page);
     await page.goto("/");
-    await expect(
-      page.locator(".panel-header >> text=Console").first()
-    ).toBeVisible({ timeout: 45_000 });
+    await waitForIDEShell(page);
   });
 });
 
@@ -120,10 +117,9 @@ test.describe("File type restrictions", () => {
   }) => {
     test.setTimeout(60_000);
     // Navigate and wait for load
+    await mockStarterFilesAPI(page);
     await page.goto("/");
-    await expect(
-      page.locator(".panel-header >> text=Console").first()
-    ).toBeVisible({ timeout: 45_000 });
+    await waitForIDEShell(page);
 
     // The Open/Import dialog uses accept=".py,.txt" on its file input
     // This is enforced at the component level and tested in unit tests
