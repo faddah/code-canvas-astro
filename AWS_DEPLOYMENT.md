@@ -3,7 +3,7 @@
 This document covers two scenarios:
 
 1. **[Initial Setup](#initial-setup)** — first-time deployment of the full AWS infrastructure stack (Route 53, ACM, CloudFront, API Gateway, Lambda, ECR).
-2. **[Updating a Live Deployment](#updating-a-live-deployment)** — pushing new code after the infrastructure is already running, using `update_aws_deployment.py`.
+2. **[Updating a Live Deployment](#updating-a-live-deployment)** — pushing new code after the infrastructure is already running, using `update_aws_deployment.py`. This is a Pyton script that uses the Python `boto3` and `botocore` libraries for AWS configuration, deployment, and maintenance.
 
 ---
 
