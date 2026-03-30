@@ -22,13 +22,15 @@ test.describe("Anonymous User Flow", () => {
   });
 
   test("can write code and run it — sees console output", async ({ page }) => {
-    // Pyodide is a ~15MB WASM bundle — Firefox needs extra time to download and init
-    test.setTimeout(90_000);
+    // Pyodide is a ~15MB WASM bundle — Firefox WASM compilation is slower
+    test.setTimeout(120_000);
 
-    // Wait for Pyodide to initialize
-    await expect(page.locator("text=Pyodide v0.27.7 initialized ready.")).toBeVisible({
-      timeout: 60_000,
-    });
+    // Wait for Pyodide to initialize. Race against the failure message so
+    // we fail fast with a clear reason if the CDN script fails to load.
+    const ready = page.locator("text=Pyodide v0.27.7 initialized ready.");
+    const failed = page.locator("text=Failed to load Python environment script.");
+    await expect(ready.or(failed)).toBeVisible({ timeout: 90_000 });
+    await expect(ready).toBeVisible();
 
     // The Monaco editor should be present
     const editor = page.locator(".monaco-editor").first();
