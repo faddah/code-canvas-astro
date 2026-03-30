@@ -1,60 +1,19 @@
 import { test, expect } from "@playwright/test";
+import { mockStarterFilesAPI, blockPyodide, waitForIDEShell, waitForFiles } from "./helpers";
 
 /**
  * E2E tests targeting branch-coverage gaps that cannot be reached in jsdom.
  *
  * Primary target: IDE.tsx lines 255-257 — handleRun guard when !isReady.
  * In jsdom, the Run button is disabled={!isReady} and React blocks synthetic
- * click handlers on disabled elements. In a real browser, we remove the
- * disabled attribute via page.evaluate() before clicking, so React's event
- * delegation sees a non-disabled button and fires the onClick handler,
- * reaching the `if (!isReady)` toast guard.
+ * click handlers on disabled elements. In a real browser, we call React's
+ * internal onClick directly via __reactProps$, reaching the `if (!isReady)`
+ * toast guard.
  *
  * The dev server's Turso DB can fail, producing a vite-error-overlay that
  * blocks pointer events. We intercept /api/starter-files and return mock
  * data so the app renders regardless of DB state.
  */
-
-// Mock starter files returned by the API
-const MOCK_STARTER_FILES = [
-  {
-    id: 1,
-    name: "main.py",
-    content: 'print("hello from e2e")\n',
-    createdAt: "2025-01-01T00:00:00.000Z",
-  },
-  {
-    id: 2,
-    name: "utils.py",
-    content: "# utility functions\ndef add(a, b):\n    return a + b\n",
-    createdAt: "2025-01-01T00:00:00.000Z",
-  },
-];
-
-// ─── Helper: intercept starter-files API to avoid DB errors ───
-async function mockStarterFilesAPI(page: import("@playwright/test").Page) {
-  await page.route("**/api/starter-files", (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(MOCK_STARTER_FILES),
-    })
-  );
-}
-
-// ─── Helper: wait for the IDE shell to render ───
-async function waitForIDEShell(page: import("@playwright/test").Page) {
-  await expect(
-    page.locator(".panel-header >> text=Console").first()
-  ).toBeVisible({ timeout: 45_000 });
-}
-
-// ─── Helper: wait for at least one file in the Explorer ───
-async function waitForFiles(page: import("@playwright/test").Page) {
-  await expect(
-    page.locator(".truncate.flex-1").first()
-  ).toBeVisible({ timeout: 15_000 });
-}
 
 // ═══════════════════════════════════════════════════════════════
 // Run button while Pyodide is loading (IDE.tsx lines 255-257)
@@ -69,11 +28,8 @@ test.describe("IDE — Run button while Pyodide is loading", () => {
     // Mock the starter-files API to avoid DB errors / vite-error-overlay
     await mockStarterFilesAPI(page);
 
-    // Block the Pyodide CDN so isReady stays false throughout the test
-    await page.route(
-      "**/cdn.jsdelivr.net/pyodide/**",
-      (route) => route.abort()
-    );
+    // Block Pyodide CDN with empty JS so isReady stays false (avoids vite-error-overlay)
+    await blockPyodide(page);
 
     await page.goto("/");
     await waitForIDEShell(page);
@@ -93,24 +49,42 @@ test.describe("IDE — Run button while Pyodide is loading", () => {
       timeout: 45_000,
     });
 
-    // The Run button is disabled={!isReady}. React's event delegation checks
-    // event.target.disabled and drops the synthetic onClick for disabled elements.
-    // Remove the DOM disabled attribute and dispatch a click in a single evaluate
-    // so there's no race between removing disabled and React re-rendering.
+    // The Run button is disabled={!isReady}. React 18's event delegation checks
+    // props.disabled from its INTERNAL fiber props (stored as __reactProps$xxx on
+    // the DOM node), not the DOM disabled attribute. We need to:
+    // 1. Find the __reactProps$ key on the button element
+    // 2. Set props.disabled = false in React's internal props
+    // 3. Also remove DOM disabled attribute
+    // 4. Fire the click — React sees an enabled button and fires handleRun,
+    //    which hits the `if (!isReady)` toast guard (IDE.tsx lines 255-257).
     const runButton = page.locator('button:has-text("Run")').first();
     await expect(runButton).toBeVisible();
     await expect(runButton).toBeDisabled();
 
-    const clicked = await page.evaluate(() => {
-      // Find the Run button by its Play icon SVG
+    const result = await page.evaluate(() => {
       const svgs = document.querySelectorAll("svg.lucide-play");
       const btn = svgs[0]?.closest("button") as HTMLButtonElement | null;
-      if (!btn) return false;
-      btn.disabled = false;
-      btn.click();
-      return true;
+      if (!btn) return { found: false, called: false };
+
+      // Find React's internal props key on the button element
+      const propsKey = Object.keys(btn).find((k) =>
+        k.startsWith("__reactProps$")
+      );
+      if (!propsKey) return { found: true, called: false };
+
+      const reactProps = (btn as any)[propsKey];
+      if (typeof reactProps?.onClick !== "function")
+        return { found: true, called: false };
+
+      // Call handleRun directly — bypasses React's event delegation entirely.
+      // handleRun is an arrow function that reads isReady from its closure.
+      // Since Pyodide is blocked, isReady is false → toast fires.
+      reactProps.onClick();
+      return { found: true, called: true };
     });
-    expect(clicked).toBe(true);
+
+    expect(result.found).toBe(true);
+    expect(result.called).toBe(true);
 
     // The toast should appear with the loading warning
     await expect(
@@ -145,9 +119,9 @@ test.describe("IDE — Tab management (e2e)", () => {
 
     // Open both files as tabs by clicking them
     await fileEntries.nth(0).click();
-    await expect(page.locator(".monaco-editor").first()).toBeVisible({
-      timeout: 45_000,
-    });
+    await expect(
+      page.locator("[class*='min-w-30']", { hasText: firstFileName }).first()
+    ).toBeVisible({ timeout: 10_000 });
     await fileEntries.nth(1).click();
 
     // Both tabs should be visible in the tab bar
@@ -223,11 +197,8 @@ test.describe("IDE — Environment status", () => {
   }) => {
     await mockStarterFilesAPI(page);
 
-    // Block Pyodide to ensure we catch the loading state
-    await page.route(
-      "**/cdn.jsdelivr.net/pyodide/**",
-      (route) => route.abort()
-    );
+    // Block Pyodide with empty JS to ensure we catch the loading state
+    await blockPyodide(page);
 
     await page.goto("/");
     await waitForIDEShell(page);
@@ -246,11 +217,8 @@ test.describe("IDE — Environment status", () => {
   }) => {
     await mockStarterFilesAPI(page);
 
-    // Block Pyodide
-    await page.route(
-      "**/cdn.jsdelivr.net/pyodide/**",
-      (route) => route.abort()
-    );
+    // Block Pyodide with empty JS
+    await blockPyodide(page);
 
     await page.goto("/");
     await waitForIDEShell(page);
