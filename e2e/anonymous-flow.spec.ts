@@ -1,14 +1,14 @@
 import { test, expect } from "@playwright/test";
+import { mockStarterFilesAPI, dismissViteOverlay, waitForIDEShell } from "./helpers";
 
 test.describe("Anonymous User Flow", () => {
   // Firefox needs extra time — IDE hydration + asset loading can exceed 30s
   test.setTimeout(60_000);
 
   test.beforeEach(async ({ page }) => {
+    await mockStarterFilesAPI(page);
     await page.goto("/");
-    await expect(
-      page.locator(".panel-header >> text=Console").first()
-    ).toBeVisible({ timeout: 45_000 });
+    await waitForIDEShell(page);
   });
 
   test("loads the page and shows the IDE", async ({ page }) => {
@@ -47,6 +47,10 @@ test.describe("Anonymous User Flow", () => {
 
     // Give React a tick to process the onChange from Monaco's content change event
     await page.waitForTimeout(500);
+
+    // Dismiss any vite-error-overlay that may have appeared from transient
+    // server errors during the long Pyodide download (dev-server artifact only)
+    await dismissViteOverlay(page);
 
     // Click the Run button
     const runButton = page.locator('button:has-text("Run")').first();
