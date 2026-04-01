@@ -10,6 +10,7 @@ import {
   X,
   GripVertical,
   FileText,
+  Package,
 } from "lucide-react";
 import {
   Dialog,
@@ -44,6 +45,7 @@ interface ExplorerPaneProps {
   isSignedIn: boolean;
   isLoading: boolean;
   isError: boolean;
+  packages: { id: number; packageName: string; versionSpec?: string | null }[];
   onOpenFile: (id: number) => void;
   onDeleteFile: (id: number) => void;
   onCreateFile: (name: string, projectId?: number | null) => void;
@@ -51,6 +53,8 @@ interface ExplorerPaneProps {
   onDeleteProject: (id: number) => void;
   onMoveFile: (fileId: number, projectId: number | null) => void;
   onRetry: () => void;
+  onAddPackage: (packageName: string) => void;
+  onRemovePackage: (id: number) => void;
 }
 
 function getFileIcon(name: string) {
@@ -112,6 +116,7 @@ export function ExplorerPane({
   isSignedIn,
   isLoading,
   isError,
+  packages,
   onOpenFile,
   onDeleteFile,
   onCreateFile,
@@ -119,6 +124,8 @@ export function ExplorerPane({
   onDeleteProject,
   onMoveFile,
   onRetry,
+  onAddPackage,
+  onRemovePackage,
 }: ExplorerPaneProps) {
   const [isNewFileDialogOpen, setIsNewFileDialogOpen] = useState(false);
   const [isNewProjectDialogOpen, setIsNewProjectDialogOpen] = useState(false);
@@ -128,6 +135,14 @@ export function ExplorerPane({
   const [expandedProjects, setExpandedProjects] = useState<Set<number>>(new Set());
   const [draggedFileId, setDraggedFileId] = useState<number | null>(null);
   const [dropTarget, setDropTarget] = useState<{ type: "project" | "root"; id?: number } | null>(null);
+  const [isAddPackageOpen, setIsAddPackageOpen] = useState(false);
+  const [newPackageName, setNewPackageName] = useState("");
+  const handleAddPackage = () => {
+    if (!newPackageName.trim()) return;
+    onAddPackage(newPackageName.trim());
+    setIsAddPackageOpen(false);
+    setNewPackageName("");
+  };
 
   const toggleProject = (projectId: number) => {
     setExpandedProjects((prev) => {
@@ -459,6 +474,107 @@ export function ExplorerPane({
         {/* Loose files (not in any project) */}
         {looseFiles.map((file) => renderFileItem(file, false))}
       </div>
+
+      {/* Packages */}
+        {isSignedIn && (
+          <div className="border-t border-border px-2 py-2">
+            <div className="flex items-center justify-between px-1 mb-1">
+              <span className="
+                text-xs
+                font-semibold
+                text-muted-foreground
+                uppercase
+                tracking-wider
+                flex
+                items-center
+                gap-1.5"
+              >
+                <Package className="w-3.5 h-3.5" />
+                Packages
+              </span>
+              <button
+                onClick={() => setIsAddPackageOpen(true)}
+                className="hover:text-primary hover:bg-primary/10 p-1 rounded transition-colors"
+                title="Add Package"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+
+            {packages.length === 0 ? (
+              <p className="text-[10px] text-muted-foreground/50 italic px-1 py-1">
+                No packages — click + to add
+              </p>
+            ) : (
+              <div className="space-y-0.5">
+                {packages.map((pkg) => (
+                  <div
+                    key={pkg.id}
+                    className="group flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground
+  hover:bg-white/5"
+                  >
+                    <Package className="w-3.5 h-3.5 opacity-50" />
+                    <span className="truncate flex-1">{pkg.packageName}</span>
+                    {pkg.versionSpec && (
+                      <span className="text-[10px] text-muted-foreground/60">{pkg.versionSpec}</span>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemovePackage(pkg.id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded transition-opacity"
+                    >
+                      <Trash2 className="w-3 h-3 text-muted-foreground hover:text-red-400" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add Package Dialog */}
+            <Dialog open={isAddPackageOpen} onOpenChange={setIsAddPackageOpen}>
+              <DialogContent className="bg-white text-black min-h-55 sm:rounded-xl">
+                <DialogHeader>
+                  <DialogTitle className="text-black font-bold text-xl">Add Package</DialogTitle>
+                </DialogHeader>
+                <div className="py-5">
+                  <Input
+                    placeholder="numpy"
+                    value={newPackageName}
+                    onChange={(e) => setNewPackageName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleAddPackage()}
+                    autoFocus
+                    className="bg-white text-black font-bold text-base border-2 border-gray-400 h-12
+  placeholder:text-gray-400 focus-visible:ring-blue-500"
+                  />
+                  <p className="text-gray-500 text-xs mt-2">
+                    Enter a PyPI package name (e.g. numpy, pandas, matplotlib)
+                  </p>
+                </div>
+                <DialogFooter className="gap-2 sm:gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsAddPackageOpen(false);
+                      setNewPackageName("");
+                    }}
+                    className="border-gray-400 text-black hover:bg-gray-100 font-semibold"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleAddPackage}
+                    disabled={!newPackageName.trim()}
+                    className="font-semibold"
+                  >
+                    Add
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
 
       {/* Footer */}
       <div className="px-3 py-2 border-t border-border text-[10px] text-muted-foreground/60 italic leading-relaxed">
