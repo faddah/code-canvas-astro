@@ -4,7 +4,6 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [2.2.0](https://github.com/faddah/code-canvas-astro/compare/v2.1.1...v2.2.0) (2026-04-01)
 
-
 ### Features
 
 * add PyPI package management — users can add/remove Python packages per project via the Explorer sidebar ([8e2b55f](https://github.com/faddah/code-canvas-astro/commit/8e2b55f))
@@ -17,13 +16,11 @@ All notable changes to this project will be documented in this file. See [standa
 * show install progress messages in console — "Installing numpy, pandas..." and "Installed 2 packages." ([e981f3d](https://github.com/faddah/code-canvas-astro/commit/e981f3d))
 * add Package icon and Add Package dialog in ExplorerPane UI ([f8d56e6](https://github.com/faddah/code-canvas-astro/commit/f8d56e6))
 
-
 ### Bug Fixes
 
 * remove `Error.isError()` (ES2026 proposal) causing GitHub Actions CI failures — replaced with empty catch block ([30c3f78](https://github.com/faddah/code-canvas-astro/commit/30c3f78))
 * fix `projectId` referenced before defined in packages index.ts API route ([90c46a0](https://github.com/faddah/code-canvas-astro/commit/90c46a0))
 * expand catch error messaging in packages create.ts for better debugging ([b767872](https://github.com/faddah/code-canvas-astro/commit/b767872))
-
 
 ### Tests
 
@@ -35,7 +32,6 @@ All notable changes to this project will be documented in this file. See [standa
 * update ExplorerPane test helper with new package props ([5344376](https://github.com/faddah/code-canvas-astro/commit/5344376))
 * update IDE-interactions test for new `runCode` 3-arg signature ([41b2384](https://github.com/faddah/code-canvas-astro/commit/41b2384))
 
-
 ### CI/CD
 
 * upgrade GitHub Actions — checkout v6, setup-node v6, upload-artifact v7, Node.js 22 ([9b3433e](https://github.com/faddah/code-canvas-astro/commit/9b3433e))
@@ -43,8 +39,7 @@ All notable changes to this project will be documented in this file. See [standa
 * add separate build step before e2e tests, refactor webServer to use `npm run preview` in CI ([fe5d724](https://github.com/faddah/code-canvas-astro/commit/fe5d724))
 * add `actions/cache@v5` for e2e test caching ([4bbaab1](https://github.com/faddah/code-canvas-astro/commit/4bbaab1))
 
-
-### Dependency Updates
+### Dependencies
 
 * update @clerk/astro, @clerk/react, @clerk/testing ([6c952db](https://github.com/faddah/code-canvas-astro/commit/6c952db))
 * update @tanstack/react-query ([6c952db](https://github.com/faddah/code-canvas-astro/commit/6c952db))
@@ -52,18 +47,15 @@ All notable changes to this project will be documented in this file. See [standa
 * update aws-cdk ([6c952db](https://github.com/faddah/code-canvas-astro/commit/6c952db))
 * add TypeScript v^5.9.3 as devDependency ([6ad7cd9](https://github.com/faddah/code-canvas-astro/commit/6ad7cd9))
 
-
 ### [2.1.1](https://github.com/faddah/code-canvas-astro/compare/v2.1.0...v2.1.1) (2026-03-30)
 
-
-### Bug Fixes
+### Bug Fixes (2.1.1)
 
 * fix Playwright e2e tests stalling due to stale Astro dev server on port 4321 ([9fb8a6c](https://github.com/faddah/code-canvas-astro/commit/9fb8a6c))
 * add `pretest:e2e` script to kill any existing server on port 4321 before running e2e tests ([b63eb60](https://github.com/faddah/code-canvas-astro/commit/b63eb60))
 * set `reuseExistingServer: false` in Playwright config so tests always start a fresh Astro server ([9fb8a6c](https://github.com/faddah/code-canvas-astro/commit/9fb8a6c))
 * refactor `astro.config.mjs` import from `createRequire` (node:module) to `defineConfig` (astro/config) for Astro 6.1.1 compatibility ([2e96aca](https://github.com/faddah/code-canvas-astro/commit/2e96aca))
 * refactor import of `defineConfig` & `devices` in Playwright config ([3194d21](https://github.com/faddah/code-canvas-astro/commit/3194d21))
-
 
 ### Dependency Updates
 
@@ -75,9 +67,6 @@ All notable changes to this project will be documented in this file. See [standa
 * update lucide-react to v^1.7.0 ([b63eb60](https://github.com/faddah/code-canvas-astro/commit/b63eb60))
 
 ## [2.1.0](https://github.com/faddah/code-canvas-astro/compare/v2.0.1...v2.1.0) (2026-03-27)
-
-
-### Features
 
 * add Save/Open dialogs, project management, and Explorer drag-and-drop ([d4d19bc](https://github.com/faddah/code-canvas-astro/commit/d4d19bcbe463216ec57fafffd673387864f82af2))
 
