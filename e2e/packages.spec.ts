@@ -26,9 +26,9 @@ test.describe("API Routes - Packages", () => {
         const response = await request.delete("/api/packages/1");
         expect(response.status()).toBe(401);
     });
-    });
+});
 
-    test.describe("Packages UI - Anonymous", () => {
+test.describe("Packages UI - Anonymous", () => {
     test.setTimeout(60_000);
 
     test.beforeEach(async ({ page }) => {
