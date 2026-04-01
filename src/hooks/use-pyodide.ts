@@ -42,6 +42,9 @@ export function usePyodide() {
           pyodide.setStdout({ batched: (msg: string) => appendOutput(msg) });
           pyodide.setStderr({ batched: (msg: string) => appendOutput(msg, true) });
 
+          // Pre-load micropip so runCode can install PyPI packages
+          await pyodide.loadPackage("micropip");
+
           // Define a custom render function for HTML preview
           // Users can call render("<h1>Hello</h1>") in Python
           // Detect JSPI support by actually trying to use run_sync
