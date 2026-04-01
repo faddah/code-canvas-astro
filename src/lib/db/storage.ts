@@ -228,6 +228,50 @@ export class DatabaseStorage implements IStorage {
       .delete(userFiles)
       .where(and(eq(userFiles.projectId, projectId), eq(userFiles.clerkUserId, clerkUserId)));
   }
+
+  async getProjectPackages(projectId: number | null, clerkUserId: string): Promise<ProjectPackage[]> {
+    const projectCondition = projectId === null
+      ? isNull(projectPackages.projectId)
+      : eq(projectPackages.projectId, projectId);
+
+    return await db
+      .select()
+      .from(projectPackages)
+      .where(and(eq(projectPackages.clerkUserId, clerkUserId), projectCondition))
+      .orderBy(projectPackages.id);
+  }
+
+  async getAllUserPackages(clerkUserId: string): Promise<ProjectPackage[]> {
+    return await db
+      .select()
+      .from(projectPackages)
+      .where(eq(projectPackages.clerkUserId, clerkUserId))
+      .orderBy(projectPackages.id);
+  }
+
+  async addProjectPackage(pkg: InsertProjectPackage): Promise<ProjectPackage> {
+    const [created] = await db
+      .insert(projectPackages)
+      .values(pkg)
+      .returning();
+    return created;
+  }
+
+  async removeProjectPackage(id: number, clerkUserId: string): Promise<void> {
+    await db
+      .delete(projectPackages)
+      .where(and(eq(projectPackages.id, id), eq(projectPackages.clerkUserId, clerkUserId)));
+  }
+
+  async removeAllProjectPackages(clerkUserId: string, projectId: number | null): Promise<void> {
+    const projectCondition = projectId === null
+      ? isNull(projectPackages.projectId)
+      : eq(projectPackages.projectId, projectId);
+
+    await db
+      .delete(projectPackages)
+      .where(and(eq(projectPackages.clerkUserId, clerkUserId), projectCondition));
+  }
 }
 
 export const storage = new DatabaseStorage();
