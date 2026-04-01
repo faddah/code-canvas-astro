@@ -55,6 +55,15 @@ export async function setupTestTables(client: ReturnType<typeof createClient>) {
       created_at INTEGER NOT NULL DEFAULT (unixepoch()),
       updated_at INTEGER NOT NULL DEFAULT (unixepoch())
     );
+
+    CREATE TABLE IF NOT EXISTS project_packages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      clerk_user_id TEXT NOT NULL,
+      project_id INTEGER REFERENCES projects(id),
+      package_name TEXT NOT NULL,
+      version_spec TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch())
+    );
   `);
 }
 
@@ -63,6 +72,7 @@ export async function setupTestTables(client: ReturnType<typeof createClient>) {
  */
 export async function teardownTestTables(client: ReturnType<typeof createClient>) {
   await client.executeMultiple(`
+    DROP TABLE IF EXISTS project_packages;
     DROP TABLE IF EXISTS user_files;
     DROP TABLE IF EXISTS starter_files;
     DROP TABLE IF EXISTS projects;
