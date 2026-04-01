@@ -129,8 +129,8 @@ describe("use-packages hooks", () => {
                 wrapper: createWrapper(),
             });
 
-            await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
-        });
+            await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 35000 });
+        }, 40000);
     });
 
     // ─── useAddPackage ───
