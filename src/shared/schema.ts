@@ -1,4 +1,3 @@
-
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -86,6 +85,24 @@ export const insertUserFileSchema = createInsertSchema(userFiles).omit({
 export type UserFile = typeof userFiles.$inferSelect;
 export type InsertUserFile = (typeof insertUserFileSchema)["_output"];
 
+// Project packages — dependencies of a project
+export const projectPackages = sqliteTable("project_packages", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  clerkUserId: text("clerk_user_id").notNull(),
+  projectId: integer("project_id"),
+  packageName: text("package_name").notNull(),
+  versionSpec: text("version_spec"),
+  createdAt: integer("created_at", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+});
+
+export const insertProjectPackageSchema = createInsertSchema(projectPackages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type ProjectPackage = typeof projectPackages.$inferSelect;
+export type InsertProjectPackage = (typeof insertProjectPackageSchema)["_output"];
+
 export const api = {
   // Legacy files endpoints (backward compat, points to starter_files)
   files: {
@@ -169,6 +186,21 @@ export const api = {
     delete: {
       method: 'DELETE' as const,
       path: '/api/projects/:id',
+    },
+  },
+  // Packages (auth-required, linked to projects)
+  packages: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/packages',
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/packages/create',
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/packages/:id',
     },
   },
   // User profile (auth-required)
