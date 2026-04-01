@@ -91,6 +91,52 @@ describe("usePyodide", () => {
     expect(result.current.isRunning).toBe(false);
   });
 
+  it("runCode shows install progress when packageNames are provided", async () => {
+    const { result } = renderHook(() => usePyodide());
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+
+    await act(async () => {
+      await result.current.runCode('print("hello")', [], ["numpy", "pandas"]);
+    });
+
+    // Should show install start message
+    expect(result.current.output).toContainEqual("Installing numpy, pandas...");
+    // Should show install complete message
+    expect(result.current.output).toContainEqual("Installed 2 packages.");
+    // micropip install should have been called via runPythonAsync
+    expect(mockPyodide.runPythonAsync).toHaveBeenCalledWith(
+      expect.stringContaining("micropip.install")
+    );
+  });
+
+    it("runCode shows singular form for single package", async () => {
+      const { result } = renderHook(() => usePyodide());
+
+      await waitFor(() => expect(result.current.isReady).toBe(true));
+
+      await act(async () => {
+        await result.current.runCode('print("hello")', [], ["numpy"]);
+      });
+
+      expect(result.current.output).toContainEqual("Installing numpy...");
+      expect(result.current.output).toContainEqual("Installed 1 package.");
+    });
+
+    it("runCode skips install messages when no packages provided", async () => {
+      const { result } = renderHook(() => usePyodide());
+
+      await waitFor(() => expect(result.current.isReady).toBe(true));
+
+      await act(async () => {
+        await result.current.runCode('print("hello")', []);
+      });
+
+      expect(result.current.output).not.toContainEqual(
+        expect.stringContaining("Installing")
+      );
+    });
+
   it("clearConsole resets output and htmlOutput", async () => {
     const { result } = renderHook(() => usePyodide());
 
