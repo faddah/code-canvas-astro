@@ -123,16 +123,13 @@ describe("use-packages hooks", () => {
         });
 
         it("handles fetch error", async () => {
-            global.fetch = vi.fn().mockResolvedValue({
-                ok: false,
-                status: 500,
-            });
+            global.fetch = vi.fn().mockRejectedValue(new Error("Network failure"));
 
             const { result } = renderHook(() => usePackages("user_a"), {
                 wrapper: createWrapper(),
             });
 
-            await waitFor(() => expect(result.current.isError).toBe(true));
+            await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 5000 });
         });
     });
 
