@@ -523,4 +523,141 @@ describe("File-Project Association", () => {
     expect(allFiles).toHaveLength(1);
     expect(allFiles[0].name).toBe("standalone.py");
   });
+
+  // ─── Project Packages CRUD ───
+
+  describe("Project Packages CRUD", () => {
+    it("addProjectPackage — persists packageName and clerkUserId", async () => {
+      const pkg = await storage.addProjectPackage({
+        clerkUserId: "user_abc",
+        packageName: "numpy",
+      });
+
+      expect(pkg.packageName).toBe("numpy");
+      expect(pkg.clerkUserId).toBe("user_abc");
+      expect(pkg.id).toBeDefined();
+      expect(pkg.createdAt).toBeDefined();
+      expect(pkg.projectId).toBeNull();
+      expect(pkg.versionSpec).toBeNull();
+    });
+
+    it("addProjectPackage — accepts optional projectId and versionSpec", async () => {
+      const project = await storage.createProject({
+        clerkUserId: "user_abc",
+        name: "Test Project",
+      });
+
+      const pkg = await storage.addProjectPackage({
+        clerkUserId: "user_abc",
+        packageName: "pandas",
+        projectId: project.id,
+        versionSpec: ">=1.5",
+      });
+
+      expect(pkg.packageName).toBe("pandas");
+      expect(pkg.projectId).toBe(project.id);
+      expect(pkg.versionSpec).toBe(">=1.5");
+    });
+
+    it("getProjectPackages — returns packages for a specific project", async () => {
+      const project = await storage.createProject({
+        clerkUserId: "user_abc",
+        name: "Test Project",
+      });
+
+      await storage.addProjectPackage({ clerkUserId: "user_abc", packageName: "numpy", projectId: project.id });
+      await storage.addProjectPackage({ clerkUserId: "user_abc", packageName: "pandas", projectId: project.id });
+      await storage.addProjectPackage({ clerkUserId: "user_abc", packageName: "matplotlib" }); // no project
+
+      const projectPkgs = await storage.getProjectPackages("user_abc", project.id);
+      expect(projectPkgs).toHaveLength(2);
+      expect(projectPkgs[0].packageName).toBe("numpy");
+      expect(projectPkgs[1].packageName).toBe("pandas");
+    });
+
+    it("getProjectPackages — returns unassigned packages when projectId is null", async () => {
+      await storage.addProjectPackage({ clerkUserId: "user_abc", packageName: "requests" });
+      await storage.addProjectPackage({ clerkUserId: "user_abc", packageName: "flask" });
+
+      const project = await storage.createProject({ clerkUserId: "user_abc", name: "P1" });
+      await storage.addProjectPackage({ clerkUserId: "user_abc", packageName: "numpy", projectId: project.id });
+
+      const loose = await storage.getProjectPackages("user_abc", null);
+      expect(loose).toHaveLength(2);
+      expect(loose.map((p) => p.packageName)).toEqual(["requests", "flask"]);
+    });
+
+    it("getAllUserPackages — returns all packages across projects", async () => {
+      const project = await storage.createProject({ clerkUserId: "user_abc", name: "P1" });
+
+      await storage.addProjectPackage({ clerkUserId: "user_abc", packageName: "numpy", projectId: project.id });
+      await storage.addProjectPackage({ clerkUserId: "user_abc", packageName: "requests" });
+      await storage.addProjectPackage({ clerkUserId: "user_b", packageName: "flask" }); // different user
+
+      const all = await storage.getAllUserPackages("user_abc");
+      expect(all).toHaveLength(2);
+    });
+
+    it("getAllUserPackages — user scoping prevents cross-user access", async () => {
+      await storage.addProjectPackage({ clerkUserId: "user_a", packageName: "numpy" });
+      await storage.addProjectPackage({ clerkUserId: "user_b", packageName: "pandas" });
+
+      const userA = await storage.getAllUserPackages("user_a");
+      const userB = await storage.getAllUserPackages("user_b");
+
+      expect(userA).toHaveLength(1);
+      expect(userA[0].packageName).toBe("numpy");
+      expect(userB).toHaveLength(1);
+      expect(userB[0].packageName).toBe("pandas");
+    });
+
+    it("removeProjectPackage — deletes the package", async () => {
+      const pkg = await storage.addProjectPackage({ clerkUserId: "user_abc", packageName: "numpy" });
+      await storage.removeProjectPackage(pkg.id, "user_abc");
+
+      const all = await storage.getAllUserPackages("user_abc");
+      expect(all).toHaveLength(0);
+    });
+
+    it("removeProjectPackage — cannot delete another user's package", async () => {
+      const pkg = await storage.addProjectPackage({ clerkUserId: "user_a", packageName: "numpy" });
+      await storage.removeProjectPackage(pkg.id, "user_b"); // wrong user
+
+      const all = await storage.getAllUserPackages("user_a");
+      expect(all).toHaveLength(1); // still there
+    });
+
+    it("removeAllProjectPackages — removes all packages for a project", async () => {
+      const project = await storage.createProject({ clerkUserId: "user_abc", name: "P1" });
+
+      await storage.addProjectPackage({ clerkUserId: "user_abc", packageName: "numpy", projectId: project.id });
+      await storage.addProjectPackage({ clerkUserId: "user_abc", packageName: "pandas", projectId: project.id });
+      await storage.addProjectPackage({ clerkUserId: "user_abc", packageName: "requests" }); // no project
+
+      await storage.removeAllProjectPackages("user_abc", project.id);
+
+      const projectPkgs = await storage.getProjectPackages("user_abc", project.id);
+      expect(projectPkgs).toHaveLength(0);
+
+      const loose = await storage.getProjectPackages("user_abc", null);
+      expect(loose).toHaveLength(1);
+      expect(loose[0].packageName).toBe("requests");
+    });
+
+    it("removeAllProjectPackages — removes unassigned packages when projectId is null", async () => {
+      await storage.addProjectPackage({ clerkUserId: "user_abc", packageName: "requests" });
+      await storage.addProjectPackage({ clerkUserId: "user_abc", packageName: "flask" });
+
+      const project = await storage.createProject({ clerkUserId: "user_abc", name: "P1" });
+      await storage.addProjectPackage({ clerkUserId: "user_abc", packageName: "numpy", projectId: project.id });
+
+      await storage.removeAllProjectPackages("user_abc", null);
+
+      const loose = await storage.getProjectPackages("user_abc", null);
+      expect(loose).toHaveLength(0);
+
+      const projectPkgs = await storage.getProjectPackages("user_abc", project.id);
+      expect(projectPkgs).toHaveLength(1);
+    });
+  });
 });
