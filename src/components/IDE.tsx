@@ -12,11 +12,16 @@ import {
   useDeleteProject,
   useMoveFileToProject,
 } from "@/hooks/use-projects";
+import {
+  usePackages,
+  useAddPackage,
+  useRemovePackage,
+} from "@/hooks/use-packages";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { usePyodide } from "@/hooks/use-pyodide";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { Loader2, Play, Save, SaveAll, FolderOpen, Code2, LogOut, LogIn, UserPlus, User } from "lucide-react";
+import { Loader2, Play, Save, SaveAll, FolderOpen, Code2, LogOut, LogIn, UserPlus, User, Package } from "lucide-react";
 import Editor from "@monaco-editor/react";
 import { FileTab } from "@/components/FileTab";
 import { ConsolePanel } from "@/components/ConsolePanel";
@@ -65,6 +70,11 @@ export default function IDE() {
   const createProject = useCreateProject();
   const deleteProject = useDeleteProject();
   const moveFileToProject = useMoveFileToProject();
+
+  // Package hooks
+  const { data: packagesData } = usePackages(userId);
+  const addPackage = useAddPackage();
+  const removePackage = useRemovePackage();
 
   const { isReady, isRunning, output, htmlOutput, runCode, clearConsole, isWaitingForInput, submitInput } = usePyodide();
   const { toast } = useToast();
@@ -263,7 +273,10 @@ export default function IDE() {
       content: unsavedChanges[f.id] ?? f.content
     }));
 
-    await runCode(activeContent, fileSystem);
+    // Collect saved package names for micropip
+    const packageNames = (packagesData || []).map((p: any) => p.packageName);
+
+    await runCode(activeContent, fileSystem, packageNames);
   };
 
   const handleCreateFile = async (fileName: string, projectId?: number | null) => {
@@ -496,6 +509,9 @@ export default function IDE() {
           onDeleteProject={(id) => deleteProject.mutate(id)}
           onMoveFile={(fileId, projectId) => moveFileToProject.mutate({ fileId, projectId })}
           onRetry={() => refetchUserFiles()}
+          packages={packagesData ?? []}
+          onAddPackage={(packageName) => addPackage.mutate({ packageName })}
+          onRemovePackage={(id) => removePackage.mutate(id)}
         />
 
         {/* Editor & Preview Area */}
