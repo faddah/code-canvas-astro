@@ -22,6 +22,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
             headers: { 'Content-Type': 'application/json' }
         });
     } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(`[POST /api/packages/create] ERROR:`, message);
         return new Response(JSON.stringify({ message: "Invalid input" }), {
             status: 400,
             headers: { 'Content-Type': 'application/json' }
