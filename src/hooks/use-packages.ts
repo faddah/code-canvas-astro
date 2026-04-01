@@ -8,9 +8,9 @@ export function usePackages(userId: string | null | undefined, projectId?: numbe
     const enabled = !!userId;
 
     // Build the query path with optional projectId filter
-    let fetchPath = api.packages.list.path;
+    let fetchPath: string = api.packages.list.path;
     if (projectId !== undefined) {
-        const paramValue = projectId === null ? '' : String(projectId);
+        const paramValue: string = projectId === null ? '' : String(projectId);
         fetchPath += `?projectId=${paramValue}`;
     }
 
@@ -18,7 +18,7 @@ export function usePackages(userId: string | null | undefined, projectId?: numbe
         queryKey: [api.packages.list.path, userId, projectId],
         enabled,
         queryFn: async () => {
-            const res = await fetch(fetchPath);
+            const res: Response = await fetch(fetchPath);
             if (!res.ok) {
                 throw new Error(`Failed to fetch packages (HTTP ${res.status})`);
             }
