@@ -227,7 +227,8 @@ describe("IDE interactions (signed-in)", () => {
         expect.arrayContaining([
           expect.objectContaining({ name: "app.py" }),
           expect.objectContaining({ name: "lib.py" }),
-        ])
+        ]),
+        expect.any(Array)
       );
     });
   });
