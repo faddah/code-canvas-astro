@@ -7,7 +7,7 @@ export function useProjects(userId: string | null | undefined) {
     queryKey: [api.projects.list.path, userId],
     enabled: !!userId,
     queryFn: async () => {
-      const res = await fetch(api.projects.list.path);
+      const res: Response = await fetch(api.projects.list.path);
       if (!res.ok) throw new Error(`Failed to fetch projects (HTTP ${res.status})`);
       return res.json();
     },
