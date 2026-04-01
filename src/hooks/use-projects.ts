@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/schema";
+import type { Project } from "@shared/schema"; 
 import { useToast } from "@/hooks/use-toast";
 
 export function useProjects(userId: string | null | undefined) {
-  return useQuery({
+  return useQuery<Project[]>({
     queryKey: [api.projects.list.path, userId],
     enabled: !!userId,
     queryFn: async () => {
