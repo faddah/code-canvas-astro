@@ -25,6 +25,8 @@ function renderExplorer(overrides: Record<string, any> = {}, handlersOverride?: 
     onDeleteProject: vi.fn(),
     onMoveFile: vi.fn(),
     onRetry: vi.fn(),
+    onAddPackage: vi.fn(),
+    onRemovePackage: vi.fn(),
     ...handlersOverride,
   };
   const props = {
@@ -35,6 +37,7 @@ function renderExplorer(overrides: Record<string, any> = {}, handlersOverride?: 
     isSignedIn: true,
     isLoading: false,
     isError: false,
+    packages: [],
     ...overrides,
   };
   const result = render(<ExplorerPane {...props} {...handlers} />);
