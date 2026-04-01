@@ -4,6 +4,14 @@ A plain-language summary of what changed in each version of the app.
 
 ---
 
+## Version 2.2.1 — April 1, 2026
+
+### micropip loading fix
+
+- Fixed third-party package installation failing with `ModuleNotFoundError: No module named 'micropip'` — micropip is included in the Pyodide distribution but wasn't being loaded before use. Added `pyodide.loadPackage("micropip")` during Pyodide initialization so it's always available when scripts need to install PyPI packages.
+
+---
+
 ## Version 2.2.0 — April 1, 2026
 
 ### PyPI package management, project-scoped packages, and install progress

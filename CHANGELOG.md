@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [2.2.1](https://github.com/faddah/code-canvas-astro/compare/v2.2.0...v2.2.1) (2026-04-01)
 
+
+### Bug Fixes
+
+* pre-load micropip during Pyodide initialization with `pyodide.loadPackage("micropip")` — fixes `ModuleNotFoundError: No module named 'micropip'` when running scripts with third-party packages ([ed2a29d](https://github.com/faddah/code-canvas-astro/commit/ed2a29d))
+
+
 ## [2.2.0](https://github.com/faddah/code-canvas-astro/compare/v2.1.1...v2.2.0) (2026-04-01)
 
 ### Features
