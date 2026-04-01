@@ -4,6 +4,8 @@ import {
   userFiles,
   userProfiles,
   projects,
+  projectPackages, 
+  insertProjectPackageSchema,
   type File,
   type InsertFile,
   type StarterFile,
@@ -13,9 +15,11 @@ import {
   type InsertUserProfile,
   type Project,
   type InsertProject,
+  type ProjectPackage,
+  type InsertProjectPackage,
 } from "../../shared/schema";
 import { db } from "./index";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 
 export interface IStorage {
   // Legacy (backward compat — delegates to starter files)
