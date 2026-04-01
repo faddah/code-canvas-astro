@@ -46,6 +46,7 @@ interface ExplorerPaneProps {
   isLoading: boolean;
   isError: boolean;
   packages: { id: number; packageName: string; versionSpec?: string | null }[];
+  activeProjectName: string | null;
   onOpenFile: (id: number) => void;
   onDeleteFile: (id: number) => void;
   onCreateFile: (name: string, projectId?: number | null) => void;
@@ -117,6 +118,7 @@ export function ExplorerPane({
   isLoading,
   isError,
   packages,
+  activeProjectName,
   onOpenFile,
   onDeleteFile,
   onCreateFile,
@@ -491,6 +493,19 @@ export function ExplorerPane({
               >
                 <Package className="w-3.5 h-3.5" />
                 Packages
+                  {activeProjectName && (
+                    <span
+                    className="
+                      normal-case
+                      tracking-normal
+                      font-normal
+                      text-[10px]
+                      text-muted-foreground/60
+                      ml-0.5"
+                    >
+                      — {activeProjectName}
+                    </span>
+                  )}
               </span>
               <button
                 onClick={() => setIsAddPackageOpen(true)}
