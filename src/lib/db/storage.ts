@@ -57,6 +57,13 @@ export interface IStorage {
   // Bulk operations
   deleteAllUserFiles(clerkUserId: string): Promise<void>;
   deleteAllProjectFiles(projectId: number, clerkUserId: string): Promise<void>;
+  
+  // Project packages
+  getProjectPackages(projectId: number | null, clerkUserId: string): Promise<ProjectPackage[]>;  // get packages for a specific project (or null for unassigned)
+  getAllUserPackages(clerkUserId: string): Promise<ProjectPackage[]> // get all packages across all user's projects
+  addProjectPackage(pkg: InsertProjectPackage): Promise<ProjectPackage> // insert a package record
+  removeProjectPackage(id: number, clerkUserId: string): Promise<void> // delete one package (ownership-scoped)
+  removeAllProjectPackages(clerkUserId: string, projectId: number | null): Promise<void>
 }
 
 export class DatabaseStorage implements IStorage {
