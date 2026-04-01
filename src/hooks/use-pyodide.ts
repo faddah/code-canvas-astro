@@ -171,25 +171,32 @@ export function usePyodide() {
     appendOutput(text);
   };
 
-  const runCode = async (code: string, files: { name: string; content: string }[]) => {
+  const runCode = async (code: string, files: { name: string; content: string }[], packageNames?: string[]) => {
     if (!pyodideRef.current) return;
 
     setIsRunning(true);
     clearConsole();
 
     try {
-      // 1. Sync Virtual Filesystem
-      for (const file of files) {
-        pyodideRef.current.FS.writeFile(file.name, file.content);
-      }
+        // 1. Install packages via micropip
+        if (packageNames && packageNames.length > 0) {
+          await pyodideRef.current.runPythonAsync(`
+            import micropip
+            await micropip.install(${JSON.stringify(packageNames)})
+          `);
+        }
+        // 2. Sync Virtual Filesystem
+        for (const file of files) {
+          pyodideRef.current.FS.writeFile(file.name, file.content);
+        }
 
-      // 2. Run the code
-      await pyodideRef.current.runPythonAsync(code);
-    } catch (err: any) {
-      appendOutput(err.toString(), true);
-    } finally {
-      setIsRunning(false);
-    }
+        // 3. Run the code
+        await pyodideRef.current.runPythonAsync(code);
+      } catch (err: any) {
+        appendOutput(err.toString(), true);
+      } finally {
+        setIsRunning(false);
+      }
   };
 
     return {
