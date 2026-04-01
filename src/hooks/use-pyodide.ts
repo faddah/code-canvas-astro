@@ -180,10 +180,12 @@ export function usePyodide() {
     try {
         // 1. Install packages via micropip
         if (packageNames && packageNames.length > 0) {
+          appendOutput(`Installing ${packageNames.join(", ")}...`);
           await pyodideRef.current.runPythonAsync(`
             import micropip
             await micropip.install(${JSON.stringify(packageNames)})
           `);
+          appendOutput(`Installed ${packageNames.length} package${packageNames.length === 1 ? "" : "s"}.`);
         }
         // 2. Sync Virtual Filesystem
         for (const file of files) {
