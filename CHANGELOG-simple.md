@@ -4,6 +4,26 @@ A plain-language summary of what changed in each version of the app.
 
 ---
 
+## Version 2.2.0 — April 1, 2026
+
+### PyPI package management, project-scoped packages, and install progress
+
+- Added a full package management system — users can now add and remove Python (PyPI) packages for their projects directly from the Explorer sidebar
+- Created the `project_packages` database table and all CRUD methods (add, list, remove) in the storage layer using Drizzle ORM
+- Built three new API routes: GET `/api/packages` (list), POST `/api/packages/create` (add), and DELETE `/api/packages/[id]` (remove), all protected with Clerk authentication
+- Created React Query hooks (`usePackages`, `useAddPackage`, `useRemovePackage`) with retry and exponential backoff
+- Integrated micropip into Pyodide — when you click Run, project packages are automatically installed before your Python code executes
+- Packages are scoped to the active project — switching projects shows that project's packages, and adding a package ties it to the current project
+- Added a project name label in the Packages section header so you always know which project's packages you're looking at
+- Console now shows install progress messages: "Installing numpy, pandas..." followed by "Installed 2 packages." so you know what's happening
+- Added an "Add Package" dialog in the Explorer with a text input for PyPI package names
+- Fixed `Error.isError()` usage that was failing in GitHub Actions CI (ES2026 proposal not yet available in Node.js)
+- Upgraded GitHub Actions: checkout v6, setup-node v6, upload-artifact v7, Node.js 22, added caching, increased Playwright workers to 2
+- Updated dependencies: @clerk/astro, @clerk/react, @clerk/testing, @tanstack/react-query, @playwright/test, playwright, aws-cdk, TypeScript v5.9.3
+- Wrote 31 new tests: 12 for package hooks, 10 for database CRUD, 4 Playwright e2e tests, 2 for Explorer UI, 3 for install progress messages
+
+---
+
 ## Version 2.1.1 — March 30, 2026
 
 ### Playwright test reliability fix & dependency updates

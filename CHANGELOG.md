@@ -4,6 +4,55 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [2.2.0](https://github.com/faddah/code-canvas-astro/compare/v2.1.1...v2.2.0) (2026-04-01)
 
+
+### Features
+
+* add PyPI package management — users can add/remove Python packages per project via the Explorer sidebar ([8e2b55f](https://github.com/faddah/code-canvas-astro/commit/8e2b55f))
+* add `project_packages` database table with Drizzle ORM schema, list/create/delete methods in DatabaseStorage ([084d5bf](https://github.com/faddah/code-canvas-astro/commit/084d5bf))
+* add API routes for packages — GET `/api/packages`, POST `/api/packages/create`, DELETE `/api/packages/[id]` with Clerk auth ([8e2b55f](https://github.com/faddah/code-canvas-astro/commit/8e2b55f))
+* add `usePackages`, `useAddPackage`, `useRemovePackage` React Query hooks with retry/backoff ([e627344](https://github.com/faddah/code-canvas-astro/commit/e627344))
+* integrate micropip into Pyodide `runCode()` — auto-installs project packages before executing Python code ([c9d8f34](https://github.com/faddah/code-canvas-astro/commit/c9d8f34))
+* scope packages to the active project — packages are tied to the currently selected project in the Explorer ([482c339](https://github.com/faddah/code-canvas-astro/commit/482c339))
+* show project name label in Packages section header in Explorer sidebar ([186d5c4](https://github.com/faddah/code-canvas-astro/commit/186d5c4))
+* show install progress messages in console — "Installing numpy, pandas..." and "Installed 2 packages." ([e981f3d](https://github.com/faddah/code-canvas-astro/commit/e981f3d))
+* add Package icon and Add Package dialog in ExplorerPane UI ([f8d56e6](https://github.com/faddah/code-canvas-astro/commit/f8d56e6))
+
+
+### Bug Fixes
+
+* remove `Error.isError()` (ES2026 proposal) causing GitHub Actions CI failures — replaced with empty catch block ([30c3f78](https://github.com/faddah/code-canvas-astro/commit/30c3f78))
+* fix `projectId` referenced before defined in packages index.ts API route ([90c46a0](https://github.com/faddah/code-canvas-astro/commit/90c46a0))
+* expand catch error messaging in packages create.ts for better debugging ([b767872](https://github.com/faddah/code-canvas-astro/commit/b767872))
+
+
+### Tests
+
+* add 12 unit tests for `usePackages`, `useAddPackage`, `useRemovePackage` hooks ([2a64618](https://github.com/faddah/code-canvas-astro/commit/2a64618))
+* add 10 unit tests for Project Packages CRUD in DatabaseStorage ([5d8ab50](https://github.com/faddah/code-canvas-astro/commit/5d8ab50))
+* add 4 Playwright e2e tests for packages API routes (401 auth checks, anonymous UI) ([fd7be2b](https://github.com/faddah/code-canvas-astro/commit/fd7be2b))
+* add 2 ExplorerPane unit tests for project name label visibility ([17db853](https://github.com/faddah/code-canvas-astro/commit/17db853))
+* add 3 use-pyodide unit tests for micropip install progress messages ([311655a](https://github.com/faddah/code-canvas-astro/commit/311655a))
+* update ExplorerPane test helper with new package props ([5344376](https://github.com/faddah/code-canvas-astro/commit/5344376))
+* update IDE-interactions test for new `runCode` 3-arg signature ([41b2384](https://github.com/faddah/code-canvas-astro/commit/41b2384))
+
+
+### CI/CD
+
+* upgrade GitHub Actions — checkout v6, setup-node v6, upload-artifact v7, Node.js 22 ([9b3433e](https://github.com/faddah/code-canvas-astro/commit/9b3433e))
+* increase Playwright worker processes from 1 to 2 for faster CI runs ([90db0bf](https://github.com/faddah/code-canvas-astro/commit/90db0bf))
+* add separate build step before e2e tests, refactor webServer to use `npm run preview` in CI ([fe5d724](https://github.com/faddah/code-canvas-astro/commit/fe5d724))
+* add `actions/cache@v5` for e2e test caching ([4bbaab1](https://github.com/faddah/code-canvas-astro/commit/4bbaab1))
+
+
+### Dependency Updates
+
+* update @clerk/astro, @clerk/react, @clerk/testing ([6c952db](https://github.com/faddah/code-canvas-astro/commit/6c952db))
+* update @tanstack/react-query ([6c952db](https://github.com/faddah/code-canvas-astro/commit/6c952db))
+* update @playwright/test and playwright ([6c952db](https://github.com/faddah/code-canvas-astro/commit/6c952db))
+* update aws-cdk ([6c952db](https://github.com/faddah/code-canvas-astro/commit/6c952db))
+* add TypeScript v^5.9.3 as devDependency ([6ad7cd9](https://github.com/faddah/code-canvas-astro/commit/6ad7cd9))
+
+
 ### [2.1.1](https://github.com/faddah/code-canvas-astro/compare/v2.1.0...v2.1.1) (2026-03-30)
 
 
