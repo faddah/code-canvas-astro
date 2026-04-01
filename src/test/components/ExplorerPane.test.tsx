@@ -37,6 +37,7 @@ function renderExplorer(overrides: Record<string, any> = {}, handlersOverride?: 
     isSignedIn: true,
     isLoading: false,
     isError: false,
+    activeProjectName: "Python REPL IDE",
     packages: [],
     ...overrides,
   };
@@ -593,5 +594,15 @@ describe("ExplorerPane", () => {
 
     // The project header should still be in the DOM and functional
     expect(screen.getByText("My Project")).toBeInTheDocument();
+  });
+
+  it("shows project name in Packages header when activeProjectName is set", () => {
+    renderExplorer({ activeProjectName: "My Project" });
+    expect(screen.getByText("— My Project")).toBeInTheDocument();
+  });
+
+  it("does not show project label in Packages header when activeProjectName is null", () => {
+    renderExplorer({ activeProjectName: null });
+    expect(screen.queryByText(/^—/)).not.toBeInTheDocument();
   });
 });
