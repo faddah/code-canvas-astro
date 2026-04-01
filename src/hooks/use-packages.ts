@@ -77,7 +77,7 @@ export function useRemovePackage() {
                     serverMsg = body.error ?? body.message ?? serverMsg;
                 } catch(e) {
                     // body was not JSON
-                    Error.isError(e) && console.error("The response body was not JSON:", e);
+                    console.error("The response body was not JSON:", e);
                 }
                 throw new Error(serverMsg);
             }
