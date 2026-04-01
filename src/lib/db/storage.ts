@@ -59,7 +59,7 @@ export interface IStorage {
   deleteAllProjectFiles(projectId: number, clerkUserId: string): Promise<void>;
   
   // Project packages
-  getProjectPackages(projectId: number | null, clerkUserId: string): Promise<ProjectPackage[]>;  // get packages for a specific project (or null for unassigned)
+  getProjectPackages(clerkUserId: string,projectId: number | null): Promise<ProjectPackage[]>;  // get packages for a specific project (or null for unassigned)
   getAllUserPackages(clerkUserId: string): Promise<ProjectPackage[]> // get all packages across all user's projects
   addProjectPackage(pkg: InsertProjectPackage): Promise<ProjectPackage> // insert a package record
   removeProjectPackage(id: number, clerkUserId: string): Promise<void> // delete one package (ownership-scoped)
@@ -229,7 +229,7 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(userFiles.projectId, projectId), eq(userFiles.clerkUserId, clerkUserId)));
   }
 
-  async getProjectPackages(projectId: number | null, clerkUserId: string): Promise<ProjectPackage[]> {
+  async getProjectPackages(clerkUserId: string, projectId: number | null): Promise<ProjectPackage[]> {
     const projectCondition = projectId === null
       ? isNull(projectPackages.projectId)
       : eq(projectPackages.projectId, projectId);
