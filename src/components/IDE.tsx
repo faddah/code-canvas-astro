@@ -71,11 +71,6 @@ export default function IDE() {
   const deleteProject = useDeleteProject();
   const moveFileToProject = useMoveFileToProject();
 
-  // Package hooks
-  const { data: packagesData } = usePackages(userId);
-  const addPackage = useAddPackage();
-  const removePackage = useRemovePackage();
-
   const { isReady, isRunning, output, htmlOutput, runCode, clearConsole, isWaitingForInput, submitInput } = usePyodide();
   const { toast } = useToast();
 
@@ -166,6 +161,14 @@ export default function IDE() {
 
   const activeFile = files?.find((f: any) => f.id === activeFileId);
   const activeContent = activeFileId ? (unsavedChanges[activeFileId] ?? activeFile?.content ?? "") : "";
+  
+  // Derive active project from the currently open file
+  const activeProjectId = activeFile?.projectId ?? null;
+
+  // Package hooks (scoped to active project)
+  const { data: packagesData } = usePackages(userId, activeProjectId);
+  const addPackage = useAddPackage();
+  const removePackage = useRemovePackage();
 
   // Handlers
   const handleEditorChange = (value: string | undefined) => {
@@ -510,8 +513,9 @@ export default function IDE() {
           onMoveFile={(fileId, projectId) => moveFileToProject.mutate({ fileId, projectId })}
           onRetry={() => refetchUserFiles()}
           packages={packagesData ?? []}
-          onAddPackage={(packageName) => addPackage.mutate({ packageName })}
+          onAddPackage={(packageName) => addPackage.mutate({ packageName, projectId: activeProjectId })}
           onRemovePackage={(id) => removePackage.mutate(id)}
+          activeProjectName={projects.find((p) => p.id === activeProjectId)?.name ?? null}
         />
 
         {/* Editor & Preview Area */}
