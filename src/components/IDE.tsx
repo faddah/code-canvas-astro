@@ -1,11 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
-import {
-  useStarterFiles,
-  useUserFiles,
-  useCreateUserFile,
-  useUpdateUserFile,
-  useDeleteUserFile,
-} from "@/hooks/use-files";
+import { useState, useEffect } from "react";
 import {
   useProjects,
   useCreateProject,
@@ -17,7 +10,6 @@ import {
   useAddPackage,
   useRemovePackage,
 } from "@/hooks/use-packages";
-import { useQueryClient } from "@tanstack/react-query";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { usePyodide } from "@/hooks/use-pyodide";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
@@ -35,35 +27,25 @@ import { CompleteProfile } from "@/components/CompleteProfile";
 import { UserProfileModal } from "@/components/UserProfileModal";
 import { version } from "../../package.json";
 import { useAuth, SignInButton, SignUpButton, SignOutButton } from "@clerk/astro/react";
-import { $userStore } from "@clerk/astro/client";
-import { api } from "@shared/schema";
-
-// Subscribe to the $userStore nanostore from @clerk/astro/client
-function useClerkUser() {
-  const get = $userStore.get.bind($userStore);
-  return useSyncExternalStore($userStore.listen, get, () => null);
-}
+import { useClerkUser } from "@/hooks/use-clerk-user";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { useFileManagement } from "@/hooks/use-file-management";
 
 export default function IDE() {
   // Auth state from @clerk/astro/react (uses nanostores, not React Context)
   const { userId, signOut } = useAuth();
   const isSignedIn = !!userId;
   const user = useClerkUser();
+  const {
+    files, activeFile, activeFileId, activeContent, activeProjectId,
+    openFileIds, unsavedChanges, isLoadingFiles, isLoadingUser,
+    isUserFilesError, setActiveFileId, openTab, closeTab,
+    handleEditorChange, handleQuickSave, handleSaveDialog,
+    handleImportFiles, handleCreateFile, handleDeleteFile, refetchUserFiles,
+  } = useFileManagement({ isSignedIn, userId });
 
   // Data hooks
-  const { data: starterFiles, isLoading: isLoadingStarter } = useStarterFiles();
-  const {
-    data: userFilesData,
-    isLoading: isLoadingUser,
-    isError: isUserFilesError,
-    error: userFilesError,
-    refetch: refetchUserFiles,
-  } = useUserFiles(userId);
   const { data: profile, isLoading: isLoadingProfile, isSuccess: isProfileSuccess } = useUserProfile(isSignedIn);
-
-  const createFile = useCreateUserFile();
-  const updateFile = useUpdateUserFile();
-  const deleteFile = useDeleteUserFile();
 
   // Project hooks
   const { data: projectsData } = useProjects(userId);
@@ -73,28 +55,6 @@ export default function IDE() {
 
   const { isReady, isRunning, output, htmlOutput, runCode, clearConsole, isWaitingForInput, submitInput } = usePyodide();
   const { toast } = useToast();
-
-  const queryClient = useQueryClient();
-
-  // Ephemeral local files for non-logged-in users (lost on refresh)
-  const [localFiles, setLocalFiles] = useState<any[]>([]);
-  const [localIdCounter, setLocalIdCounter] = useState(-1);
-
-  // Track previous auth state to distinguish real login/logout from
-  // the spurious false→true transition that happens on every page refresh
-  // (Clerk starts with isSignedIn=false while the client SDK loads).
-  const prevSignedIn = useRef<boolean | null>(null);
-
-  // Seed local files from starter files when not signed in
-  useEffect(() => {
-    if (!isSignedIn && starterFiles && starterFiles.length > 0 && localFiles.length === 0) {
-      setLocalFiles(starterFiles.map((f: any) => ({ ...f })));
-    }
-  }, [isSignedIn, starterFiles]);
-
-  // Choose which files to display
-  const files = isSignedIn ? userFilesData : localFiles;
-  const isLoadingFiles = isSignedIn ? isLoadingUser : isLoadingStarter;
 
   // Show complete profile modal after first signup
   const [showCompleteProfile, setShowCompleteProfile] = useState(false);
@@ -106,10 +66,7 @@ export default function IDE() {
   }
 }, [isSignedIn, isProfileSuccess, profile]);
 
-
-  const [activeFileId, setActiveFileId] = useState<number | null>(null);
-  const [openFileIds, setOpenFileIds] = useState<number[]>([]);
-  const [unsavedChanges, setUnsavedChanges] = useState<Record<number, string>>({});
+  // File management state
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [isOpenImportDialogOpen, setIsOpenImportDialogOpen] = useState(false);
@@ -122,146 +79,20 @@ export default function IDE() {
     if (el) el.remove();
   }, []);
 
-  // Handle auth state changes (login/logout) without disrupting page refreshes.
-  useEffect(() => {
-    const wasSignedIn = prevSignedIn.current;
-    prevSignedIn.current = isSignedIn;
-
-    // First render (wasSignedIn === null): skip reset — component just mounted,
-    // let the data hooks populate files naturally.
-    if (wasSignedIn === null) return;
-
-    // Real logout (was signed in, now signed out)
-    if (wasSignedIn && !isSignedIn) {
-      setActiveFileId(null);
-      setOpenFileIds([]);
-      setUnsavedChanges({});
-      setLocalFiles(starterFiles ? starterFiles.map((f: any) => ({ ...f })) : []);
-      setLocalIdCounter(-1);
-    }
-
-    // Real login (was signed out, now signed in)
-    if (!wasSignedIn && isSignedIn) {
-      setActiveFileId(null);
-      setOpenFileIds([]);
-      setUnsavedChanges({});
-      // Invalidate & refetch user files to ensure fresh data after login.
-      // Use the userId-scoped key so we target the right cache entry.
-      queryClient.invalidateQueries({ queryKey: [api.userFiles.list.path] });
-    }
-  }, [isSignedIn, queryClient]);
-
-  // Initialize active file when files load
-  useEffect(() => {
-    if (files && files.length > 0 && activeFileId === null) {
-      setActiveFileId(files[0].id);
-      setOpenFileIds([files[0].id]);
-    }
-  }, [files, activeFileId]);
-
-  const activeFile = files?.find((f: any) => f.id === activeFileId);
-  const activeContent = activeFileId ? (unsavedChanges[activeFileId] ?? activeFile?.content ?? "") : "";
-  
-  // Derive active project from the currently open file
-  const activeProjectId = activeFile?.projectId ?? null;
-
   // Package hooks (scoped to active project)
   const { data: packagesData } = usePackages(userId, activeProjectId);
   const addPackage = useAddPackage();
   const removePackage = useRemovePackage();
 
-  // Handlers
-  const handleEditorChange = (value: string | undefined) => {
-    if (activeFileId && value !== undefined) {
-      setUnsavedChanges(prev => ({ ...prev, [activeFileId]: value }));
-    }
-  };
-
-  // Quick save (writes content without dialog)
-  const handleQuickSave = useCallback(async () => {
-    if (!isSignedIn) return;
-    if (!activeFileId || unsavedChanges[activeFileId] === undefined) return;
-
-    const content = unsavedChanges[activeFileId];
-
-    try {
-      await updateFile.mutateAsync({
-        id: activeFileId,
-        content: content,
-      });
-
-      setUnsavedChanges(prev => {
-        const next = { ...prev };
-        delete next[activeFileId];
-        return next;
-      });
-
-      toast({ title: "Saved", description: "Changes saved to disk." });
-    } catch (e) {
-      // Error handled in hook
-    }
-  }, [isSignedIn, activeFileId, unsavedChanges, updateFile, toast]);
-
-  // Save dialog handler (supports rename + project assignment)
-  const handleSaveDialog = async (fileName: string, content: string, projectId: number | null) => {
-    if (!isSignedIn || !activeFileId) return;
-
-    try {
-      await updateFile.mutateAsync({
-        id: activeFileId,
-        name: fileName,
-        content: content,
-        projectId: projectId,
-      });
-
-      setUnsavedChanges(prev => {
-        const next = { ...prev };
-        delete next[activeFileId];
-        return next;
-      });
-
-      toast({ title: "Saved", description: `${fileName} saved successfully.` });
-    } catch (e) {
-      // Error handled in hook
-    }
-  };
-
-  // Open/Import handler
-  const handleImportFiles = async (importedFiles: { name: string; content: string }[], projectId: number | null) => {
-    if (!isSignedIn) return;
-
-    for (const file of importedFiles) {
-      try {
-        const newFile = await createFile.mutateAsync({
-          name: file.name,
-          content: file.content,
-          ...(projectId ? { projectId } : {}),
-        });
-        setOpenFileIds(prev => [...prev, newFile.id]);
-        setActiveFileId(newFile.id);
-      } catch (e) {
-        // Error handled in hook
-      }
-    }
-  };
-
-  // Cmd+S / Ctrl+S keyboard shortcut — quick-saves in place
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
-        e.preventDefault();
-        if (isSignedIn && activeFileId) {
-          if (unsavedChanges[activeFileId] !== undefined) {
-            handleQuickSave();
-          } else {
-            toast({ title: "No changes", description: "File is already saved." });
-          }
-        }
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isSignedIn, activeFileId, unsavedChanges, toast, handleQuickSave]);
+  // Use Keyboard Shortcuts hook for Cmd+S / Ctrl+S
+  useKeyboardShortcuts({
+    isSignedIn,
+    activeFileId,
+    hasUnsavedChanges: unsavedChanges[activeFileId || 0] !== undefined,
+    onSave: handleQuickSave,
+    onNoChanges: () => toast({ title: "No changes",
+    description: "File is already saved." }),
+  });
 
   const handleRun = async () => {
     if (!activeContent) return;
@@ -280,79 +111,6 @@ export default function IDE() {
     const packageNames = (packagesData || []).map((p: any) => p.packageName);
 
     await runCode(activeContent, fileSystem, packageNames);
-  };
-
-  const handleCreateFile = async (fileName: string, projectId?: number | null) => {
-    if (!fileName) return;
-    const normalizedName = (fileName.endsWith(".py") || fileName.endsWith(".txt")) ? fileName : `${fileName}.py`;
-    const defaultContent = normalizedName.endsWith(".py")
-      ? "# New Python File\nprint('Hello World')\n"
-      : "";
-
-    if (isSignedIn) {
-      try {
-        const newFile = await createFile.mutateAsync({
-          name: normalizedName,
-          content: defaultContent,
-          ...(projectId ? { projectId } : {}),
-        });
-        setOpenFileIds(prev => [...prev, newFile.id]);
-        setActiveFileId(newFile.id);
-      } catch (e) {
-        // Error handled in hook
-      }
-    } else {
-      const newId = localIdCounter;
-      setLocalIdCounter(prev => prev - 1);
-      const newFile = {
-        id: newId,
-        name: normalizedName,
-        content: defaultContent,
-        createdAt: new Date(),
-      };
-      setLocalFiles(prev => [...prev, newFile]);
-      setOpenFileIds(prev => [...prev, newId]);
-      setActiveFileId(newId);
-    }
-  };
-
-  const closeTab = (e: React.MouseEvent, id: number) => {
-    e.stopPropagation();
-    setOpenFileIds(prev => prev.filter(fid => fid !== id));
-    if (activeFileId === id) {
-      const remaining = openFileIds.filter(fid => fid !== id);
-      setActiveFileId(remaining.length > 0 ? remaining[remaining.length - 1] : null);
-    }
-  };
-
-  const openTab = (id: number) => {
-    if (!openFileIds.includes(id)) {
-      setOpenFileIds(prev => [...prev, id]);
-    }
-    setActiveFileId(id);
-  };
-
-  const handleDeleteFile = (id: number) => {
-    const cleanupUI = () => {
-      setOpenFileIds(prev => prev.filter(fid => fid !== id));
-      if (activeFileId === id) {
-        const remaining = openFileIds.filter(fid => fid !== id);
-        setActiveFileId(remaining.length > 0 ? remaining[remaining.length - 1] : null);
-      }
-      setUnsavedChanges(prev => {
-        const next = { ...prev };
-        delete next[id];
-        return next;
-      });
-    };
-
-    if (isSignedIn) {
-      deleteFile.mutate(id, { onSuccess: cleanupUI });
-    } else {
-      // Remove from local ephemeral files
-      setLocalFiles(prev => prev.filter(f => f.id !== id));
-      cleanupUI();
-    }
   };
 
   // Track how long we've been loading — show a retry hint after 10 seconds
