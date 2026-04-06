@@ -18,8 +18,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install -g npm@11
-      - run: npm ci
+      - run: npx -y npm@11 ci
       - run: npm run test:coverage
 
   e2e-tests:
@@ -35,8 +34,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install -g npm@11
-      - run: npm ci
+      - run: npx -y npm@11 ci
       - name: Cache Astro build output
         uses: actions/cache@v5
         with:
