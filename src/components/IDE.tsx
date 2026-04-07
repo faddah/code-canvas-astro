@@ -36,7 +36,12 @@ export default function IDE() {
   // Auth state from @clerk/astro/react (uses nanostores, not React Context)
   const { userId, signOut } = useAuth();
   const isSignedIn = !!userId;
-  const user = useClerkUser();
+  const clerkUser = useClerkUser();
+  
+  // Transform UserResource to ClerkUser type
+  const user = clerkUser ?? null;
+
+  // File hooks
   const {
     files, activeFile, activeFileId, activeContent, activeProjectId,
     openFileIds, unsavedChanges, isLoadingFiles, isLoadingUser,
