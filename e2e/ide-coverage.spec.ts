@@ -120,22 +120,26 @@ test.describe("IDE — Tab management (e2e)", () => {
     // Open both files as tabs by clicking them
     await fileEntries.nth(0).click();
     await expect(
-      page.locator("[class*='min-w-30']", { hasText: firstFileName }).first()
+      page.getByTestId("file-tab").filter({ hasText: firstFileName })
     ).toBeVisible({ timeout: 10_000 });
     await fileEntries.nth(1).click();
 
     // Both tabs should be visible in the tab bar
     await expect(
-      page.locator("[class*='min-w-30']", { hasText: firstFileName }).first()
+      page.getByTestId("file-tab").filter({ hasText: firstFileName }).first()
     ).toBeVisible({ timeout: 5_000 });
     await expect(
-      page.locator("[class*='min-w-30']", { hasText: secondFileName }).first()
+      page.getByTestId("file-tab").filter({ hasText: secondFileName }).first()
     ).toBeVisible({ timeout: 5_000 });
 
+
     // The second file's tab should be active (border-t-primary)
-    const activeTab = page.locator(
-      "[class*='min-w-30'][class*='border-t-primary']"
-    );
+    const activeTab = page.locator('[data-testid="file-tab"][data-active="true"]');
+/* It seems like the code snippet you provided is incomplete and ends abruptly with `await ex`. It
+looks like there might have been a typo or an incomplete statement. If you can provide more context
+or complete the code snippet, I'd be happy to help you understand what that part of the code is
+intended to do. */
+
     await expect(activeTab).toContainText(secondFileName);
 
     // Close the active tab via its X button
@@ -144,8 +148,9 @@ test.describe("IDE — Tab management (e2e)", () => {
 
     // The first file's tab should now be active (IDE.tsx closeTab lines 306-308)
     await expect(
-      page.locator("[class*='min-w-30'][class*='border-t-primary']")
+      page.locator('[data-testid="file-tab"][data-active="true"]')
     ).toContainText(firstFileName);
+
 
     // The closed tab should be gone
     await expect(
@@ -158,9 +163,7 @@ test.describe("IDE — Tab management (e2e)", () => {
   }) => {
     // The first file is auto-opened by the useEffect (line 150-155).
     // Wait for the tab to appear.
-    const activeTab = page.locator(
-      "[class*='min-w-30'][class*='border-t-primary']"
-    );
+    const activeTab = page.locator('[data-testid="file-tab"][data-active="true"]');
     await expect(activeTab).toBeVisible({ timeout: 10_000 });
 
     const tabName = (await activeTab.textContent())!.trim();
