@@ -28,6 +28,9 @@ import { useAuth } from "@clerk/astro/react";
 import { useClerkUser } from "@/hooks/use-clerk-user";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useFileManagement } from "@/hooks/use-file-management";
+import TopNavBar, { type ClerkUser} from "@/components/TopNavBar";
+import EditorPanel from "@/components/EditorPanel";
+import ExecutionPanel from "@/components/ExecutionPanel";
 
 export default function IDE() {
   // Auth state from @clerk/astro/react (uses nanostores, not React Context)
