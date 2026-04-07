@@ -11,7 +11,8 @@
   "exclude": [
     "node_modules",
     "build",
-    "dist"
+    "dist", 
+    "e2e",
   ],
   "compilerOptions": {
     "incremental": true,
