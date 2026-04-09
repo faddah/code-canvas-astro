@@ -1,7 +1,7 @@
 import { useFileManagement } from '@/hooks/use-file-management';
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
+import { renderHook, act, waitFor } from "@testing-library/react";
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -169,7 +169,8 @@ describe("useFileManagement", () => {
         });
 
         // localFiles was seeded with 2 starter files + 1 new local file
-        const localFile = result.current.files.find((f: any) => f.id < 0);
+        await waitFor(() => expect(result.current.files).toBeDefined());
+        const localFile = result.current.files?.find((f: any) => f.id < 0);
         expect(localFile).toBeDefined();
         expect(localFile!.id).toBeLessThan(0);
     });
@@ -202,15 +203,16 @@ describe("useFileManagement", () => {
         await act(async () => {
             await result.current.handleCreateFile("temp.py");
         });
-
-        const localFile = result.current.files.find((f: any) => f.id < 0);
+        await waitFor(() => expect(result.current.files).toBeDefined());
+        const localFile = result.current.files?.find((f: any) => f.id < 0);
         expect(localFile).toBeDefined();
 
         act(() => {
             result.current.handleDeleteFile(localFile!.id);
         });
 
-        expect(result.current.files.find((f: any) => f.id === localFile!.id)).toBeUndefined();
+        await waitFor(() => expect(result.current.files).toBeDefined());
+        expect(result.current.files!.find((f: any) => f.id === localFile!.id)).toBeUndefined();
     });
 
     it("has handleDeleteFile call deleteFile mutation when signed in", () => {
