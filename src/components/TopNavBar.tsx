@@ -6,10 +6,10 @@ import { version } from "../../package.json";
 
 export interface ClerkUser {
     id: string;
-    primaryEmailAddress?: { emailAddress?: string | null } | null;
+    primaryEmailAddress?: { emailAddress?: string | null} | null;
 }
 
-interface TopNavBarProps {
+export interface TopNavBarProps {
     isSignedIn: boolean;
     isReady: boolean;
     isRunning: boolean;
