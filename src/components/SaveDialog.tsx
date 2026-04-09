@@ -68,7 +68,7 @@ export function SaveDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white text-black sm:rounded-xl sm:max-w-md">
+      <DialogContent aria-describedby={undefined} className="bg-white text-black sm:rounded-xl sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-black font-bold text-xl flex items-center gap-2">
             <Save className="w-5 h-5" />

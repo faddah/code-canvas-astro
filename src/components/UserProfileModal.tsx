@@ -183,7 +183,7 @@ export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md bg-white text-black rounded-xl">
+      <DialogContent aria-describedby={undefined} className="sm:max-w-md bg-white text-black rounded-xl">
         <DialogHeader>
           <DialogTitle className="text-black flex items-center gap-2">
             <User className="w-5 h-5" />
@@ -376,7 +376,7 @@ export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile
 
       {/* Delete confirmation dialog */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <AlertDialogContent className="bg-white text-black rounded-xl">
+        <AlertDialogContent aria-describedby={undefined}className="bg-white text-black rounded-xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-black">Delete Account</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-600">

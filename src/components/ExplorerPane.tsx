@@ -267,7 +267,7 @@ export function ExplorerPane({
                   <FolderOpen className="w-4 h-4" />
                 </button>
               </DialogTrigger>
-              <DialogContent className="bg-white text-black min-h-55 sm:rounded-xl">
+              <DialogContent aria-describedby={undefined} className="bg-white text-black min-h-55 sm:rounded-xl">
                 <DialogHeader>
                   <DialogTitle className="text-black font-bold text-xl">Create New Project</DialogTitle>
                 </DialogHeader>
@@ -337,7 +337,7 @@ export function ExplorerPane({
 
       {/* New File Dialog */}
       <Dialog open={isNewFileDialogOpen} onOpenChange={setIsNewFileDialogOpen}>
-        <DialogContent className="bg-white text-black min-h-55 sm:rounded-xl">
+        <DialogContent aria-describedby={undefined} className="bg-white text-black min-h-55 sm:rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-black font-bold text-xl">
               Create New File{newFileProjectId ? ` in Project` : ""}
@@ -549,7 +549,7 @@ export function ExplorerPane({
 
             {/* Add Package Dialog */}
             <Dialog open={isAddPackageOpen} onOpenChange={setIsAddPackageOpen}>
-              <DialogContent className="bg-white text-black min-h-55 sm:rounded-xl">
+              <DialogContent aria-describedby={undefined} className="bg-white text-black min-h-55 sm:rounded-xl">
                 <DialogHeader>
                   <DialogTitle className="text-black font-bold text-xl">Add Package</DialogTitle>
                 </DialogHeader>

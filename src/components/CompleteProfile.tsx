@@ -131,6 +131,7 @@ export function CompleteProfile({ onComplete, onCancel }: CompleteProfileProps) 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onCancel(); }}>
       <DialogContent
+        aria-describedby={undefined}
         className="sm:max-w-md bg-white text-black rounded-xl"
       >
         <DialogHeader>
