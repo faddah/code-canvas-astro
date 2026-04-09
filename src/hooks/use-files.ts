@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, buildUrl, type InsertFile } from "@shared/schema";
+import { api, buildUrl, type InsertFile, type File } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
 // ─── Starter Files (read-only, shown to all users) ───
@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 export function useStarterFiles() {
   return useQuery({
     queryKey: [api.starterFiles.list.path],
-    queryFn: async () => {
+    queryFn: async (): Promise<File[]> => {
       const res = await fetch(api.starterFiles.list.path);
       if (!res.ok) throw new Error("Failed to fetch starter files");
       return res.json();
@@ -24,7 +24,7 @@ export function useUserFiles(userId: string | null | undefined) {
     // and automatically refetches when the userId changes (e.g. on login).
     queryKey: [api.userFiles.list.path, userId],
     enabled,
-    queryFn: async () => {
+    queryFn: async (): Promise<File[]> => {
       console.log(`[useUserFiles] Fetching user files for userId=${userId}`);
       const res = await fetch(api.userFiles.list.path);
       if (!res.ok) {
