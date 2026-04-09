@@ -17,10 +17,6 @@ const mockCreateProjectMutate = vi.fn();
 const mockDeleteProjectMutate = vi.fn();
 const mockMoveFileMutate = vi.fn();
 
-// Track Monaco onMount / onChange
-let capturedOnChange: ((value: string | undefined) => void) | null = null;
-let capturedOnMount: ((editor: any) => void) | null = null;
-
 // Track SaveDialog props
 let capturedSaveDialogProps: any = null;
 // Track OpenImportDialog props
@@ -87,11 +83,15 @@ vi.mock("@/hooks/use-toast", () => ({
 }));
 
 // Monaco mock that captures onChange and onMount
-vi.mock("@monaco-editor/react", () => ({
-  default: (props: any) => {
-    capturedOnChange = props.onChange;
+const { MonacoMock, captured } = vi.hoisted(() => {
+  const captured = {
+    onChange: undefined as ((value: string) => void) | undefined,
+    onMount: undefined as ((editor: any) => void) | undefined,
+  };
+  const MonacoMock = (props: any) => {
+    captured.onChange = props.onChange;
     if (props.onMount) {
-      capturedOnMount = props.onMount;
+      captured.onMount = props.onMount;
     }
     return (
       <textarea
@@ -188,8 +188,8 @@ describe("IDE interactions (signed-in)", () => {
     mockUserFilesError = false;
     mockProjectsData = [];
     mockIsReady = true;
-    capturedOnChange = null;
-    capturedOnMount = null;
+    captured.onChange = undefined;
+    captured.onMount = undefined;
     capturedSaveDialogProps = null;
     capturedImportDialogProps = null;
     document.getElementById = vi.fn().mockReturnValue(null);
@@ -204,7 +204,7 @@ describe("IDE interactions (signed-in)", () => {
     await waitFor(() => expect(screen.getByTestId("monaco-editor")).toBeInTheDocument());
 
     // Simulate editor change
-    act(() => { capturedOnChange?.("modified content"); });
+    act(() => { captured.onChange?.("modified content"); });
 
     // The Save button should now have unsaved styling (yellow)
     await waitFor(() => {
@@ -240,7 +240,7 @@ describe("IDE interactions (signed-in)", () => {
     await waitFor(() => expect(screen.getByTestId("monaco-editor")).toBeInTheDocument());
 
     // Create unsaved changes
-    act(() => { capturedOnChange?.("modified"); });
+    act(() => { captured.onChange?.("modified"); });
 
     // Press Cmd+S — now quick-saves in place
     fireEvent.keyDown(window, { key: "s", metaKey: true });
@@ -273,7 +273,7 @@ describe("IDE interactions (signed-in)", () => {
     render(<IDE />, { wrapper: Wrapper });
     await waitFor(() => expect(screen.getByTestId("monaco-editor")).toBeInTheDocument());
 
-    act(() => { capturedOnChange?.("modified"); });
+    act(() => { captured.onChange?.("modified"); });
 
     // Verify unsaved indicator appears (yellow border)
     await waitFor(() => {
@@ -310,7 +310,7 @@ describe("IDE interactions (signed-in)", () => {
     await waitFor(() => expect(screen.getByTestId("monaco-editor")).toBeInTheDocument());
 
     // Create unsaved changes
-    act(() => { capturedOnChange?.("modified"); });
+    act(() => { captured.onChange?.("modified"); });
 
     // Verify unsaved indicator appears (yellow border)
     await waitFor(() => {
@@ -399,7 +399,7 @@ describe("IDE interactions (signed-in)", () => {
     await waitFor(() => expect(screen.getByTestId("monaco-editor")).toBeInTheDocument());
 
     // Create unsaved changes and open dialog via Save As
-    act(() => { capturedOnChange?.("new content"); });
+    act(() => { captured.onChange?.("new content"); });
     fireEvent.click(screen.getByText("Save As"));
 
     await waitFor(() => expect(screen.getByTestId("save-dialog")).toBeInTheDocument());
@@ -540,7 +540,7 @@ describe("IDE interactions (signed-in)", () => {
     render(<IDE />, { wrapper: Wrapper });
     await waitFor(() => expect(screen.getByTestId("monaco-editor")).toBeInTheDocument());
 
-    act(() => { capturedOnMount?.(mockEditor); });
+    act(() => { captured.onMount?.(mockEditor); });
 
     expect(mockEditor.addCommand).toHaveBeenCalledWith(
       2048 | 49,
@@ -562,8 +562,8 @@ describe("IDE interactions (signed-in)", () => {
 
     // Signed-out users don't get the Monaco editor, but if onMount were called
     // the guard `if (isSignedIn)` on line 556 should prevent addCommand
-    if (capturedOnMount) {
-      act(() => { capturedOnMount?.(mockEditor); });
+    if (captured.onMount) {
+      act(() => { captured.onMount?.(mockEditor); });
       expect(mockEditor.addCommand).not.toHaveBeenCalled();
     }
   });
