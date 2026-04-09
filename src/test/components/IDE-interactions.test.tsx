@@ -100,7 +100,13 @@ const { MonacoMock, captured } = vi.hoisted(() => {
         onChange={(e) => props.onChange?.(e.target.value)}
       />
     );
-  },
+  };
+  return { MonacoMock, captured };
+});
+
+vi.mock("@monaco-editor/react", () => ({
+  default: MonacoMock,
+  Editor: MonacoMock,
 }));
 
 vi.mock("@/components/ui/resizable", () => ({
