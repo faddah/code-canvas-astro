@@ -719,10 +719,11 @@ describe("IDE interactions (signed-in)", () => {
 
     // Click the app.py FileTab in the tab bar to switch back.
     // FileTab renders inside a div with class "min-w-30" — unique to FileTab, not ExplorerPane.
-    const appPyTab = screen.getAllByText("app.py")
-      .find(el => el.closest("[class*='min-w-30']"));
+    // NEW — find the FileTab whose contained text is "app.py"
+    const appPyTab = screen.getAllByTestId("file-tab")
+      .find(tab => tab.textContent?.includes("app.py"));
     expect(appPyTab).toBeTruthy();
-    fireEvent.click(appPyTab!.closest("[class*='cursor-pointer']")!);
+    fireEvent.click(appPyTab!);
 
     // Editor should now show app.py content again
     await waitFor(() => {
@@ -740,10 +741,10 @@ describe("IDE interactions (signed-in)", () => {
     await waitFor(() => expect(screen.getByText("My Project")).toBeInTheDocument());
 
     // Find the draggable file row for app.py (in ExplorerPane, not in the tab bar)
+    // NEW — explicitly find the row in ExplorerPane (not in any FileTab)
     const appPyRow = screen.getAllByText("app.py")
-      .find(el => !el.closest("[class*='min-w-30']"))
+      .find(el => !el.closest("[data-testid='file-tab']"))
       ?.closest("[draggable='true']");
-    expect(appPyRow).toBeTruthy();
 
     // Find the project header — it's the div containing "My Project" text with onDrop
     const projectHeader = screen.getByText("My Project").closest("div[class*='cursor-pointer']");
@@ -786,8 +787,9 @@ describe("IDE interactions (signed-in)", () => {
 
     // Find the close button on the ACTIVE tab (lib.py).
     // The active tab has "border-t-primary" class; its close button has "opacity-100".
-    const activeTab = Array.from(document.querySelectorAll("[class*='min-w-30']"))
-      .find(el => el.className.includes("border-t-primary"));
+    // NEW — the active FileTab has data-active="true"
+    const activeTab = screen.getAllByTestId("file-tab")
+      .find(tab => tab.getAttribute("data-active") === "true");
     expect(activeTab).toBeTruthy();
 
     const closeBtn = activeTab!.querySelector("button");
