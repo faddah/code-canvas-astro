@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/schema";
+import type { ProjectPackage as Package } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
 // ─── Packages (auth-required, CRUD) ───
@@ -17,7 +18,7 @@ export function usePackages(userId: string | null | undefined, projectId?: numbe
     return useQuery({
         queryKey: [api.packages.list.path, userId, projectId],
         enabled,
-        queryFn: async () => {
+        queryFn: async (): Promise<Package[]> => {
             const res: Response = await fetch(fetchPath);
             if (!res.ok) {
                 throw new Error(`Failed to fetch packages (HTTP ${res.status})`);
