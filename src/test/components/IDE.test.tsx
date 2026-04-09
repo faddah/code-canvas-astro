@@ -85,9 +85,10 @@ vi.mock("@/hooks/use-toast", () => ({
 // Monaco Editor
 vi.mock("@monaco-editor/react", () => ({
   default: (props: any) => (
-    <div data-testid="monaco-editor" data-value={props.value}>
-      Monaco Editor Mock
-    </div>
+    <div data-testid="monaco-editor" data-value={props.value}>Editor</div>
+  ),
+  Editor: (props: any) => (
+    <div data-testid="monaco-editor" data-value={props.value}>Editor</div>
   ),
 }));
 
