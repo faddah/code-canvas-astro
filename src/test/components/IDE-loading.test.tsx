@@ -48,8 +48,14 @@ vi.mock("@/hooks/use-toast", () => ({
   useToast: () => ({ toast: vi.fn(), dismiss: vi.fn(), toasts: [] }),
 }));
 
+// Monaco Editor
 vi.mock("@monaco-editor/react", () => ({
-  default: () => <div data-testid="monaco-editor">Editor</div>,
+  default: (props: any) => (
+    <div data-testid="monaco-editor" data-value={props.value}>Editor</div>
+  ),
+  Editor: (props: any) => (
+    <div data-testid="monaco-editor" data-value={props.value}>Editor</div>
+  ),
 }));
 
 vi.mock("@/components/ui/resizable", () => ({
