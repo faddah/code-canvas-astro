@@ -72,7 +72,7 @@ describe("UserProfileModal", () => {
     mockDeleteIsPending = false;
   });
 
-  it("renders dialog with User Profile title", () => {
+  it("renders dialog with User Profile title", async () => {
     render(
       <UserProfileModal
         open={true}
@@ -82,10 +82,12 @@ describe("UserProfileModal", () => {
         profile={mockProfile}
       />
     );
-    expect(screen.getByText("User Profile")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("User Profile")).toBeInTheDocument();
+    });
   });
 
-  it("shows profile fields in view mode", () => {
+  it("shows profile fields in view mode", async () => {
     render(
       <UserProfileModal
         open={true}
@@ -95,16 +97,18 @@ describe("UserProfileModal", () => {
         profile={mockProfile}
       />
     );
-    expect(screen.getByText("Test User")).toBeInTheDocument();
-    expect(screen.getByText("test@example.com")).toBeInTheDocument();
-    expect(screen.getByText("+1 5551234567")).toBeInTheDocument();
-    expect(screen.getByText("Portland")).toBeInTheDocument();
-    expect(screen.getByText("OR")).toBeInTheDocument();
-    expect(screen.getByText("97201")).toBeInTheDocument();
-    expect(screen.getByText("US")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Test User")).toBeInTheDocument();
+      expect(screen.getByText("test@example.com")).toBeInTheDocument();
+      expect(screen.getByText("+1 5551234567")).toBeInTheDocument();
+      expect(screen.getByText("Portland")).toBeInTheDocument();
+      expect(screen.getByText("OR")).toBeInTheDocument();
+      expect(screen.getByText("97201")).toBeInTheDocument();
+      expect(screen.getByText("US")).toBeInTheDocument();
+    });
   });
 
-  it("shows 'Not set' for missing profile fields", () => {
+  it("shows 'Not set' for missing profile fields", async () => {
     render(
       <UserProfileModal
         open={true}
@@ -115,10 +119,12 @@ describe("UserProfileModal", () => {
       />
     );
     const notSetElements = screen.getAllByText("Not set");
-    expect(notSetElements.length).toBeGreaterThanOrEqual(4);
+    await waitFor(() => {
+      expect(notSetElements.length).toBeGreaterThanOrEqual(4);
+    });
   });
 
-  it("shows Edit Profile, Cancel, and Delete Profile buttons in view mode", () => {
+  it("shows Edit Profile, Cancel, and Delete Profile buttons in view mode", async () => {
     render(
       <UserProfileModal
         open={true}
@@ -128,27 +134,14 @@ describe("UserProfileModal", () => {
         profile={mockProfile}
       />
     );
-    expect(screen.getByText("Edit Profile")).toBeInTheDocument();
-    expect(screen.getByText("Cancel")).toBeInTheDocument();
-    expect(screen.getByText("Delete Profile")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Edit Profile")).toBeInTheDocument();
+      expect(screen.getByText("Cancel")).toBeInTheDocument();
+      expect(screen.getByText("Delete Profile")).toBeInTheDocument();
+    });
   });
 
-  it("switches to edit mode when Edit Profile is clicked", () => {
-    render(
-      <UserProfileModal
-        open={true}
-        onClose={onClose}
-        onDeleteProfile={onDeleteProfile}
-        user={mockUser}
-        profile={mockProfile}
-      />
-    );
-    fireEvent.click(screen.getByText("Edit Profile"));
-    expect(screen.getByText("Save Changes")).toBeInTheDocument();
-    expect(screen.getByLabelText("City")).toBeInTheDocument();
-  });
-
-  it("shows password fields for non-OAuth users in edit mode", () => {
+  it("switches to edit mode when Edit Profile is clicked", async () => {
     render(
       <UserProfileModal
         open={true}
@@ -159,11 +152,31 @@ describe("UserProfileModal", () => {
       />
     );
     fireEvent.click(screen.getByText("Edit Profile"));
-    expect(screen.getByLabelText("New Password")).toBeInTheDocument();
-    expect(screen.getByLabelText("Confirm Password")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Save Changes")).toBeInTheDocument();
+      expect(screen.getByLabelText("City")).toBeInTheDocument();
+    });
   });
 
-  it("hides password fields for OAuth users in edit mode", () => {
+
+  it("shows password fields for non-OAuth users in edit mode", async () => {
+    render(
+      <UserProfileModal
+        open={true}
+        onClose={onClose}
+        onDeleteProfile={onDeleteProfile}
+        user={mockUser}
+        profile={mockProfile}
+      />
+    );
+    fireEvent.click(screen.getByText("Edit Profile"));
+    await waitFor(() => {
+      expect(screen.getByLabelText("New Password")).toBeInTheDocument();
+      expect(screen.getByLabelText("Confirm Password")).toBeInTheDocument();
+    });
+  });
+
+  it("hides password fields for OAuth users in edit mode", async () => {
     const oauthUser = {
       ...mockUser,
       externalAccounts: [{ provider: "google" }],
@@ -179,11 +192,13 @@ describe("UserProfileModal", () => {
       />
     );
     fireEvent.click(screen.getByText("Edit Profile"));
-    expect(screen.queryByLabelText("New Password")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Confirm Password")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByLabelText("New Password")).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("Confirm Password")).not.toBeInTheDocument();
+    });
   });
 
-  it("returns to view mode when Cancel is clicked in edit mode", () => {
+  it("returns to view mode when Cancel is clicked in edit mode", async () => {
     render(
       <UserProfileModal
         open={true}
@@ -194,14 +209,18 @@ describe("UserProfileModal", () => {
       />
     );
     fireEvent.click(screen.getByText("Edit Profile"));
-    expect(screen.getByText("Save Changes")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Save Changes")).toBeInTheDocument();
+    });
 
     // In edit mode, the Cancel button should switch back to view mode
     fireEvent.click(screen.getByText("Cancel"));
-    expect(screen.getByText("Edit Profile")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Edit Profile")).toBeInTheDocument();
+    });
   });
 
-  it("shows delete confirmation dialog", () => {
+  it("shows delete confirmation dialog", async () => {
     render(
       <UserProfileModal
         open={true}
@@ -212,8 +231,10 @@ describe("UserProfileModal", () => {
       />
     );
     fireEvent.click(screen.getByText("Delete Profile"));
-    expect(screen.getByText("Delete Account")).toBeInTheDocument();
-    expect(screen.getByText(/Are you certain/)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Delete Account")).toBeInTheDocument();
+      expect(screen.getByText(/Are you certain/)).toBeInTheDocument();
+    });
   });
 
   it("calls deleteProfile and onDeleteProfile when confirmed", async () => {
@@ -246,7 +267,7 @@ describe("UserProfileModal", () => {
     });
   });
 
-  it("shows 'Managed by Clerk' hints in edit mode for name and email", () => {
+  it("shows 'Managed by Clerk' hints in edit mode for name and email", async () => {
     render(
       <UserProfileModal
         open={true}
@@ -258,10 +279,12 @@ describe("UserProfileModal", () => {
     );
     fireEvent.click(screen.getByText("Edit Profile"));
     const hints = screen.getAllByText("Managed by Clerk");
-    expect(hints.length).toBe(2);
+    await waitFor(() => {
+      expect(hints.length).toBe(2);
+    });
   });
 
-  it("does not render when open is false", () => {
+  it("does not render when open is false", async () => {
     const { container } = render(
       <UserProfileModal
         open={false}
@@ -271,10 +294,12 @@ describe("UserProfileModal", () => {
         profile={mockProfile}
       />
     );
-    expect(screen.queryByText("User Profile")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByText("User Profile")).not.toBeInTheDocument();
+    });
   });
 
-  it("shows masked password in view mode", () => {
+  it("shows masked password in view mode", async () => {
     render(
       <UserProfileModal
         open={true}
@@ -284,10 +309,12 @@ describe("UserProfileModal", () => {
         profile={mockProfile}
       />
     );
-    expect(screen.getByText("**********")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("**********")).toBeInTheDocument();
+    });
   });
 
-  it("uses firstName fallback when fullName is missing", () => {
+  it("uses firstName fallback when fullName is missing", async () => {
     const userNoFullName = { ...mockUser, fullName: null };
     render(
       <UserProfileModal
@@ -298,7 +325,9 @@ describe("UserProfileModal", () => {
         profile={mockProfile}
       />
     );
-    expect(screen.getByText("Test")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Test")).toBeInTheDocument();
+    });
   });
 
   it("submitting edit form with password calls user.updatePassword", async () => {
@@ -366,10 +395,12 @@ describe("UserProfileModal", () => {
     });
 
     // updatePassword was called but threw — no crash
-    expect(mockUser.updatePassword).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockUser.updatePassword).toHaveBeenCalled();
+    });
   });
 
-  it("shows empty name and email when user fields are null", () => {
+  it("shows empty name and email when user fields are null", async() => {
     const nullUser = {
       primaryEmailAddress: null,
       fullName: null,
@@ -389,11 +420,13 @@ describe("UserProfileModal", () => {
     );
     // With no name or email, those fields should show empty or fallback text
     // The "Not set" label appears for missing profile data, but name/email render as empty strings
-    expect(screen.queryByText("Test User")).not.toBeInTheDocument();
-    expect(screen.queryByText("test@example.com")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByText("Test User")).not.toBeInTheDocument();
+      expect(screen.queryByText("test@example.com")).not.toBeInTheDocument();
+    });
   });
 
-  it("phone without country code prefix shows full number in edit mode", () => {
+  it("phone without country code prefix shows full number in edit mode", async () => {
     const profileNoCode = { ...mockProfile, phone: "5551234567" };
     render(
       <UserProfileModal
@@ -408,10 +441,12 @@ describe("UserProfileModal", () => {
 
     // The regex replace finds no country code prefix, so full number is used
     const phoneInput = screen.getByLabelText("Phone Number") as HTMLInputElement;
-    expect(phoneInput.value).toBe("5551234567");
+    await waitFor(() => {
+      expect(phoneInput.value).toBe("5551234567");
+    });
   });
 
-  it("Cancel in view mode calls handleClose (setIsEditing false + onClose)", () => {
+  it("Cancel in view mode calls handleClose (setIsEditing false + onClose)", async () => {
     render(
       <UserProfileModal
         open={true}
@@ -456,7 +491,7 @@ describe("UserProfileModal", () => {
     });
   });
 
-  it("closing dialog via overlay calls handleClose", () => {
+  it("closing dialog via overlay calls handleClose", async () => {
     render(
       <UserProfileModal
         open={true}
@@ -471,7 +506,9 @@ describe("UserProfileModal", () => {
     const closeButton = screen.getByRole("button", { name: /close/i });
     fireEvent.click(closeButton);
 
-    expect(onClose).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(onClose).toHaveBeenCalled();
+    });
   });
 
   it("submitting edit form without password only updates profile", async () => {
@@ -502,7 +539,9 @@ describe("UserProfileModal", () => {
     });
 
     // updatePassword should NOT have been called (no password entered)
-    expect(mockUser.updatePassword).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockUser.updatePassword).not.toHaveBeenCalled();
+    });
 
     // Should return to view mode
     await waitFor(() => {
@@ -556,7 +595,7 @@ describe("UserProfileModal", () => {
     });
   });
 
-  it("shows 'Saving...' when updateProfile.isPending is true", () => {
+  it("shows 'Saving...' when updateProfile.isPending is true", async () => {
     mockUpdateIsPending = true;
     render(
       <UserProfileModal
@@ -569,11 +608,14 @@ describe("UserProfileModal", () => {
     );
 
     fireEvent.click(screen.getByText("Edit Profile"));
-    expect(screen.getByText("Saving...")).toBeInTheDocument();
-    expect(screen.queryByText("Save Changes")).not.toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText("Saving...")).toBeInTheDocument();
+      expect(screen.queryByText("Save Changes")).not.toBeInTheDocument();
+    });
   });
 
-  it("shows 'Deleting...' when deleteProfile.isPending is true", () => {
+  it("shows 'Deleting...' when deleteProfile.isPending is true", async () => {
     mockDeleteIsPending = true;
     render(
       <UserProfileModal
@@ -589,6 +631,8 @@ describe("UserProfileModal", () => {
     fireEvent.click(screen.getByText("Delete Profile"));
 
     // The confirm button in the alert dialog should show "Deleting..."
-    expect(screen.getByText("Deleting...")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Deleting...")).toBeInTheDocument();
+    });
   });
 });

@@ -61,23 +61,28 @@ describe("useUserFiles", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual(mockFiles);
+    await waitFor(() => {
+      expect(result.current.data).toEqual(mockFiles);
+    });
   });
 
-  it("does not fetch when userId is null", () => {
+  it("does not fetch when userId is null", async () => {
     const { result } = renderHook(() => useUserFiles(null), {
       wrapper: createWrapper(),
     });
-
-    expect(result.current.fetchStatus).toBe("idle");
+    await waitFor(() => {
+      expect(result.current.fetchStatus).toBe("idle");
+    });
   });
 
-  it("does not fetch when userId is undefined", () => {
+  it("does not fetch when userId is undefined", async() => {
     const { result } = renderHook(() => useUserFiles(undefined), {
       wrapper: createWrapper(),
     });
 
-    expect(result.current.fetchStatus).toBe("idle");
+    await waitFor(() => {
+      expect(result.current.fetchStatus).toBe("idle");
+    });
   });
 });
 
@@ -100,13 +105,16 @@ describe("useCreateUserFile", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/user-files/create",
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({ name: "new.py", content: "# new" }),
-      })
-    );
+    
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/user-files/create",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ name: "new.py", content: "# new" }),
+        })
+      );
+    });
   });
 
   it("handles server error", async () => {
@@ -142,13 +150,15 @@ describe("useUpdateUserFile", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/user-files/1",
-      expect.objectContaining({
-        method: "PUT",
-        body: JSON.stringify({ content: "# updated" }),
-      })
-    );
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/user-files/1",
+        expect.objectContaining({
+          method: "PUT",
+          body: JSON.stringify({ content: "# updated" }),
+        })
+      );
+    });
   });
 });
 
@@ -170,13 +180,15 @@ describe("useUpdateUserFile with projectId", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/user-files/1",
-      expect.objectContaining({
-        method: "PUT",
-        body: JSON.stringify({ content: "# code", projectId: 5 }),
-      })
-    );
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/user-files/1",
+        expect.objectContaining({
+          method: "PUT",
+          body: JSON.stringify({ content: "# code", projectId: 5 }),
+        })
+      );
+    });
   });
 
   it("sends PUT request with null projectId to unassign from project", async () => {
@@ -194,13 +206,15 @@ describe("useUpdateUserFile with projectId", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/user-files/1",
-      expect.objectContaining({
-        method: "PUT",
-        body: JSON.stringify({ projectId: null }),
-      })
-    );
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/user-files/1",
+        expect.objectContaining({
+          method: "PUT",
+          body: JSON.stringify({ projectId: null }),
+        })
+      );
+    });
   });
 });
 
@@ -219,7 +233,9 @@ describe("useDeleteUserFile", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(global.fetch).toHaveBeenCalledWith("/api/user-files/42", { method: "DELETE" });
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith("/api/user-files/42", { method: "DELETE" });
+    });
   });
 
   it("handles delete failure with server error message", async () => {
@@ -238,7 +254,9 @@ describe("useDeleteUserFile", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error?.message).toBe("Internal server error");
+    await waitFor(() => {
+      expect(result.current.error?.message).toBe("Internal server error");
+    });
   });
 });
 
@@ -283,7 +301,9 @@ describe("useDeleteUserFile edge cases", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error?.message).toBe("HTTP 503");
+    await waitFor(() => {
+      expect(result.current.error?.message).toBe("HTTP 503");
+    });
   });
 
   it("uses message field when error field is absent", async () => {
@@ -302,7 +322,9 @@ describe("useDeleteUserFile edge cases", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error?.message).toBe("File not found");
+    await waitFor(() => {
+      expect(result.current.error?.message).toBe("File not found");
+    });
   });
 });
 
@@ -321,7 +343,9 @@ describe("useStarterFiles", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual(starters);
+    await waitFor(() => {
+      expect(result.current.data).toEqual(starters);
+    });
   });
 
   it("throws on fetch failure", async () => {
@@ -357,8 +381,10 @@ describe("useFiles", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual(mockFiles);
-    expect(global.fetch).toHaveBeenCalledWith("/api/files");
+    await waitFor(() => {
+      expect(result.current.data).toEqual(mockFiles);
+      expect(global.fetch).toHaveBeenCalledWith("/api/files");
+    });
   });
 
   it("throws on fetch failure", async () => {
@@ -387,16 +413,19 @@ describe("useFile", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual(mockFile);
-    expect(global.fetch).toHaveBeenCalledWith("/api/files/5");
+    await waitFor(() => {
+      expect(result.current.data).toEqual(mockFile);
+      expect(global.fetch).toHaveBeenCalledWith("/api/files/5");
+    });
   });
 
-  it("does not fetch when id is null", () => {
+  it("does not fetch when id is null", async() => {
     const { result } = renderHook(() => useFile(null), {
       wrapper: createWrapper(),
     });
-
-    expect(result.current.fetchStatus).toBe("idle");
+    await waitFor(() => {
+      expect(result.current.fetchStatus).toBe("idle");
+    });
   });
 
   it("returns null on 404 response", async () => {
@@ -410,7 +439,9 @@ describe("useFile", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toBeNull();
+    await waitFor(() => {
+      expect(result.current.data).toBeNull();
+    });
   });
 
   it("throws on non-404 error", async () => {
@@ -446,13 +477,15 @@ describe("useCreateFile", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/files/create",
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({ name: "new.py", content: "# new file" }),
-      })
-    );
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/files/create",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ name: "new.py", content: "# new file" }),
+        })
+      );
+    });
   });
 
   it("handles server error on create", async () => {
@@ -489,13 +522,15 @@ describe("useUpdateFile", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/files/1",
-      expect.objectContaining({
-        method: "PUT",
-        body: JSON.stringify({ content: "# updated" }),
-      })
-    );
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/files/1",
+        expect.objectContaining({
+          method: "PUT",
+          body: JSON.stringify({ content: "# updated" }),
+        })
+      );
+    });
   });
 
   it("handles server error on update", async () => {
@@ -528,7 +563,9 @@ describe("useDeleteFile", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(global.fetch).toHaveBeenCalledWith("/api/files/10", { method: "DELETE" });
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith("/api/files/10", { method: "DELETE" });
+    });
   });
 
   it("handles delete failure with JSON error body", async () => {
@@ -547,7 +584,9 @@ describe("useDeleteFile", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error?.message).toBe("Server error");
+    await waitFor(() => {
+      expect(result.current.error?.message).toBe("Server error");
+    });
   });
 
   it("handles delete failure with message field in error body", async () => {
@@ -566,7 +605,9 @@ describe("useDeleteFile", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error?.message).toBe("File not found");
+    await waitFor(() => {
+      expect(result.current.error?.message).toBe("File not found");
+    });
   });
 
   it("falls back to HTTP status when error body is not JSON", async () => {
@@ -585,7 +626,9 @@ describe("useDeleteFile", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error?.message).toBe("HTTP 503");
+    await waitFor(() => {
+      expect(result.current.error?.message).toBe("HTTP 503");
+    });
   });
 });
 
@@ -611,7 +654,10 @@ describe("useUserFiles (branch coverage)", () => {
     await vi.advanceTimersByTimeAsync(35000);
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error?.message).toBe("Failed to fetch user files (HTTP 403)");
+    await waitFor(() => {
+      expect(result.current.error?.message).toBe("Failed to fetch user files (HTTP 403)");
+    });
+
     consoleSpy.mockRestore();
     consoleLogSpy.mockRestore();
     vi.useRealTimers();
