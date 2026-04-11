@@ -20,7 +20,6 @@ beforeEach(async () => {
 
 afterEach(() => {
   uninstallPyodideMock();
-  vi.restoreAllMocks();
 });
 
 describe("usePyodide", () => {
