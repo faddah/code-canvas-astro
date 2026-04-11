@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import path from "path";
 import fs from "fs";
 import os from "os";
-import { mockStarterFilesAPI, waitForIDEShell } from "./helpers";
+import { mockStarterFilesAPI, blockPyodide, waitForIDEShell } from "./helpers";
 
 test.describe("Explorer Pane & Dialogs (Anonymous)", () => {
   // Firefox needs extra time — IDE hydration + asset loading can exceed 30s
@@ -10,6 +10,7 @@ test.describe("Explorer Pane & Dialogs (Anonymous)", () => {
 
   test.beforeEach(async ({ page }) => {
     await mockStarterFilesAPI(page);
+    await blockPyodide(page);
     await page.goto("/");
     await waitForIDEShell(page);
   });
@@ -82,6 +83,7 @@ test.describe("Keyboard Shortcut (Cmd+S / Ctrl+S)", () => {
   }) => {
     test.setTimeout(60_000);
     await mockStarterFilesAPI(page);
+    await blockPyodide(page);
     await page.goto("/");
     await waitForIDEShell(page);
 
@@ -106,6 +108,7 @@ test.describe("Open / Import Dialog file validation", () => {
     // The actual dialog is only available for signed-in users,
     // so we test the component's constraint via DOM inspection
     await mockStarterFilesAPI(page);
+    await blockPyodide(page);
     await page.goto("/");
     await waitForIDEShell(page);
   });
@@ -118,6 +121,7 @@ test.describe("File type restrictions", () => {
     test.setTimeout(60_000);
     // Navigate and wait for load
     await mockStarterFilesAPI(page);
+    await blockPyodide(page);
     await page.goto("/");
     await waitForIDEShell(page);
 
