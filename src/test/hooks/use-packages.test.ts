@@ -42,13 +42,6 @@ function createWrapper() {
 }
 
 describe("use-packages hooks", () => {
-    beforeEach(() => {
-        vi.restoreAllMocks();
-    });
-
-    afterEach(() => {
-        vi.restoreAllMocks();
-    });
 
     // ─── usePackages ───
 
@@ -123,14 +116,22 @@ describe("use-packages hooks", () => {
         });
 
         it("handles fetch error", async () => {
+            vi.useFakeTimers({ shouldAdvanceTime: true });
             global.fetch = vi.fn().mockRejectedValue(new Error("Network failure"));
 
-            const { result } = renderHook(() => usePackages("user_a"), {
+            const { result, unmount } = renderHook(() => usePackages("user_a"), {
                 wrapper: createWrapper(),
             });
 
-            await waitFor(() => expect(result.current.isError).toBe(true), { timeout: 35000 });
-        }, 40000);
+            // Advance past all retry delays (1s + 2s + 4s + 8s + 16s = 31s)
+            await act(async () => {
+                await vi.advanceTimersByTimeAsync(35000);
+            });
+
+            await waitFor(() => expect(result.current.isError).toBe(true));
+            unmount();
+            vi.useRealTimers();
+        });
     });
 
     // ─── useAddPackage ───
