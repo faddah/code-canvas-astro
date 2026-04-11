@@ -47,6 +47,7 @@ pnpm-debug.log*
 .env.docker
 .env.local
 .env.*.local
+.env.test
 
 # macOS-specific files
 .DS_Store
