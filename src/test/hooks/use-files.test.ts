@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -36,14 +36,6 @@ function createWrapper() {
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 }
 
-beforeEach(() => {
-  vi.restoreAllMocks();
-});
-
-afterEach(() => {
-  vi.restoreAllMocks();
-});
-
 // ─── useUserFiles ───
 
 describe("useUserFiles", () => {
@@ -56,7 +48,7 @@ describe("useUserFiles", () => {
       json: () => Promise.resolve(mockFiles),
     });
 
-    const { result } = renderHook(() => useUserFiles("user_a"), {
+    const { result, unmount } = renderHook(() => useUserFiles("user_a"), {
       wrapper: createWrapper(),
     });
 
@@ -64,25 +56,28 @@ describe("useUserFiles", () => {
     await waitFor(() => {
       expect(result.current.data).toEqual(mockFiles);
     });
+    unmount();
   });
 
   it("does not fetch when userId is null", async () => {
-    const { result } = renderHook(() => useUserFiles(null), {
+    const { result, unmount } = renderHook(() => useUserFiles(null), {
       wrapper: createWrapper(),
     });
     await waitFor(() => {
       expect(result.current.fetchStatus).toBe("idle");
     });
+    unmount();
   });
 
   it("does not fetch when userId is undefined", async() => {
-    const { result } = renderHook(() => useUserFiles(undefined), {
+    const { result, unmount } = renderHook(() => useUserFiles(undefined), {
       wrapper: createWrapper(),
     });
 
     await waitFor(() => {
       expect(result.current.fetchStatus).toBe("idle");
     });
+    unmount();
   });
 });
 
@@ -96,7 +91,7 @@ describe("useCreateUserFile", () => {
       json: () => Promise.resolve(newFile),
     });
 
-    const { result } = renderHook(() => useCreateUserFile(), {
+    const { result, unmount } = renderHook(() => useCreateUserFile(), {
       wrapper: createWrapper(),
     });
 
@@ -115,12 +110,13 @@ describe("useCreateUserFile", () => {
         })
       );
     });
+    unmount();
   });
 
   it("handles server error", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
 
-    const { result } = renderHook(() => useCreateUserFile(), {
+    const { result, unmount } = renderHook(() => useCreateUserFile(), {
       wrapper: createWrapper(),
     });
 
@@ -129,6 +125,7 @@ describe("useCreateUserFile", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+    unmount();
   });
 });
 
@@ -141,7 +138,7 @@ describe("useUpdateUserFile", () => {
       json: () => Promise.resolve({ id: 1, name: "a.py", content: "# updated" }),
     });
 
-    const { result } = renderHook(() => useUpdateUserFile(), {
+    const { result, unmount } = renderHook(() => useUpdateUserFile(), {
       wrapper: createWrapper(),
     });
 
@@ -159,6 +156,7 @@ describe("useUpdateUserFile", () => {
         })
       );
     });
+    unmount();
   });
 });
 
@@ -171,7 +169,7 @@ describe("useUpdateUserFile with projectId", () => {
       json: () => Promise.resolve({ id: 1, name: "a.py", content: "# code", projectId: 5 }),
     });
 
-    const { result } = renderHook(() => useUpdateUserFile(), {
+    const { result, unmount } = renderHook(() => useUpdateUserFile(), {
       wrapper: createWrapper(),
     });
 
@@ -189,6 +187,7 @@ describe("useUpdateUserFile with projectId", () => {
         })
       );
     });
+    unmount();
   });
 
   it("sends PUT request with null projectId to unassign from project", async () => {
@@ -197,7 +196,7 @@ describe("useUpdateUserFile with projectId", () => {
       json: () => Promise.resolve({ id: 1, name: "a.py", content: "# code", projectId: null }),
     });
 
-    const { result } = renderHook(() => useUpdateUserFile(), {
+    const { result, unmount } = renderHook(() => useUpdateUserFile(), {
       wrapper: createWrapper(),
     });
 
@@ -215,6 +214,7 @@ describe("useUpdateUserFile with projectId", () => {
         })
       );
     });
+    unmount();
   });
 });
 
@@ -224,7 +224,7 @@ describe("useDeleteUserFile", () => {
   it("sends DELETE request for file id", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 204 });
 
-    const { result } = renderHook(() => useDeleteUserFile(), {
+    const { result, unmount } = renderHook(() => useDeleteUserFile(), {
       wrapper: createWrapper(),
     });
 
@@ -236,6 +236,7 @@ describe("useDeleteUserFile", () => {
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith("/api/user-files/42", { method: "DELETE" });
     });
+    unmount();
   });
 
   it("handles delete failure with server error message", async () => {
@@ -245,7 +246,7 @@ describe("useDeleteUserFile", () => {
       json: () => Promise.resolve({ error: "Internal server error" }),
     });
 
-    const { result } = renderHook(() => useDeleteUserFile(), {
+    const { result, unmount } = renderHook(() => useDeleteUserFile(), {
       wrapper: createWrapper(),
     });
 
@@ -257,6 +258,7 @@ describe("useDeleteUserFile", () => {
     await waitFor(() => {
       expect(result.current.error?.message).toBe("Internal server error");
     });
+    unmount();
   });
 });
 
@@ -270,7 +272,7 @@ describe("useUpdateUserFile error handling", () => {
   it("handles server error on update", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
 
-    const { result } = renderHook(() => useUpdateUserFile(), {
+    const { result, unmount } = renderHook(() => useUpdateUserFile(), {
       wrapper: createWrapper(),
     });
 
@@ -279,6 +281,7 @@ describe("useUpdateUserFile error handling", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+    unmount();
   });
 });
 
@@ -292,7 +295,7 @@ describe("useDeleteUserFile edge cases", () => {
       json: () => Promise.reject(new Error("not JSON")),
     });
 
-    const { result } = renderHook(() => useDeleteUserFile(), {
+    const { result, unmount } = renderHook(() => useDeleteUserFile(), {
       wrapper: createWrapper(),
     });
 
@@ -304,6 +307,7 @@ describe("useDeleteUserFile edge cases", () => {
     await waitFor(() => {
       expect(result.current.error?.message).toBe("HTTP 503");
     });
+    unmount();
   });
 
   it("uses message field when error field is absent", async () => {
@@ -313,7 +317,7 @@ describe("useDeleteUserFile edge cases", () => {
       json: () => Promise.resolve({ message: "File not found" }),
     });
 
-    const { result } = renderHook(() => useDeleteUserFile(), {
+    const { result, unmount } = renderHook(() => useDeleteUserFile(), {
       wrapper: createWrapper(),
     });
 
@@ -325,6 +329,7 @@ describe("useDeleteUserFile edge cases", () => {
     await waitFor(() => {
       expect(result.current.error?.message).toBe("File not found");
     });
+    unmount();
   });
 });
 
@@ -338,7 +343,7 @@ describe("useStarterFiles", () => {
       json: () => Promise.resolve(starters),
     });
 
-    const { result } = renderHook(() => useStarterFiles(), {
+    const { result, unmount } = renderHook(() => useStarterFiles(), {
       wrapper: createWrapper(),
     });
 
@@ -346,16 +351,18 @@ describe("useStarterFiles", () => {
     await waitFor(() => {
       expect(result.current.data).toEqual(starters);
     });
+    unmount();
   });
 
   it("throws on fetch failure", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
 
-    const { result } = renderHook(() => useStarterFiles(), {
+    const { result, unmount } = renderHook(() => useStarterFiles(), {
       wrapper: createWrapper(),
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+    unmount();
   });
 });
 
@@ -376,7 +383,7 @@ describe("useFiles", () => {
       json: () => Promise.resolve(mockFiles),
     });
 
-    const { result } = renderHook(() => useFiles(), {
+    const { result, unmount } = renderHook(() => useFiles(), {
       wrapper: createWrapper(),
     });
 
@@ -385,16 +392,18 @@ describe("useFiles", () => {
       expect(result.current.data).toEqual(mockFiles);
       expect(global.fetch).toHaveBeenCalledWith("/api/files");
     });
+    unmount();
   });
 
   it("throws on fetch failure", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
 
-    const { result } = renderHook(() => useFiles(), {
+    const { result, unmount } = renderHook(() => useFiles(), {
       wrapper: createWrapper(),
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+    unmount();
   });
 });
 
@@ -408,7 +417,7 @@ describe("useFile", () => {
       json: () => Promise.resolve(mockFile),
     });
 
-    const { result } = renderHook(() => useFile(5), {
+    const { result, unmount } = renderHook(() => useFile(5), {
       wrapper: createWrapper(),
     });
 
@@ -417,15 +426,17 @@ describe("useFile", () => {
       expect(result.current.data).toEqual(mockFile);
       expect(global.fetch).toHaveBeenCalledWith("/api/files/5");
     });
+    unmount();
   });
 
   it("does not fetch when id is null", async() => {
-    const { result } = renderHook(() => useFile(null), {
+    const { result, unmount } = renderHook(() => useFile(null), {
       wrapper: createWrapper(),
     });
     await waitFor(() => {
       expect(result.current.fetchStatus).toBe("idle");
     });
+    unmount();
   });
 
   it("returns null on 404 response", async () => {
@@ -434,7 +445,7 @@ describe("useFile", () => {
       status: 404,
     });
 
-    const { result } = renderHook(() => useFile(999), {
+    const { result, unmount } = renderHook(() => useFile(999), {
       wrapper: createWrapper(),
     });
 
@@ -442,6 +453,7 @@ describe("useFile", () => {
     await waitFor(() => {
       expect(result.current.data).toBeNull();
     });
+    unmount();
   });
 
   it("throws on non-404 error", async () => {
@@ -450,11 +462,12 @@ describe("useFile", () => {
       status: 500,
     });
 
-    const { result } = renderHook(() => useFile(1), {
+    const { result, unmount } = renderHook(() => useFile(1), {
       wrapper: createWrapper(),
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+    unmount();
   });
 });
 
@@ -468,7 +481,7 @@ describe("useCreateFile", () => {
       json: () => Promise.resolve(newFile),
     });
 
-    const { result } = renderHook(() => useCreateFile(), {
+    const { result, unmount } = renderHook(() => useCreateFile(), {
       wrapper: createWrapper(),
     });
 
@@ -486,12 +499,13 @@ describe("useCreateFile", () => {
         })
       );
     });
+    unmount();
   });
 
   it("handles server error on create", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
 
-    const { result } = renderHook(() => useCreateFile(), {
+    const { result, unmount } = renderHook(() => useCreateFile(), {
       wrapper: createWrapper(),
     });
 
@@ -500,6 +514,7 @@ describe("useCreateFile", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+    unmount();
   });
 });
 
@@ -513,7 +528,7 @@ describe("useUpdateFile", () => {
       json: () => Promise.resolve(updated),
     });
 
-    const { result } = renderHook(() => useUpdateFile(), {
+    const { result, unmount } = renderHook(() => useUpdateFile(), {
       wrapper: createWrapper(),
     });
 
@@ -531,12 +546,13 @@ describe("useUpdateFile", () => {
         })
       );
     });
+    unmount();
   });
 
   it("handles server error on update", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
 
-    const { result } = renderHook(() => useUpdateFile(), {
+    const { result, unmount } = renderHook(() => useUpdateFile(), {
       wrapper: createWrapper(),
     });
 
@@ -545,6 +561,7 @@ describe("useUpdateFile", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+    unmount();
   });
 });
 
@@ -554,7 +571,7 @@ describe("useDeleteFile", () => {
   it("sends DELETE request to legacy delete endpoint", async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 204 });
 
-    const { result } = renderHook(() => useDeleteFile(), {
+    const { result, unmount } = renderHook(() => useDeleteFile(), {
       wrapper: createWrapper(),
     });
 
@@ -566,6 +583,7 @@ describe("useDeleteFile", () => {
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith("/api/files/10", { method: "DELETE" });
     });
+    unmount();
   });
 
   it("handles delete failure with JSON error body", async () => {
@@ -575,7 +593,7 @@ describe("useDeleteFile", () => {
       json: () => Promise.resolve({ error: "Server error" }),
     });
 
-    const { result } = renderHook(() => useDeleteFile(), {
+    const { result, unmount } = renderHook(() => useDeleteFile(), {
       wrapper: createWrapper(),
     });
 
@@ -587,6 +605,7 @@ describe("useDeleteFile", () => {
     await waitFor(() => {
       expect(result.current.error?.message).toBe("Server error");
     });
+    unmount();
   });
 
   it("handles delete failure with message field in error body", async () => {
@@ -596,7 +615,7 @@ describe("useDeleteFile", () => {
       json: () => Promise.resolve({ message: "File not found" }),
     });
 
-    const { result } = renderHook(() => useDeleteFile(), {
+    const { result, unmount } = renderHook(() => useDeleteFile(), {
       wrapper: createWrapper(),
     });
 
@@ -608,6 +627,7 @@ describe("useDeleteFile", () => {
     await waitFor(() => {
       expect(result.current.error?.message).toBe("File not found");
     });
+    unmount();
   });
 
   it("falls back to HTTP status when error body is not JSON", async () => {
@@ -617,7 +637,7 @@ describe("useDeleteFile", () => {
       json: () => Promise.reject(new Error("not JSON")),
     });
 
-    const { result } = renderHook(() => useDeleteFile(), {
+    const { result, unmount } = renderHook(() => useDeleteFile(), {
       wrapper: createWrapper(),
     });
 
@@ -629,6 +649,7 @@ describe("useDeleteFile", () => {
     await waitFor(() => {
       expect(result.current.error?.message).toBe("HTTP 503");
     });
+    unmount();
   });
 });
 
@@ -643,24 +664,19 @@ describe("useUserFiles (branch coverage)", () => {
       status: 403,
     });
 
-    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-    const { result } = renderHook(() => useUserFiles("user_err"), {
+    const { result, unmount } = renderHook(() => useUserFiles("user_err"), {
       wrapper: createWrapper(),
     });
 
     // Advance past all retry delays (1s + 2s + 4s + 8s + 16s = 31s)
-    await vi.advanceTimersByTimeAsync(35000);
-
-    await waitFor(() => expect(result.current.isError).toBe(true));
-    await waitFor(() => {
-      expect(result.current.error?.message).toBe("Failed to fetch user files (HTTP 403)");
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(35000);
     });
 
-    consoleSpy.mockRestore();
-    consoleLogSpy.mockRestore();
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("Failed to fetch user files (HTTP 403)");
+    unmount();
+
     vi.useRealTimers();
   });
-
 });
