@@ -33,7 +33,10 @@ async function globalSetup() {
         }
     }
 
-    await clerkSetup();
+    await clerkSetup({
+        publishableKey: process.env.PUBLIC_CLERK_PUBLISHABLE_KEY,
+        secretKey: process.env.CLERK_SECRET_KEY,
+    });
 }
 
 export default globalSetup;
