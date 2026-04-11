@@ -141,7 +141,6 @@ function createWrapper() {
 
 describe("IDE", () => {
   beforeEach(() => {
-    vi.restoreAllMocks();
     // Suppress getElementById for app-loading removal
     document.getElementById = vi.fn().mockReturnValue(null);
   });
