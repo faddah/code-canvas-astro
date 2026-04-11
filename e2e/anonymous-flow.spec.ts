@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { mockStarterFilesAPI, dismissViteOverlay, waitForIDEShell } from "./helpers";
+import { mockStarterFilesAPI, blockPyodide, dismissViteOverlay, waitForIDEShell } from "./helpers";
 
 test.describe("Anonymous User Flow", () => {
   // Firefox needs extra time — IDE hydration + asset loading can exceed 30s
@@ -7,6 +7,7 @@ test.describe("Anonymous User Flow", () => {
 
   test.beforeEach(async ({ page }) => {
     await mockStarterFilesAPI(page);
+    await blockPyodide(page);
     await page.goto("/");
     await waitForIDEShell(page);
   });
@@ -24,6 +25,12 @@ test.describe("Anonymous User Flow", () => {
   test("can write code and run it — sees console output", async ({ page }) => {
     // Pyodide is a ~15MB WASM bundle — Firefox WASM compilation is slower
     test.setTimeout(120_000);
+
+    // Remove the Pyodide block (set by beforeEach) so the real CDN loads
+    await page.unrouteAll({ behavior: "wait" });
+    await mockStarterFilesAPI(page);
+    await page.goto("/");
+    await waitForIDEShell(page);
 
     // Wait for Pyodide to initialize. Race against the failure message so
     // we fail fast with a clear reason if the CDN script fails to load.
