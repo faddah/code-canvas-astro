@@ -54,6 +54,8 @@ export async function dismissViteOverlay(page: Page) {
 
 /** Wait for the IDE shell to render (Console panel visible) */
 export async function waitForIDEShell(page: Page) {
+  // IDE hydration + asset loading can exceed 30s
+  await dismissViteOverlay(page);
   await expect(
     page.locator(".panel-header >> text=Console").first()
   ).toBeVisible({ timeout: 45_000 });
