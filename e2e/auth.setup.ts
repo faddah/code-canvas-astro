@@ -1,4 +1,4 @@
-import { clerk, setupClerkTestingToken } from "@clerk/testing/playwright";
+import { setupClerkTestingToken, clerk } from "@clerk/testing/playwright";
 import { test as setup } from "@playwright/test";
 import fs from "fs";
 import path from "path";
@@ -9,7 +9,7 @@ setup("authenticate with Clerk", async ({ page }) => {
     setup.setTimeout(120_000);
     fs.mkdirSync(path.dirname(STORAGE_STATE), { recursive: true });
 
-    // ─── Verbose browser-side diagnostics ───────────────────────────
+    // ─── Browser diagnostics ──────────────────────────────────────────
     page.on("console", (msg) => {
         const type = msg.type();
         if (type === "error" || type === "warning") {
@@ -19,12 +19,8 @@ setup("authenticate with Clerk", async ({ page }) => {
     page.on("pageerror", (err) => {
         console.log(`[browser pageerror] ${err.message}`);
     });
-    page.on("requestfailed", (req) => {
-        console.log(
-        `[req failed] ${req.method()} ${req.url()} → ${req.failure()?.errorText}`,
-        );
-    });
 
+    // ─── Navigate and wait for Clerk SDK ──────────────────────────────
     console.log("[setup] step 1: injecting testing token");
     await setupClerkTestingToken({ page });
 
@@ -34,57 +30,121 @@ setup("authenticate with Clerk", async ({ page }) => {
     console.log("[setup] step 3: waiting for clerk.loaded");
     await clerk.loaded({ page });
 
-    const before = await page.evaluate(() => {
-        const c = (window as any).Clerk;
-        return {
-        loaded: !!c?.loaded,
-        hasSession: !!c?.session,
-        userId: c?.user?.id ?? null,
-        };
-    });
-    console.log("[setup] state BEFORE signIn:", JSON.stringify(before));
+    // ─── Create a sign-in ticket via Clerk Backend API (Node side) ────
+    // We call fetch directly instead of using @clerk/testing's helper
+    // because we need complete control over the flow and full error
+    // visibility. Also the built-in helper may skip the setActive step.
+    console.log("[setup] step 4: fetching user by email");
+    const email = process.env.E2E_CLERK_USER_USERNAME!;
+    const secretKey = process.env.CLERK_SECRET_KEY!;
 
-    console.log("[setup] step 4: calling clerk.signIn (email ticket strategy)");
-    await clerk.signIn({
-        page,
-        signInParams: {
-            strategy: "password",
-            identifier: process.env.E2E_CLERK_USER_USERNAME!,
-            password: process.env.E2E_CLERK_USER_PASSWORD!,
-        },
-    });
-
-    const after = await page.evaluate(() => {
-        const c = (window as any).Clerk;
-        return {
-        loaded: !!c?.loaded,
-        hasSession: !!c?.session,
-        userId: c?.user?.id ?? null,
-        sessionId: c?.session?.id ?? null,
-        };
-    });
-    console.log("[setup] state AFTER signIn (no reload):", JSON.stringify(after));
-
-    const cookies = await page.context().cookies();
-    const cookieSummary = cookies
-        .map((c) => `${c.name}@${c.domain}`)
-        .sort()
-        .join(", ");
-    console.log("[setup] cookies after signIn:", cookieSummary || "(none)");
-
-    // ─── Hard-fail with a clear message if signIn didn't actually work ───
-    if (!after.hasSession) {
+    const userListRes = await fetch(
+        `https://api.clerk.com/v1/users?email_address=${encodeURIComponent(email)}`,
+        { headers: { Authorization: `Bearer ${secretKey}` } },
+    );
+    if (!userListRes.ok) {
         throw new Error(
-        "[setup] clerk.signIn returned but window.Clerk.session is null.\n" +
-            "Likely causes:\n" +
-            "  (a) Wrong credentials in .env.test\n" +
-            "  (b) Test user not in this Clerk instance (created in a different app)\n" +
-            "  (c) Clerk key mismatch: dev server reads .env, test runner reads .env.test\n" +
-            "  (d) Clerk email verification pending on the test user",
+        `[setup] users lookup failed: ${userListRes.status} ${await userListRes.text()}`,
+        );
+    }
+    const users = (await userListRes.json()) as Array<{ id: string }>;
+    if (!users.length) {
+        throw new Error(`[setup] no Clerk user found with email ${email}`);
+    }
+    const userId = users[0].id;
+    console.log(`[setup] found user: ${userId}`);
+
+    console.log("[setup] step 5: creating sign-in ticket");
+    const tokenRes = await fetch("https://api.clerk.com/v1/sign_in_tokens", {
+        method: "POST",
+        headers: {
+        Authorization: `Bearer ${secretKey}`,
+        "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_id: userId, expires_in_seconds: 300 }),
+    });
+    if (!tokenRes.ok) {
+        throw new Error(
+        `[setup] sign-in token creation failed: ${tokenRes.status} ${await tokenRes.text()}`,
+        );
+    }
+    const { token } = (await tokenRes.json()) as { token: string };
+    console.log("[setup] ticket created successfully");
+
+    // ─── Consume the ticket in the browser + activate the session ─────
+    console.log("[setup] step 6: calling signIn.create + setActive in browser");
+    const signInResult = await page.evaluate(async (ticket: string) => {
+        try {
+        const clerk = (window as any).Clerk;
+        if (!clerk) return { ok: false, reason: "window.Clerk is undefined" };
+        if (!clerk.client)
+            return { ok: false, reason: "window.Clerk.client is undefined" };
+
+        const signIn = await clerk.client.signIn.create({
+            strategy: "ticket",
+            ticket,
+        });
+
+        const createdSessionId = signIn?.createdSessionId;
+        const status = signIn?.status;
+
+        if (!createdSessionId) {
+            return {
+            ok: false,
+            reason: "signIn.create returned without createdSessionId",
+            status,
+            firstFactorVerification: signIn?.firstFactorVerification,
+            secondFactorVerification: signIn?.secondFactorVerification,
+            supportedFirstFactors: signIn?.supportedFirstFactors,
+            };
+        }
+
+        // THE critical step — activate the session on the client.
+        await clerk.setActive({ session: createdSessionId });
+
+        return {
+            ok: true,
+            status,
+            createdSessionId,
+            currentSessionId: clerk.session?.id ?? null,
+            currentUserId: clerk.user?.id ?? null,
+        };
+        } catch (err: any) {
+        return {
+            ok: false,
+            reason: "threw exception",
+            error: err?.message ?? String(err),
+            errors: err?.errors ?? null,
+        };
+        }
+    }, token);
+
+    console.log("[setup] signIn result:", JSON.stringify(signInResult, null, 2));
+
+    if (!signInResult.ok) {
+        throw new Error(
+        `[setup] sign-in failed in browser: ${JSON.stringify(signInResult)}`,
         );
     }
 
-    console.log("[setup] step 5: persisting storageState");
+    // ─── Final sanity check ───────────────────────────────────────────
+    const finalState = await page.evaluate(() => {
+        const c = (window as any).Clerk;
+        return {
+        loaded: c?.loaded,
+        hasSession: !!c?.session,
+        sessionId: c?.session?.id ?? null,
+        userId: c?.user?.id ?? null,
+        };
+    });
+    console.log("[setup] final state:", JSON.stringify(finalState));
+
+    if (!finalState.hasSession) {
+        throw new Error("[setup] setActive completed but session still null");
+    }
+
+    // ─── Persist ─────────────────────────────────────────────────────
+    console.log("[setup] step 7: persisting storageState");
     await page.context().storageState({ path: STORAGE_STATE });
-    console.log("[setup] done");
+    console.log("[setup] done ✓");
 });
