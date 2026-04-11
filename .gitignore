@@ -65,6 +65,9 @@ playwright-report/
 test-results/
 coverage/
 
+# Playwright auth state (contains live Clerk session tokens — NEVER commit)
+e2e/.auth/
+
 # other
 distance.py
 .gstack/
