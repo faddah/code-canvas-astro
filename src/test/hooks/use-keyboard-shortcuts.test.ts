@@ -1,14 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useKeyboardShortcuts, type UseKeyboardShortcutsOptions } from "@/hooks/use-keyboard-shortcuts";
-
-beforeEach(() => {
-    vi.restoreAllMocks();
-});
-
-afterEach(() => {
-    vi.restoreAllMocks();
-});
 
 describe("useKeyboardShortcuts", () => {
     it("calls onSave when CMD+S is pressed while signed in, has active file, and has unsaved changes", async () => {

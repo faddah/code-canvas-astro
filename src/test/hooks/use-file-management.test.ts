@@ -50,9 +50,7 @@ beforeEach(() => {
     mockMutate.mockReset();
 });
 
-afterEach(() => {
-    vi.restoreAllMocks();
-});
+// cleanup handled by global setup.ts afterEach
 
 describe("useFileManagement", () => {
     it("returns starter files when not signed in", () => {

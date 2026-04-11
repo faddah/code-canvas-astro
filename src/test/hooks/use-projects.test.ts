@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -28,14 +28,6 @@ function createWrapper() {
   return ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 }
-
-beforeEach(() => {
-  vi.restoreAllMocks();
-});
-
-afterEach(() => {
-  vi.restoreAllMocks();
-});
 
 // ─── useProjects ───
 
