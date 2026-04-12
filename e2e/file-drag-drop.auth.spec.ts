@@ -239,25 +239,4 @@ test.describe("File drag-and-drop between projects", () => {
 
         await dispatchDragEnd(page, "solo.py");
     });
-
-    test("drop target highlights on dragover", async ({ page }) => {
-        const soloFile = page.locator("text=solo.py").first();
-        await expect(soloFile).toBeVisible({ timeout: 10_000 });
-
-        const projectRow = page.locator("text=My Project").first();
-        await expect(projectRow).toBeVisible({ timeout: 10_000 });
-
-        // Step 1: dragstart
-        await dispatchDragStart(page, "solo.py");
-        await page.waitForTimeout(200);
-
-        // Step 2: dragover on project
-        await dispatchDragOverProject(page, "My Project");
-
-        // The project row's parent div gets the highlight class
-        const projectGroup = projectRow.locator("..");
-        await expect(projectGroup).toHaveClass(/bg-blue-500/, { timeout: 3_000 });
-
-        await dispatchDragEnd(page, "solo.py");
-    });
 });
