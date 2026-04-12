@@ -11,73 +11,103 @@ import {
     mockUpdateFileAPI,
 } from "./helpers";
 
-/**
- * Perform a full drag-drop sequence via synthetic DragEvents.
- * Bypasses vite-error-overlay since it doesn't use real pointer events.
- */
-async function syntheticDragDrop(
+/** Dispatch dragstart on a file row matching the given text */
+async function dispatchDragStart(
     page: import("@playwright/test").Page,
-    sourceText: string,
-    targetSelector: { text: string; closest?: string },
+    fileText: string,
     ) {
-    await page.evaluate(
-        ({ sourceText, targetSelector }) => {
-            // Find the source element (draggable file row)
-            const source = [...document.querySelectorAll('[draggable="true"]')].find(
-                (el) => el.textContent?.includes(sourceText),
-            );
-            if (!source) throw new Error(`Source "${sourceText}" not found`);
-
-            // Find the target element
-            let target: Element | null = null;
-            const candidates = document.querySelectorAll("*");
-            for (const el of candidates) {
-                // Match direct text content in a span.font-medium or span.truncate
-                const spans = el.querySelectorAll(".font-medium, .truncate");
-                for (const span of spans) {
-                    if (span.textContent?.trim() === targetSelector.text) {
-                        target = targetSelector.closest
-                        ? span.closest(targetSelector.closest)
-                        : span.closest(".group") || el;
-                        break;
-                    }
-                }
-                if (target) break;
-            }
-            if (!target) throw new Error(`Target "${targetSelector.text}" not found`);
-
-            const dt = new DataTransfer();
-            dt.setData("text/plain", sourceText);
-
-            source.dispatchEvent(
-                new DragEvent("dragstart", {
+    await page.evaluate((text) => {
+        const el = [...document.querySelectorAll('[draggable="true"]')].find((e) =>
+            e.textContent?.includes(text),
+        );
+        if (!el) throw new Error(`Draggable "${text}" not found`);
+        const dt = new DataTransfer();
+        dt.setData("text/plain", text);
+        el.dispatchEvent(
+            new DragEvent("dragstart", {
                 bubbles: true,
                 cancelable: true,
                 dataTransfer: dt,
-                }),
-            );
-
-            target.dispatchEvent(
-                new DragEvent("dragover", {
-                bubbles: true,
-                cancelable: true,
-                dataTransfer: dt,
-                }),
-            );
-
-            target.dispatchEvent(
-                new DragEvent("drop", {
-                bubbles: true,
-                cancelable: true,
-                dataTransfer: dt,
-                }),
-            );
-
-            source.dispatchEvent(new DragEvent("dragend", { bubbles: true }));
-        },
-        { sourceText, targetSelector },
-    );
+            }),
+        );
+    }, fileText);
 }
+
+    /** Dispatch dragover on a project row matching the given text */
+async function dispatchDragOverProject(
+    page: import("@playwright/test").Page,
+    projectName: string,
+    ) {
+    await page.evaluate((name) => {
+        const span = [...document.querySelectorAll(".font-medium")].find(
+            (e) => e.textContent?.trim() === name,
+        );
+        const el = span?.closest(".group");
+        if (!el) throw new Error(`Project "${name}" not found`);
+        const dt = new DataTransfer();
+        dt.dropEffect = "move";
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: dt,
+            }),
+        );
+    }, projectName);
+}
+
+/** Dispatch drop on a project row matching the given text */
+async function dispatchDropOnProject(
+    page: import("@playwright/test").Page,
+    projectName: string,
+    ) {
+    await page.evaluate((name) => {
+        const span = [...document.querySelectorAll(".font-medium")].find(
+            (e) => e.textContent?.trim() === name,
+        );
+        const el = span?.closest(".group");
+        if (!el) throw new Error(`Project "${name}" not found`);
+        const dt = new DataTransfer();
+        el.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: dt,
+            }),
+        );
+    }, projectName);
+}
+
+    /** Dispatch drop on the root file list (the scrollable container) */
+async function dispatchDropOnRoot(page: import("@playwright/test").Page) {
+    await page.evaluate(() => {
+        const el = document.querySelector(".overflow-y-auto");
+        if (!el) throw new Error("Root drop zone not found");
+        const dt = new DataTransfer();
+        el.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: dt,
+            }),
+        );
+    });
+}
+
+    /** Dispatch dragend on a file row matching the given text */
+async function dispatchDragEnd(
+    page: import("@playwright/test").Page,
+    fileText: string,
+    ) {
+    await page.evaluate((text) => {
+        const el = [...document.querySelectorAll('[draggable="true"]')].find((e) =>
+            e.textContent?.includes(text),
+        );
+        if (el) {
+            el.dispatchEvent(new DragEvent("dragend", { bubbles: true }));
+        }
+    }, fileText);
+1}
 
 test.describe("File drag-and-drop between projects", () => {
     test.setTimeout(60_000);
@@ -124,8 +154,17 @@ test.describe("File drag-and-drop between projects", () => {
             return route.continue();
         });
 
-        await syntheticDragDrop(page, "solo.py", { text: "My Project" });
+        // Step 1: dragstart — sets draggedFileId in React state
+        await dispatchDragStart(page, "solo.py");
+        // Wait for React to commit the state update
+        await page.waitForTimeout(200);
 
+        // Step 2: dragover + drop — reads draggedFileId, calls onMoveFile
+        await dispatchDragOverProject(page, "My Project");
+        await dispatchDropOnProject(page, "My Project");
+        await dispatchDragEnd(page, "solo.py");
+
+        // Wait for the React Query mutation to fire
         await page.waitForTimeout(2_000);
         expect(moveCalled).toBe(true);
         expect(sentBody?.projectId).toBe(1);
@@ -135,12 +174,18 @@ test.describe("File drag-and-drop between projects", () => {
         const secondProject = page.locator("text=Second Project").first();
         await expect(secondProject).toBeVisible({ timeout: 10_000 });
 
-        await syntheticDragDrop(page, "solo.py", { text: "Second Project" });
+        await dispatchDragStart(page, "solo.py");
+        await page.waitForTimeout(200);
+        await dispatchDragOverProject(page, "Second Project");
+        await dispatchDropOnProject(page, "Second Project");
+        await dispatchDragEnd(page, "solo.py");
 
-        // After drop, the project should auto-expand — folder-open icon appears
-        await expect(page.locator("svg.lucide-folder-open").first()).toBeVisible({
-            timeout: 5_000,
-        });
+        // After drop, the project should auto-expand
+        // Check for folder-open icon WITHIN the Second Project row (not the header button)
+        const projectRow = secondProject.locator("..");
+        await expect(
+            projectRow.locator("svg.lucide-folder-open").first(),
+        ).toBeVisible({ timeout: 5_000 });
     });
 
     test("dragging a project file to root removes it from the project", async ({
@@ -156,23 +201,25 @@ test.describe("File drag-and-drop between projects", () => {
         let moveCalled = false;
         let sentBody: any = null;
         await page.route("**/api/user-files/*", (route, request) => {
-        if (request.method() === "PUT") {
-            moveCalled = true;
-            sentBody = JSON.parse(request.postData() || "{}");
-            return route.fulfill({
-                status: 200,
-                contentType: "application/json",
-                body: JSON.stringify({ id: 101, ...sentBody }),
-            });
-        }
-        return route.continue();
+            if (request.method() === "PUT") {
+                moveCalled = true;
+                sentBody = JSON.parse(request.postData() || "{}");
+                return route.fulfill({
+                    status: 200,
+                    contentType: "application/json",
+                    body: JSON.stringify({ id: 101, ...sentBody }),
+                });
+            }
+            return route.continue();
         });
 
-        // Drag app.py to the root drop zone by targeting a loose file
-        await syntheticDragDrop(page, "app.py", {
-            text: "solo.py",
-            closest: ".overflow-y-auto",
-        });
+        // Step 1: dragstart on app.py
+        await dispatchDragStart(page, "app.py");
+        await page.waitForTimeout(200);
+
+        // Step 2: drop on root zone
+        await dispatchDropOnRoot(page);
+        await dispatchDragEnd(page, "app.py");
 
         await page.waitForTimeout(2_000);
         expect(moveCalled).toBe(true);
@@ -185,94 +232,32 @@ test.describe("File drag-and-drop between projects", () => {
         const soloFile = page.locator("text=solo.py").first();
         await expect(soloFile).toBeVisible({ timeout: 10_000 });
 
-        // Dispatch only dragstart (no drop/dragend) so the drag state persists
-        await page.evaluate(() => {
-            const el = [...document.querySelectorAll('[draggable="true"]')].find(
-                (e) => e.textContent?.includes("solo.py"),
-            );
-            if (el) {
-                const dt = new DataTransfer();
-                dt.setData("text/plain", "103");
-                el.dispatchEvent(
-                new DragEvent("dragstart", {
-                    bubbles: true,
-                    cancelable: true,
-                    dataTransfer: dt,
-                }),
-                );
-            }
-        });
+        await dispatchDragStart(page, "solo.py");
 
         const soloRow = soloFile.locator("..");
         await expect(soloRow).toHaveClass(/opacity-40/, { timeout: 3_000 });
 
-        // Clean up
-        await page.evaluate(() => {
-            const el = [...document.querySelectorAll('[draggable="true"]')].find(
-                (e) => e.textContent?.includes("solo.py"),
-            );
-            if (el) {
-                el.dispatchEvent(new DragEvent("dragend", { bubbles: true }));
-            }
-        });
+        await dispatchDragEnd(page, "solo.py");
     });
 
-    test("drop target highlights with blue ring on dragover", async ({
-        page,
-    }) => {
+    test("drop target highlights on dragover", async ({ page }) => {
         const soloFile = page.locator("text=solo.py").first();
         await expect(soloFile).toBeVisible({ timeout: 10_000 });
 
         const projectRow = page.locator("text=My Project").first();
         await expect(projectRow).toBeVisible({ timeout: 10_000 });
 
-        // Dispatch dragstart on solo.py, then dragover on the project row
-        // (but NO drop or dragend, so the highlight state persists)
-        await page.evaluate(() => {
-            const source = [...document.querySelectorAll('[draggable="true"]')].find(
-                (e) => e.textContent?.includes("solo.py"),
-            );
-            if (!source) throw new Error("source not found");
+        // Step 1: dragstart
+        await dispatchDragStart(page, "solo.py");
+        await page.waitForTimeout(200);
 
-            const dt = new DataTransfer();
-            dt.setData("text/plain", "103");
+        // Step 2: dragover on project
+        await dispatchDragOverProject(page, "My Project");
 
-            source.dispatchEvent(
-                new DragEvent("dragstart", {
-                bubbles: true,
-                cancelable: true,
-                dataTransfer: dt,
-                }),
-            );
-
-            // Find the project row element that has the onDragOver handler
-            const projectSpan = [...document.querySelectorAll(".font-medium")].find(
-                (e) => e.textContent?.trim() === "My Project",
-            );
-            const projectEl = projectSpan?.closest(".group");
-            if (!projectEl) throw new Error("project element not found");
-
-            projectEl.dispatchEvent(
-                new DragEvent("dragover", {
-                    bubbles: true,
-                    cancelable: true,
-                    dataTransfer: dt,
-                }),
-            );
-        });
-
-        // The project row itself (not parent) should have the highlight
+        // The project row's parent div gets the highlight class
         const projectGroup = projectRow.locator("..");
         await expect(projectGroup).toHaveClass(/bg-blue-500/, { timeout: 3_000 });
 
-        // Clean up
-        await page.evaluate(() => {
-            const el = [...document.querySelectorAll('[draggable="true"]')].find(
-                (e) => e.textContent?.includes("solo.py"),
-            );
-            if (el) {
-                el.dispatchEvent(new DragEvent("dragend", { bubbles: true }));
-            }
-        });
+        await dispatchDragEnd(page, "solo.py");
     });
 });
