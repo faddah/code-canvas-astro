@@ -1,0 +1,92 @@
+# E2E Coverage Gaps — Remaining Work
+
+**Project:** code-canvas-astro (Python REPL IDE)
+**Date:** 2026-04-11
+**Context:** After completing authenticated e2e specs (profile-completion, project-crud, package-management, file-drag-drop) and confirming 256 Playwright + 552 Vitest tests all pass.
+
+---
+
+## High Priority (real user flows not yet tested)
+
+### 1. File deletion confirmation flow
+- Explorer has a two-step delete (trash icon -> Confirm button -> API call)
+- Only the project delete confirm is tested, not file delete
+- **File:** new `e2e/file-delete.auth.spec.ts` or add to existing spec
+
+### 2. "Taking too long?" reload button
+- Loading screen shows a retry button after 10s timeout
+- Located in IDE.tsx lines 157-176
+- **File:** add to anonymous spec (e.g., `e2e/ide-coverage.spec.ts` or new file)
+
+### 3. Error/retry state in Explorer
+- When `GET /api/user-files` fails, Explorer shows "Could not load files" with a Retry button
+- Located in ExplorerPane.tsx lines 393-403
+- **File:** new `e2e/explorer-error-state.auth.spec.ts`
+
+### 4. Escape key closes dialogs
+- None of the dialog tests verify Escape key dismissal
+- Applies to: New File, New Project, Add Package, Save As, Open/Import, Complete Profile
+- **File:** add tests to existing spec files
+
+### 5. Console output from code execution
+- Anonymous flow tests check Run button exists but never verify console output
+- Pyodide is blocked in tests; would need a mock approach
+- **File:** add to `e2e/anonymous-flow.spec.ts` or `e2e/ide-interactions.spec.ts`
+
+### 6. UserProfileModal edit/delete flows
+- Modal opens, but viewing profile data, editing, and deleting are not tested
+- **File:** new `e2e/user-profile-modal.auth.spec.ts`
+
+---
+
+## Medium Priority (secondary but valuable)
+
+### 7. New File happy path (authenticated)
+- Create a file, verify it calls the API, see it appear in Explorer
+- **File:** add to `e2e/project-crud.auth.spec.ts` or new file
+
+### 8. SaveDialog actual save flow (authenticated)
+- Open Save As, fill the form, submit, verify the PUT/POST API call
+- **File:** new `e2e/save-flow.auth.spec.ts`
+
+### 9. Keyboard shortcut Cmd+S / Ctrl+S
+- The hook is unit-tested but e2e doesn't verify the key combo triggers a save
+- **File:** add to an authenticated spec
+
+### 10. File with .txt extension
+- All tests use .py files; the app also supports .txt
+- **File:** add to New File dialog tests
+
+---
+
+## Low Priority (edge cases)
+
+### 11. Panel resizing via drag handles
+- ResizablePanelGroup allows dragging panel borders
+- **File:** new spec or add to `e2e/ide-interactions.spec.ts`
+
+### 12. Mobile viewport (Explorer hidden on small screens)
+- Explorer has `hidden md:flex` — should be hidden on small viewports
+- **File:** new `e2e/responsive.spec.ts`
+
+### 13. Long filename truncation
+- File names use `truncate` CSS class
+- **File:** add to file creation tests
+
+### 14. Duplicate filename handling in New File dialog
+- What happens when creating a file with a name that already exists
+- **File:** add to New File dialog tests
+
+---
+
+## Current Test Counts (as of 2026-04-11)
+
+| Suite | Tests | Status |
+|-------|-------|--------|
+| Playwright e2e | 256 | All passing |
+| Vitest unit | 552 | All passing |
+| **Total** | **808** | **All passing** |
+
+---
+
+*Generated during pair programming session, 2026-04-11*
