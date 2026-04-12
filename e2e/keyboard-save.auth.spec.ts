@@ -27,40 +27,51 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("Ctrl+S saves the active file when there are unsaved changes", async ({
-        page,
+    page,
     }) => {
-        // Click on solo.py to make it the active file
-        await dismissViteOverlay(page);
-        await page
-            .locator(".truncate.flex-1", { hasText: "solo.py" })
-            .first()
-            .click({ force: true });
+    // Click on solo.py to make it the active file
+    await dismissViteOverlay(page);
+    await page
+        .locator(".truncate.flex-1", { hasText: "solo.py" })
+        .first()
+        .click({ force: true });
 
-        // Wait for the editor to load with the file content
-        await expect(page.locator(".monaco-editor").first()).toBeVisible({
-            timeout: 10_000,
-        });
-
-        // Type into the Monaco editor to create unsaved changes
-        await page.locator(".monaco-editor .view-lines").first().click({ force: true });
-        await page.keyboard.type("# edited line");
-
-        // Press Ctrl+S and verify the PUT request fires
-        const putRequest = page.waitForRequest(
-        (req) =>
-            req.url().includes("/api/user-files/") && req.method() === "PUT",
-        );
-        await page.keyboard.press("Control+s");
-        const req = await putRequest;
-        expect(req.method()).toBe("PUT");
-
-        // "Saved" toast should appear
-        await expect(page.locator("text=Saved").first()).toBeVisible({
-            timeout: 5_000,
-        });
+    // Wait for the editor to load
+    await expect(page.locator(".monaco-editor").first()).toBeVisible({
+        timeout: 10_000,
     });
 
-    test("Ctrl+S shows 'No changes' toast when file has no unsaved changes", async ({
+    // Modify the editor content via Monaco API to trigger handleEditorChange
+    await page.evaluate(() => {
+        const instance = (window as any).monaco?.editor?.getEditors?.()?.[0];
+        if (instance) {
+            instance.setValue("# edited via monaco API\nprint('changed')\n");
+        }
+    });
+
+    // Small wait for React state to propagate the unsaved change
+    await page.waitForTimeout(500);
+
+    // Set up the request listener BEFORE pressing the key
+    const putPromise = page.waitForRequest(
+        (req) =>
+        req.url().includes("/api/user-files/") && req.method() === "PUT",
+    );
+
+    // Press Ctrl+S
+    await page.keyboard.press("Control+s");
+
+    // Verify the PUT request fires
+    const req = await putPromise;
+    expect(req.method()).toBe("PUT");
+
+    // "Saved" toast should appear
+    await expect(page.locator("text=Saved").first()).toBeVisible({
+        timeout: 5_000,
+    });
+});
+
+test("Ctrl+S shows 'No changes' toast when file has no unsaved changes", async ({
         page,
     }) => {
         // Click on solo.py (no edits — no unsaved changes)
