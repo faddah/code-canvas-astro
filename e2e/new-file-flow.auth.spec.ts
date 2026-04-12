@@ -216,4 +216,44 @@ test.describe("New File — authenticated happy path", () => {
         );
         expect(overflow).toBe("hidden");
     });
+
+    test("creating a file with an existing name succeeds (no client-side duplicate check)", async ({
+        page,
+        }) => {
+        // "solo.py" already exists in MOCK_USER_FILES
+        // Open dropdown and click New File
+        const plusButton = page.locator("button:has(svg.lucide-plus)").first();
+        await plusButton.click();
+        await page.locator("text=New File").first().click();
+
+        await expect(
+            page.locator("text=Create New File").first(),
+        ).toBeVisible({ timeout: 5_000 });
+
+        // Type a name that already exists
+        const input = page.locator('input[placeholder="script.py"]');
+        await input.fill("solo.py");
+
+        // Set up request interception
+        const postPromise = page.waitForRequest(
+            (req) =>
+            req.url().includes("/api/user-files/create") &&
+            req.method() === "POST",
+        );
+
+        await dismissViteOverlay(page);
+        await page
+            .locator('button:has-text("Add")')
+            .click({ force: true });
+
+        // POST should still fire — no client-side duplicate blocking
+        const postRequest = await postPromise;
+        const body = postRequest.postDataJSON();
+        expect(body.name).toBe("solo.py");
+
+        // Dialog should close without error
+        await expect(
+            page.locator("text=Create New File").first(),
+        ).not.toBeVisible({ timeout: 5_000 });
+    });
 });
