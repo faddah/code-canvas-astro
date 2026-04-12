@@ -134,23 +134,33 @@ test.describe("File drag-and-drop between projects", () => {
         const soloFile = page.locator("text=solo.py").first();
         await expect(soloFile).toBeVisible({ timeout: 10_000 });
 
-        const soloRow = soloFile.locator("..");
-
-        // Start a drag operation manually to check the visual state
-        const box = (await soloRow.boundingBox())!;
-        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-        await page.mouse.down();
-        // Move slightly to trigger dragstart
-        await page.mouse.move(
-            box.x + box.width / 2 + 10,
-            box.y + box.height / 2 + 10,
-        );
+        // Dispatch a synthetic dragstart on the file row
+        await page.evaluate(() => {
+            const el = [...document.querySelectorAll('[draggable="true"]')].find(
+                (e) => e.textContent?.includes("solo.py"),
+            );
+            if (el) {
+                const dt = new DataTransfer();
+                dt.setData("text/plain", "103");
+                el.dispatchEvent(
+                    new DragEvent("dragstart", { bubbles: true, dataTransfer: dt }),
+                );
+            }
+        });
 
         // The dragged row should have opacity-40 class
+        const soloRow = soloFile.locator("..");
         await expect(soloRow).toHaveClass(/opacity-40/, { timeout: 3_000 });
 
-        // Release
-        await page.mouse.up();
+        // Clean up: dispatch dragend
+        await page.evaluate(() => {
+            const el = [...document.querySelectorAll('[draggable="true"]')].find(
+                (e) => e.textContent?.includes("solo.py"),
+            );
+            if (el) {
+                el.dispatchEvent(new DragEvent("dragend", { bubbles: true }));
+            }
+        });
     });
 
     test("drop target highlights with blue ring on dragover", async ({
@@ -162,23 +172,50 @@ test.describe("File drag-and-drop between projects", () => {
         const projectRow = page.locator("text=My Project").first();
         await expect(projectRow).toBeVisible({ timeout: 10_000 });
 
-        const soloRow = soloFile.locator("..");
-        const box = (await soloRow.boundingBox())!;
-        const projectBox = (await projectRow.boundingBox())!;
+        // Step 1: dispatch dragstart on solo.py
+        await page.evaluate(() => {
+            const el = [...document.querySelectorAll('[draggable="true"]')].find(
+                (e) => e.textContent?.includes("solo.py"),
+            );
+            if (el) {
+                const dt = new DataTransfer();
+                dt.setData("text/plain", "103");
+                el.dispatchEvent(
+                    new DragEvent("dragstart", { bubbles: true, dataTransfer: dt }),
+                );
+            }
+        });
 
-        // Start dragging solo.py
-        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-        await page.mouse.down();
-        // Move to project row to trigger dragover
-        await page.mouse.move(
-            projectBox.x + projectBox.width / 2,
-            projectBox.y + projectBox.height / 2,
-        );
+        // Step 2: dispatch dragover on the "My Project" row
+        await page.evaluate(() => {
+            const el = [...document.querySelectorAll(".font-medium")]
+                .find((e) => e.textContent?.includes("My Project"))
+                ?.closest(".group");
+            if (el) {
+                const dt = new DataTransfer();
+                dt.dropEffect = "move";
+                el.dispatchEvent(
+                new DragEvent("dragover", {
+                    bubbles: true,
+                    cancelable: true,
+                    dataTransfer: dt,
+                }),
+                );
+            }
+        });
 
         // The project row's parent should have the highlight class
         const projectGroup = projectRow.locator("..");
         await expect(projectGroup).toHaveClass(/ring-blue-500/, { timeout: 3_000 });
 
-        await page.mouse.up();
+        // Clean up
+        await page.evaluate(() => {
+            const el = [...document.querySelectorAll('[draggable="true"]')].find(
+                (e) => e.textContent?.includes("solo.py"),
+            );
+            if (el) {
+                el.dispatchEvent(new DragEvent("dragend", { bubbles: true }));
+            }
+        });
     });
 });
