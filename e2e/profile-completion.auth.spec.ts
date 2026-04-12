@@ -41,7 +41,7 @@ test.describe("Profile completion flow", () => {
     test("modal has all required form fields", async ({ page }) => {
         await page.goto("/");
         await waitForIDEShell(page);
-shw        await expect(
+        await expect(
         page.locator("text=Complete Your Profile").first(),
         ).toBeVisible({ timeout: 15_000 });
 
