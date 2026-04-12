@@ -63,11 +63,9 @@
 - **File:** `e2e/panel-resize.spec.ts`
 — 2 tests (horizontal handle resizes editor/execution, vertical handle resizes preview/console)
 
-### 12. Mobile viewport (Explorer hidden on small screens)
+### ~~12. Mobile viewport (Explorer hidden on small screens)~~ — DONE (2026-04-12)
 
-- Explorer has `hidden md:flex` — should be hidden on small viewports
-
-- **File:** new `e2e/responsive.spec.ts`
+- **File:** `e2e/responsive.spec.ts` — 2 tests (Explorer hidden at 375px, visible at 1280px)
 
 ### 13. Long filename truncation
 
