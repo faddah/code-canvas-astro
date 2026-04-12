@@ -58,10 +58,10 @@
 
 ## Low Priority (edge cases)
 
-### 11. Panel resizing via drag handles
+### ~~11. Panel resizing via drag handles~~ — DONE (2026-04-12)
 
-- ResizablePanelGroup allows dragging panel borders
-- **File:** new spec or add to `e2e/ide-interactions.spec.ts`
+- **File:** `e2e/panel-resize.spec.ts`
+— 2 tests (horizontal handle resizes editor/execution, vertical handle resizes preview/console)
 
 ### 12. Mobile viewport (Explorer hidden on small screens)
 
@@ -87,9 +87,9 @@
 
 | Suite | Tests | Status |
 | ----- | ----- | ------ |
-| Playwright e2e | 295 | All passing |
+| Playwright e2e | 308 | All passing |
 | Vitest unit | 552 | All passing |
-| **Total** | **847** | **All passing** |
+| **Total** | **860** | **All passing** |
 
 ---
 
