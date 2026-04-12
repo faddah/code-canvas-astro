@@ -136,4 +136,43 @@ test.describe("New File — authenticated happy path", () => {
         const body = postRequest.postDataJSON();
         expect(body.name).toBe("enter_test.py");
     });
+
+    test("creates a .txt file via New File dialog", async ({ page }) => {
+        // Open dropdown and click New File
+        const plusButton = page.locator("button:has(svg.lucide-plus)").first();
+        await plusButton.click();
+        await page.locator("text=New File").first().click();
+
+        // Dialog should appear
+        await expect(
+            page.locator("text=Create New File").first(),
+        ).toBeVisible({ timeout: 5_000 });
+
+        // Type a .txt file name
+        const input = page.locator('input[placeholder="script.py"]');
+        await input.fill("notes.txt");
+
+        // Set up request interception before clicking Add
+        const postPromise = page.waitForRequest(
+            (req) =>
+                req.url().includes("/api/user-files/create") &&
+                req.method() === "POST",
+        );
+
+        // Click Add
+        await dismissViteOverlay(page);
+        await page
+            .locator('button:has-text("Add")')
+            .click({ force: true });
+
+        // Verify the POST request was made with .txt name (not auto-appended to .py)
+        const postRequest = await postPromise;
+        const body = postRequest.postDataJSON();
+        expect(body.name).toBe("notes.txt");
+
+        // Dialog should close
+        await expect(
+            page.locator("text=Create New File").first(),
+        ).not.toBeVisible({ timeout: 5_000 });
+    });
 });
