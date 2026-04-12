@@ -24,7 +24,7 @@ test.describe("Panel resizing via drag handles", () => {
 
         // Get the editor panel width before drag
         const editorBefore = await page
-            .locator("[data-panel-id]")
+            .locator("[data-panel]")
             .first()
             .boundingBox();
         expect(editorBefore).not.toBeNull();
@@ -43,7 +43,7 @@ test.describe("Panel resizing via drag handles", () => {
 
         // Get the editor panel width after drag
         const editorAfter = await page
-            .locator("[data-panel-id]")
+            .locator("[data-panel]")
             .first()
             .boundingBox();
         expect(editorAfter).not.toBeNull();
@@ -56,13 +56,13 @@ test.describe("Panel resizing via drag handles", () => {
         page,
     }) => {
         // The vertical handle is the second resize handle on the page
-        const handles = page.locator("[data-panel-resize-handle-id]");
+        const handles = page.locator("[data-separator]");
         const verticalHandle = handles.nth(1);
         await expect(verticalHandle).toBeVisible({ timeout: 10_000 });
 
         // Get the console panel bounding box before drag
         // Console is the last panel in the vertical group
-        const panels = page.locator("[data-panel-id]");
+        const panels = page.locator("[data-panel]");
         const panelCount = await panels.count();
         const consolePanelBefore = await panels.nth(panelCount - 1).boundingBox();
         expect(consolePanelBefore).not.toBeNull();
