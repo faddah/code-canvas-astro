@@ -8,17 +8,44 @@ import {
     mockProjectsAPI,
     mockPackagesAPI,
     mockDeleteFileAPI,
-    MOCK_USER_FILES,
 } from "./helpers";
 
-test.describe("File delete — two-step confirmation", () => {
+// All files are loose (no projectId) so they appear at top level without expanding
+const LOOSE_FILES = [
+    {
+        id: 101,
+        name: "app.py",
+        content: '# file one\nprint("hello")\n',
+        projectId: null,
+        clerkId: "user_test123",
+        createdAt: "2025-01-01T00:00:00.000Z",
+    },
+    {
+        id: 102,
+        name: "helpers.py",
+        content: "# file two\ndef greet():\n    return 'hi'\n",
+        projectId: null,
+        clerkId: "user_test123",
+        createdAt: "2025-01-01T00:00:00.000Z",
+    },
+    {
+        id: 103,
+        name: "solo.py",
+        content: "# file three\nprint('solo')\n",
+        projectId: null,
+        clerkId: "user_test123",
+        createdAt: "2025-01-02T00:00:00.000Z",
+    },
+    ];
+
+    test.describe("File delete — two-step confirmation", () => {
     test.setTimeout(60_000);
 
     test.beforeEach(async ({ page }) => {
         await mockUserProfileAPI(page);
-        await mockUserFilesAPI(page);
-        await mockProjectsAPI(page);
-        await mockPackagesAPI(page);
+        await mockUserFilesAPI(page, LOOSE_FILES);
+        await mockProjectsAPI(page, []);
+        await mockPackagesAPI(page, []);
         await mockDeleteFileAPI(page);
         await blockPyodide(page);
         await page.goto("/");
@@ -29,12 +56,9 @@ test.describe("File delete — two-step confirmation", () => {
     test("trash icon appears on file hover when multiple files exist", async ({
         page,
     }) => {
-        // MOCK_USER_FILES has 3 files, so delete is enabled
-        // Hover over the first file row (the .group container)
-        const firstFile = page
-        .locator(".truncate.flex-1", { hasText: "app.py" })
-        .first();
-        const fileRow = firstFile.locator("..");
+        // Hover over the file row containing app.py
+        const fileRow = page.locator("text=app.py").first().locator("..");
+        await expect(fileRow).toBeVisible({ timeout: 10_000 });
         await fileRow.hover();
 
         // The Trash2 icon button should become visible on hover
@@ -43,10 +67,8 @@ test.describe("File delete — two-step confirmation", () => {
     });
 
     test("clicking trash shows Confirm and X buttons", async ({ page }) => {
-        const firstFile = page
-        .locator(".truncate.flex-1", { hasText: "app.py" })
-        .first();
-        const fileRow = firstFile.locator("..");
+        const fileRow = page.locator("text=app.py").first().locator("..");
+        await expect(fileRow).toBeVisible({ timeout: 10_000 });
         await fileRow.hover();
 
         // Click the trash icon
@@ -65,10 +87,8 @@ test.describe("File delete — two-step confirmation", () => {
     test("clicking X cancels the delete and restores trash icon", async ({
         page,
     }) => {
-        const firstFile = page
-        .locator(".truncate.flex-1", { hasText: "app.py" })
-        .first();
-        const fileRow = firstFile.locator("..");
+        const fileRow = page.locator("text=app.py").first().locator("..");
+        await expect(fileRow).toBeVisible({ timeout: 10_000 });
         await fileRow.hover();
 
         // Click trash to enter confirm state
@@ -106,10 +126,8 @@ test.describe("File delete — two-step confirmation", () => {
             }
         });
 
-        const firstFile = page
-        .locator(".truncate.flex-1", { hasText: "app.py" })
-        .first();
-        const fileRow = firstFile.locator("..");
+        const fileRow = page.locator("text=app.py").first().locator("..");
+        await expect(fileRow).toBeVisible({ timeout: 10_000 });
         await fileRow.hover();
 
         // Click trash → then Confirm
@@ -123,7 +141,7 @@ test.describe("File delete — two-step confirmation", () => {
         await page.waitForTimeout(500);
 
         expect(deleteCalled).toBe(true);
-        // File id 101 is app.py from MOCK_USER_FILES
+        // File id 101 is app.py from LOOSE_FILES
         expect(deleteUrl).toContain("/api/user-files/101");
     });
 
@@ -131,9 +149,9 @@ test.describe("File delete — two-step confirmation", () => {
         // Override the mock with only 1 file
         await page.unrouteAll();
         await mockUserProfileAPI(page);
-        await mockUserFilesAPI(page, [MOCK_USER_FILES[0]]); // just app.py
-        await mockProjectsAPI(page);
-        await mockPackagesAPI(page);
+        await mockUserFilesAPI(page, [LOOSE_FILES[0]]); // just app.py
+        await mockProjectsAPI(page, []);
+        await mockPackagesAPI(page, []);
         await mockDeleteFileAPI(page);
         await blockPyodide(page);
 
@@ -142,10 +160,8 @@ test.describe("File delete — two-step confirmation", () => {
         await waitForFiles(page);
 
         // Hover over the only file
-        const fileRow = page
-        .locator(".truncate.flex-1", { hasText: "app.py" })
-        .first()
-        .locator("..");
+        const fileRow = page.locator("text=app.py").first().locator("..");
+        await expect(fileRow).toBeVisible({ timeout: 10_000 });
         await fileRow.hover();
 
         // Trash icon should NOT appear (disabled prop causes Trash2Btn to return null)
