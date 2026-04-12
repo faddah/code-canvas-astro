@@ -36,10 +36,9 @@
 
 ## Medium Priority (secondary but valuable)
 
-### 7. New File happy path (authenticated)
+### ~~7. New File happy path (authenticated)~~ — DONE (2026-04-12)
 
-- Create a file, verify it calls the API, see it appear in Explorer
-- **File:** add to `e2e/project-crud.auth.spec.ts` or new file
+- **File:** `e2e/new-file-flow.auth.spec.ts` — 3 tests (create .py with POST API, auto-append .py, Enter key submit)
 
 ### 8. SaveDialog actual save flow (authenticated)
 
