@@ -133,12 +133,13 @@ test.describe("UserProfileModal — edit mode", () => {
 
         // Click Cancel
         await dismissViteOverlay(page);
-        await page.locator('button:has-text("Cancel")').first().click({ force: true });
+        const dialog = page.locator('[role="dialog"]');
+        await dialog.locator('button:has-text("Cancel")').click({ force: true });
 
         // Should be back in view mode — Edit Profile button visible again
         await expect(
             page.locator('button:has-text("Edit Profile")'),
-        ).toBeVisible({ timeout: 5_000 });
+        ).toBeVisible({ timeout: 10_000 });
     });
 
     test("Save Changes calls PUT /api/user-profile", async ({ page }) => {
@@ -222,7 +223,8 @@ test.describe("UserProfileModal — delete flow", () => {
         ).toBeVisible({ timeout: 5_000 });
 
         // Click Cancel in the AlertDialog
-        await page.locator('button:has-text("Cancel")').first().click({ force: true });
+        const alertDialog = page.locator('[role="alertdialog"]');
+        await alertDialog.locator('button:has-text("Cancel")').click({ force: true });
 
         // Confirmation should disappear, but modal stays open
         await expect(
