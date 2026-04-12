@@ -40,6 +40,50 @@ export async function blockPyodide(page: Page) {
 }
 
 /**
+ * Provide a mock loadPyodide that fakes stdout for print() statements.
+ * Use this INSTEAD OF blockPyodide when you need Pyodide to appear "ready"
+ * so the Run button works and console output can be tested.
+ */
+export async function mockPyodide(page: Page) {
+  await page.addInitScript(() => {
+    var stdoutCallback: ((msg: string) => void) | null = null;
+    var stderrCallback: ((msg: string) => void) | null = null;
+
+    (window as any).loadPyodide = async function () {
+      return {
+        setStdout: function (opts: { batched: (msg: string) => void }) {
+          stdoutCallback = opts.batched;
+        },
+        setStderr: function (opts: { batched: (msg: string) => void }) {
+          stderrCallback = opts.batched;
+        },
+        loadPackage: async function () {},
+        runPythonAsync: async function (code: string) {
+          // JSPI detection — throw to mimic no JSPI support
+          if (code.includes("run_sync")) {
+            throw new Error("No JSPI support");
+          }
+          // Simulate Python raise → caught by usePyodide as [Error]
+          if (code.includes("raise ")) {
+            var errorMatch = code.match(/raise\s+\w+\(["'](.+?)["']\)/);
+            throw new Error(errorMatch ? errorMatch[1] : "Python error");
+          }
+          // Extract print() calls and send to stdout
+          var printRegex = /print\(["'](.+?)["']\)/g;
+          var match;
+          while ((match = printRegex.exec(code)) !== null) {
+            if (stdoutCallback) stdoutCallback(match[1]);
+          }
+        },
+        FS: {
+          writeFile: function () {},
+        },
+      };
+    };
+  });
+}
+
+/**
  * Remove any <vite-error-overlay> currently in the DOM.
  *
  * The overlay uses `position: fixed; inset: 0` and blocks ALL pointer events.
