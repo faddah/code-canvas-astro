@@ -1,6 +1,7 @@
 import { test, expect } from "./fixtures/authenticated";
 import {
     blockPyodide,
+    dismissViteOverlay,
     waitForIDEShell,
     waitForFiles,
     mockUserProfileAPI,
@@ -36,9 +37,9 @@ const LOOSE_FILES = [
         clerkId: "user_test123",
         createdAt: "2025-01-02T00:00:00.000Z",
     },
-    ];
+];
 
-    test.describe("File delete — two-step confirmation", () => {
+test.describe("File delete — two-step confirmation", () => {
     test.setTimeout(60_000);
 
     test.beforeEach(async ({ page }) => {
@@ -56,12 +57,11 @@ const LOOSE_FILES = [
     test("trash icon appears on file hover when multiple files exist", async ({
         page,
     }) => {
-        // Hover over the file row containing app.py
         const fileRow = page.locator("text=app.py").first().locator("..");
         await expect(fileRow).toBeVisible({ timeout: 10_000 });
-        await fileRow.hover();
+        await dismissViteOverlay(page);
+        await fileRow.hover({ force: true });
 
-        // The Trash2 icon button should become visible on hover
         const trashButton = fileRow.locator("button:has(svg.lucide-trash-2)");
         await expect(trashButton).toBeVisible({ timeout: 5_000 });
     });
@@ -69,17 +69,16 @@ const LOOSE_FILES = [
     test("clicking trash shows Confirm and X buttons", async ({ page }) => {
         const fileRow = page.locator("text=app.py").first().locator("..");
         await expect(fileRow).toBeVisible({ timeout: 10_000 });
-        await fileRow.hover();
+        await dismissViteOverlay(page);
+        await fileRow.hover({ force: true });
 
-        // Click the trash icon
         const trashButton = fileRow.locator("button:has(svg.lucide-trash-2)");
-        await trashButton.click();
+        await dismissViteOverlay(page);
+        await trashButton.click({ force: true });
 
-        // Confirm button should appear with red styling
         const confirmButton = fileRow.locator("button", { hasText: "Confirm" });
         await expect(confirmButton).toBeVisible({ timeout: 5_000 });
 
-        // X button should also be visible (the cancel button next to Confirm)
         const cancelX = fileRow.locator("button:has(svg.lucide-x)");
         await expect(cancelX).toBeVisible({ timeout: 5_000 });
     });
@@ -89,23 +88,23 @@ const LOOSE_FILES = [
     }) => {
         const fileRow = page.locator("text=app.py").first().locator("..");
         await expect(fileRow).toBeVisible({ timeout: 10_000 });
-        await fileRow.hover();
+        await dismissViteOverlay(page);
+        await fileRow.hover({ force: true });
 
-        // Click trash to enter confirm state
         const trashButton = fileRow.locator("button:has(svg.lucide-trash-2)");
-        await trashButton.click();
+        await dismissViteOverlay(page);
+        await trashButton.click({ force: true });
 
-        // Click the X to cancel
         const cancelX = fileRow.locator("button:has(svg.lucide-x)");
-        await cancelX.click();
+        await dismissViteOverlay(page);
+        await cancelX.click({ force: true });
 
-        // Confirm button should disappear
         await expect(
             fileRow.locator("button", { hasText: "Confirm" }),
         ).not.toBeVisible({ timeout: 5_000 });
 
-        // Trash icon should be back (visible on hover)
-        await fileRow.hover();
+        await dismissViteOverlay(page);
+        await fileRow.hover({ force: true });
         await expect(fileRow.locator("button:has(svg.lucide-trash-2)")).toBeVisible(
             { timeout: 5_000 },
         );
@@ -115,7 +114,6 @@ const LOOSE_FILES = [
         let deleteCalled = false;
         let deleteUrl = "";
 
-        // Add a listener to capture the DELETE call
         page.on("request", (request) => {
             if (
                 request.method() === "DELETE" &&
@@ -128,28 +126,27 @@ const LOOSE_FILES = [
 
         const fileRow = page.locator("text=app.py").first().locator("..");
         await expect(fileRow).toBeVisible({ timeout: 10_000 });
-        await fileRow.hover();
+        await dismissViteOverlay(page);
+        await fileRow.hover({ force: true });
 
-        // Click trash → then Confirm
         const trashButton = fileRow.locator("button:has(svg.lucide-trash-2)");
-        await trashButton.click();
+        await dismissViteOverlay(page);
+        await trashButton.click({ force: true });
 
         const confirmButton = fileRow.locator("button", { hasText: "Confirm" });
-        await confirmButton.click();
+        await dismissViteOverlay(page);
+        await confirmButton.click({ force: true });
 
-        // Wait a tick for the API call to fire
         await page.waitForTimeout(500);
 
         expect(deleteCalled).toBe(true);
-        // File id 101 is app.py from LOOSE_FILES
         expect(deleteUrl).toContain("/api/user-files/101");
     });
 
     test("trash icon is hidden when only one file remains", async ({ page }) => {
-        // Override the mock with only 1 file
         await page.unrouteAll();
         await mockUserProfileAPI(page);
-        await mockUserFilesAPI(page, [LOOSE_FILES[0]]); // just app.py
+        await mockUserFilesAPI(page, [LOOSE_FILES[0]]);
         await mockProjectsAPI(page, []);
         await mockPackagesAPI(page, []);
         await mockDeleteFileAPI(page);
@@ -159,12 +156,11 @@ const LOOSE_FILES = [
         await waitForIDEShell(page);
         await waitForFiles(page);
 
-        // Hover over the only file
         const fileRow = page.locator("text=app.py").first().locator("..");
         await expect(fileRow).toBeVisible({ timeout: 10_000 });
-        await fileRow.hover();
+        await dismissViteOverlay(page);
+        await fileRow.hover({ force: true });
 
-        // Trash icon should NOT appear (disabled prop causes Trash2Btn to return null)
         await expect(
             fileRow.locator("button:has(svg.lucide-trash-2)"),
         ).not.toBeVisible({ timeout: 3_000 });
