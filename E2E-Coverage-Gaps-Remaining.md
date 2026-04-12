@@ -45,15 +45,14 @@
 - Open Save As, fill the form, submit, verify the PUT/POST API call
 - **File:** new `e2e/save-flow.auth.spec.ts`
 
-### 9. Keyboard shortcut Cmd+S / Ctrl+S
+### ~~9. Keyboard shortcut Cmd+S / Ctrl+S~~ — DONE (2026-04-12)
 
-- The hook is unit-tested but e2e doesn't verify the key combo triggers a save
-- **File:** add to an authenticated spec
+- **File:** `e2e/keyboard-save.auth.spec.ts` — 2 tests (Ctrl+S with unsaved changes fires PUT, Ctrl+S without changes shows "No changes" toast)
 
-### 10. File with .txt extension
+### ~~10. File with .txt extension~~ — DONE (2026-04-12)
 
-- All tests use .py files; the app also supports .txt
-- **File:** add to New File dialog tests
+- **File:** added to `e2e/new-file-flow.auth.spec.ts`
+— 1 test (create .txt file, verify name not auto-appended to .py)
 
 ---
 
