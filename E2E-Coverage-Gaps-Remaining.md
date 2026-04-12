@@ -10,27 +10,39 @@
 
 ### ~~1. File deletion confirmation flow~~ — DONE (2026-04-12)
 
-- **File:** `e2e/file-delete.auth.spec.ts` — 5 tests
+- **File:** `e2e/file-delete.auth.spec.ts`
+
+- 5 tests
 
 ### ~~2. "Taking too long?" reload button~~ — DONE (2026-04-12)
 
-- **File:** `e2e/loading-reload.spec.ts` — 2 tests
+- **File:** `e2e/loading-reload.spec.ts`
+
+- 2 tests
 
 ### ~~3. Error/retry state in Explorer~~ — DONE (2026-04-12)
 
-- **File:** `e2e/explorer-error-state.auth.spec.ts` — 2 tests
+- **File:** `e2e/explorer-error-state.auth.spec.ts`
+
+- 2 tests
 
 ### ~~4. Escape key closes dialogs~~ — DONE (2026-04-12)
 
-- **File:** `e2e/escape-closes-dialogs.auth.spec.ts` — 6 tests (New Project, New File, Add Package, Save As, Open/Import, Complete Profile)
+- **File:** `e2e/escape-closes-dialogs.auth.spec.ts`
+
+- 6 tests (New Project, New File, Add Package, Save As, Open/Import, Complete Profile)
 
 ### ~~5. Console output from code execution~~ — DONE (2026-04-12)
 
-- **File:** `e2e/console-output.spec.ts` — 5 tests (mock Pyodide: init, Run output, multiple prints, error with [Error] prefix, clear console)
+- **File:** `e2e/console-output.spec.ts`
+
+- 5 tests (mock Pyodide: init, Run output, multiple prints, error with [Error] prefix, clear console)
 
 ### ~~6. UserProfileModal edit/delete flows~~ — DONE (2026-04-12)
 
-- **File:** `e2e/user-profile-modal.auth.spec.ts` — 8 tests (view mode: open/data/cancel, edit mode: switch/cancel/save PUT, delete flow: confirm dialog/cancel/DELETE API)
+- **File:** `e2e/user-profile-modal.auth.spec.ts`
+
+- 8 tests (view mode: open/data/cancel, edit mode: switch/cancel/save PUT, delete flow: confirm dialog/cancel/DELETE API)
 
 ---
 
@@ -38,21 +50,27 @@
 
 ### ~~7. New File happy path (authenticated)~~ — DONE (2026-04-12)
 
-- **File:** `e2e/new-file-flow.auth.spec.ts` — 3 tests (create .py with POST API, auto-append .py, Enter key submit)
+- **File:** `e2e/new-file-flow.auth.spec.ts`
 
-### 8. SaveDialog actual save flow (authenticated)
+- 3 tests (create .py with POST API, auto-append .py, Enter key submit)
+
+### ~~8. SaveDialog actual save flow (authenticated)~~ — DONE (2026-04-12)
 
 - Open Save As, fill the form, submit, verify the PUT/POST API call
+
 - **File:** new `e2e/save-flow.auth.spec.ts`
 
 ### ~~9. Keyboard shortcut Cmd+S / Ctrl+S~~ — DONE (2026-04-12)
 
-- **File:** `e2e/keyboard-save.auth.spec.ts` — 2 tests (Ctrl+S with unsaved changes fires PUT, Ctrl+S without changes shows "No changes" toast)
+- **File:** `e2e/keyboard-save.auth.spec.ts`
+
+- 2 tests (Ctrl+S with unsaved changes fires PUT, Ctrl+S without changes shows "No changes" toast)
 
 ### ~~10. File with .txt extension~~ — DONE (2026-04-12)
 
 - **File:** added to `e2e/new-file-flow.auth.spec.ts`
-— 1 test (create .txt file, verify name not auto-appended to .py)
+
+- 1 test (create .txt file, verify name not auto-appended to .py)
 
 ---
 
@@ -61,22 +79,26 @@
 ### ~~11. Panel resizing via drag handles~~ — DONE (2026-04-12)
 
 - **File:** `e2e/panel-resize.spec.ts`
-— 2 tests (horizontal handle resizes editor/execution, vertical handle resizes preview/console)
+
+- 2 tests (horizontal handle resizes editor/execution, vertical handle resizes preview/console)
 
 ### ~~12. Mobile viewport (Explorer hidden on small screens)~~ — DONE (2026-04-12)
 
-- **File:** `e2e/responsive.spec.ts` — 2 tests (Explorer hidden at 375px, visible at 1280px)
+- **File:** `e2e/responsive.spec.ts`
+
+- 2 tests (Explorer hidden at 375px, visible at 1280px)
 
 ### ~~13. Long filename truncation~~ — DONE (2026-04-12)
 
 - **File:** added to `e2e/new-file-flow.auth.spec.ts`
-— 1 test (long filename has text-overflow: ellipsis and overflow: hidden)
 
-### 14. Duplicate filename handling in New File dialog
+- 1 test (long filename has text-overflow: ellipsis and overflow: hidden)
 
-- What happens when creating a file with a name that already exists
+### ~~14. Duplicate filename handling in New File dialog~~ — DONE (2026-04-12)
 
-- **File:** add to New File dialog tests
+- **File:** added to `e2e/new-file-flow.auth.spec.ts`
+
+- 1 test (duplicate name still fires POST, no client-side blocking)
 
 ---
 
@@ -84,9 +106,9 @@
 
 | Suite | Tests | Status |
 | ----- | ----- | ------ |
-| Playwright e2e | 311 | All passing |
+| Playwright e2e | 312 | All passing |
 | Vitest unit | 552 | All passing |
-| **Total** | **863** | **All passing** |
+| **Total** | **864** | **All passing** |
 
 ---
 
