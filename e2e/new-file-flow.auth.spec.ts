@@ -9,6 +9,7 @@ import {
     mockProjectsAPI,
     mockPackagesAPI,
     mockCreateFileAPI,
+    MOCK_USER_FILES,
 } from "./helpers";
 
 test.describe("New File — authenticated happy path", () => {
@@ -174,5 +175,45 @@ test.describe("New File — authenticated happy path", () => {
         await expect(
             page.locator("text=Create New File").first(),
         ).not.toBeVisible({ timeout: 5_000 });
+    });
+
+    test("long filename is visually truncated in Explorer", async ({
+        page,
+        }) => {
+        // Override the default mock to include a file with a very long name
+        await page.unroute("**/api/user-files");
+        await mockUserFilesAPI(page, [
+            ...MOCK_USER_FILES,
+            {
+                id: 999,
+                name: "this_is_a_very_long_filename_that_should_definitely_be_truncated.py",
+                content: "# long name\n",
+                projectId: null,
+                clerkId: "user_test123",
+                createdAt: "2025-01-03T00:00:00.000Z",
+            },
+        ]);
+        await page.goto("/");
+        await waitForIDEShell(page);
+        await waitForFiles(page);
+
+        // Find the file in Explorer — it uses the .truncate class
+        const fileLabel = page
+            .locator(".truncate.flex-1", {
+                hasText: "this_is_a_very_long_filename",
+            })
+            .first();
+        await expect(fileLabel).toBeVisible({ timeout: 10_000 });
+
+        // Verify the truncate CSS is applied (text-overflow: ellipsis)
+        const textOverflow = await fileLabel.evaluate(
+            (el) => getComputedStyle(el).textOverflow,
+        );
+        expect(textOverflow).toBe("ellipsis");
+
+        const overflow = await fileLabel.evaluate(
+            (el) => getComputedStyle(el).overflow,
+        );
+        expect(overflow).toBe("hidden");
     });
 });
