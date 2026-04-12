@@ -91,7 +91,7 @@
 ## Current Test Counts (as of 2026-04-12)
 
 | Suite | Tests | Status |
-|-------|-------|--------|
+| ----- | ----- | ------ |
 | Playwright e2e | 280 | All passing |
 | Vitest unit | 552 | All passing |
 | **Total** | **832** | **All passing** |
