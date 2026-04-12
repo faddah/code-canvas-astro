@@ -267,7 +267,7 @@ Three `useState` booleans for modal visibility. Only worth consolidating if dial
 ### Expected Result After Modularization
 
 | Metric | Before | After |
-|--------|--------|-------|
+| ------ | ------ | ----- |
 | IDE.tsx lines | ~304 | ~200 |
 | Hooks imported | 11 | 6-7 (aggregated) |
 | Cognitive load | High (multiple concerns mixed) | Medium (concerns separated) |
@@ -287,7 +287,7 @@ Three `useState` booleans for modal visibility. Only worth consolidating if dial
 ### Coverage Summary Table
 
 | Category | Total Files | Unit Tested | Coverage | Status |
-|----------|-------------|-------------|----------|--------|
+| -------- | ----------- | ----------- | -------- | ------ |
 | Components | 15 | 14 | 93% | EditorPanel missing |
 | Hooks | 9 | 7 | 78% | use-toast, use-clerk-user missing |
 | Libraries | 3 | 2 | 67% | lib/utils.ts not tested |
@@ -376,4 +376,4 @@ Missing error path coverage: invalid JSON bodies, database constraint violations
 
 ---
 
-*Generated during pair programming session, 2026-04-10*
+### *Generated 2026-04-10*
