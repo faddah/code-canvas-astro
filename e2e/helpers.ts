@@ -216,7 +216,7 @@ export async function mockUpdateProfileAPI(page: Page) {
         body: JSON.stringify(MOCK_USER_PROFILE),
       });
     }
-    return route.continue();
+    return route.fallback();
   });
 }
 
@@ -230,7 +230,7 @@ export async function mockDeleteProfileAPI(page: Page) {
         body: JSON.stringify({ success: true }),
       });
     }
-    return route.continue();
+    return route.fallback();
   });
 }
 
