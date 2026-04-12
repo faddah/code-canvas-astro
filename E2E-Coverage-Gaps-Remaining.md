@@ -84,9 +84,9 @@
 
 | Suite | Tests | Status |
 | ----- | ----- | ------ |
-| Playwright e2e | 308 | All passing |
+| Playwright e2e | 311 | All passing |
 | Vitest unit | 552 | All passing |
-| **Total** | **860** | **All passing** |
+| **Total** | **863** | **All passing** |
 
 ---
 
