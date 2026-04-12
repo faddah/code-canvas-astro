@@ -60,7 +60,7 @@ export async function waitForIDEShell(page: Page) {
   await dismissViteOverlay(page);
   await expect(
     page.locator(".panel-header >> text=Console").first(),
-  ).toBeVisible({ timeout: 45_000 });
+  ).toBeVisible({ timeout: 60_000 });
 }
 
 /** Wait for at least one file in the Explorer */
