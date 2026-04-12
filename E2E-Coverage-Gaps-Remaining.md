@@ -67,11 +67,10 @@
 
 - **File:** `e2e/responsive.spec.ts` — 2 tests (Explorer hidden at 375px, visible at 1280px)
 
-### 13. Long filename truncation
+### ~~13. Long filename truncation~~ — DONE (2026-04-12)
 
-- File names use `truncate` CSS class
-
-- **File:** add to file creation tests
+- **File:** added to `e2e/new-file-flow.auth.spec.ts`
+— 1 test (long filename has text-overflow: ellipsis and overflow: hidden)
 
 ### 14. Duplicate filename handling in New File dialog
 
