@@ -206,6 +206,34 @@ export async function mockCreateProfileAPI(page: Page) {
   });
 }
 
+/** Mock PUT /api/user-profile → return updated profile */
+export async function mockUpdateProfileAPI(page: Page) {
+  await page.route("**/api/user-profile", (route, request) => {
+    if (request.method() === "PUT") {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(MOCK_USER_PROFILE),
+      });
+    }
+    return route.continue();
+  });
+}
+
+/** Mock DELETE /api/user-profile → return success */
+export async function mockDeleteProfileAPI(page: Page) {
+  await page.route("**/api/user-profile", (route, request) => {
+    if (request.method() === "DELETE") {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ success: true }),
+      });
+    }
+    return route.continue();
+  });
+}
+
 /** Mock GET /api/user-files → return mock files */
 export async function mockUserFilesAPI(page: Page, files = MOCK_USER_FILES) {
   await page.route("**/api/user-files", (route, request) => {
