@@ -1,7 +1,16 @@
 {
-    "extends": "../tsconfig.json",
     "compilerOptions": {
-        "types": ["@playwright/test", "node"]
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "noEmit": true,
+        "types": [
+            "@playwright/test",
+            "node"
+        ]
     },
     "include": ["**/*.ts"],
     "exclude": []
