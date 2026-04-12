@@ -20,8 +20,7 @@ import { OpenImportDialog } from "@/components/OpenImportDialog";
 import { useToast } from "@/hooks/use-toast";
 import { CompleteProfile } from "@/components/CompleteProfile";
 import { UserProfileModal } from "@/components/UserProfileModal";
-import { useAuth } from "@clerk/astro/react";
-import { useClerkUser } from "@/hooks/use-clerk-user";
+import { useAuthState } from "@/hooks/use-auth-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useFileManagement } from "@/hooks/use-file-management";
 import TopNavBar from "@/components/TopNavBar";
@@ -29,13 +28,8 @@ import EditorPanel from "@/components/EditorPanel";
 import ExecutionPanel from "@/components/ExecutionPanel";
 
 export default function IDE() {
-  // Auth state from @clerk/astro/react (uses nanostores, not React Context)
-  const { userId, signOut } = useAuth();
-  const isSignedIn = !!userId;
-  const clerkUser = useClerkUser();
-
-  // Transform UserResource to ClerkUser type
-  const user = clerkUser ?? null;
+  // Auth state
+  const { isSignedIn, userId, user, signOut } = useAuthState();
 
   // File hooks
   const {
