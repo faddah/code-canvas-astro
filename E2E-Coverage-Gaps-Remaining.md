@@ -24,16 +24,13 @@
 
 - **File:** `e2e/escape-closes-dialogs.auth.spec.ts` — 6 tests (New Project, New File, Add Package, Save As, Open/Import, Complete Profile)
 
-### 5. Console output from code execution
+### ~~5. Console output from code execution~~ — DONE (2026-04-12)
 
-- Anonymous flow tests check Run button exists but never verify console output
-- Pyodide is blocked in tests; would need a mock approach
-- **File:** add to `e2e/anonymous-flow.spec.ts` or `e2e/ide-interactions.spec.ts`
+- **File:** `e2e/console-output.spec.ts` — 5 tests (mock Pyodide: init, Run output, multiple prints, error with [Error] prefix, clear console)
 
-### 6. UserProfileModal edit/delete flows
+### ~~6. UserProfileModal edit/delete flows~~ — DONE (2026-04-12)
 
-- Modal opens, but viewing profile data, editing, and deleting are not tested
-- **File:** new `e2e/user-profile-modal.auth.spec.ts`
+- **File:** `e2e/user-profile-modal.auth.spec.ts` — 8 tests (view mode: open/data/cancel, edit mode: switch/cancel/save PUT, delete flow: confirm dialog/cancel/DELETE API)
 
 ---
 
@@ -92,9 +89,9 @@
 
 | Suite | Tests | Status |
 | ----- | ----- | ------ |
-| Playwright e2e | 280 | All passing |
+| Playwright e2e | 295 | All passing |
 | Vitest unit | 552 | All passing |
-| **Total** | **832** | **All passing** |
+| **Total** | **847** | **All passing** |
 
 ---
 
