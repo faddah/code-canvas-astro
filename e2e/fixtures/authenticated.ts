@@ -9,6 +9,6 @@ export const test = base.extend<{ clerkPage: void }>({
             await setupClerkTestingToken({ page });
             await use();
         },
-        { auto: true },
+        { auto: true, scope: "test" },
     ],
 });
