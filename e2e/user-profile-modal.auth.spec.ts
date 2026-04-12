@@ -68,7 +68,8 @@ test.describe("UserProfileModal — view mode", () => {
         const modalTitle = page.locator("text=User Profile").first();
         await expect(modalTitle).toBeVisible({ timeout: 5_000 });
 
-        await page.locator('button:has-text("Cancel")').first().click();
+        await dismissViteOverlay(page);
+        await page.locator('button:has-text("Cancel")').first().click({ force: true });
 
         await expect(modalTitle).not.toBeVisible({ timeout: 5_000 });
     });
@@ -131,7 +132,8 @@ test.describe("UserProfileModal — edit mode", () => {
         ).toBeVisible({ timeout: 5_000 });
 
         // Click Cancel
-        await page.locator('button:has-text("Cancel")').first().click();
+        await dismissViteOverlay(page);
+        await page.locator('button:has-text("Cancel")').first().click({ force: true });
 
         // Should be back in view mode — Edit Profile button visible again
         await expect(
@@ -197,7 +199,8 @@ test.describe("UserProfileModal — delete flow", () => {
     test("Delete Profile button shows confirmation dialog", async ({
         page,
     }) => {
-        await page.locator('button:has-text("Delete Profile")').click();
+        await dismissViteOverlay(page);
+        await page.locator('button:has-text("Delete Profile")').click({ force: true });
 
         await expect(
             page.locator("text=Delete Account").first(),
@@ -211,14 +214,15 @@ test.describe("UserProfileModal — delete flow", () => {
     });
 
     test("Cancel dismisses the delete confirmation", async ({ page }) => {
-        await page.locator('button:has-text("Delete Profile")').click();
+        await dismissViteOverlay(page);
+        await page.locator('button:has-text("Delete Profile")').click({ force: true });
 
         await expect(
             page.locator("text=Delete Account").first(),
         ).toBeVisible({ timeout: 5_000 });
 
         // Click Cancel in the AlertDialog
-        await page.locator('button:has-text("Cancel")').first().click();
+        await page.locator('button:has-text("Cancel")').first().click({ force: true });
 
         // Confirmation should disappear, but modal stays open
         await expect(
@@ -233,7 +237,8 @@ test.describe("UserProfileModal — delete flow", () => {
     test("Confirm delete calls DELETE /api/user-profile", async ({
         page,
     }) => {
-        await page.locator('button:has-text("Delete Profile")').first().click();
+        await dismissViteOverlay(page);
+        await page.locator('button:has-text("Delete Profile")').first().click({ force: true });
 
         await expect(
             page.locator("text=Delete Account").first(),
