@@ -134,7 +134,7 @@ test.describe("UserProfileModal — edit mode", () => {
         // Click Cancel
         await dismissViteOverlay(page);
         const dialog = page.locator('[role="dialog"]');
-        await dialog.locator('button:has-text("Cancel")').click({ force: true });
+        await dialog.locator('button[type="button"]:has-text("Cancel")').dispatchEvent('click');
 
         // Should be back in view mode — Edit Profile button visible again
         await expect(
