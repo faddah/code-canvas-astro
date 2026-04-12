@@ -19,7 +19,7 @@ test.describe("Panel resizing via drag handles", () => {
         page,
     }) => {
         // Find the horizontal resize handle (col-resize cursor)
-        const handle = page.locator("[data-panel-resize-handle-id]").first();
+        const handle = page.locator("[data-separator]").first();
         await expect(handle).toBeVisible({ timeout: 10_000 });
 
         // Get the editor panel width before drag
