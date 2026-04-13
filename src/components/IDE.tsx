@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useProjectData } from "@/hooks/use-project-data";
 import { usePackageData } from "@/hooks/use-package-data";
 import { useUserProfile } from "@/hooks/use-user-profile";
-import { usePyodide } from "@/hooks/use-pyodide";
+import { usePythonExecution } from "@/hooks/use-python-execution";
 import { ResizablePanelGroup } from "@/components/ui/resizable";
 import { Loader2 } from "lucide-react";
 import { ExplorerPane } from "@/components/ExplorerPane";
