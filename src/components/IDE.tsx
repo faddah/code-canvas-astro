@@ -75,14 +75,9 @@ export default function IDE() {
   const handleRun = () => runPython(activeContent);
 
   // Show complete profile modal after first signup
-  const [showCompleteProfile, setShowCompleteProfile] = useState(false);
-  useEffect(() => {
-    if (isSignedIn && isProfileSuccess && profile === null) {
-      setShowCompleteProfile(true);
-    } else if (profile) {
-      setShowCompleteProfile(false);
-    }
-  }, [isSignedIn, isProfileSuccess, profile]);
+  const [profileDismissed, setProfileDismissed] = useState(false);
+  const showCompleteProfile = isSignedIn && isProfileSuccess && profile === null && !profileDismissed;
+
 
   // File management state
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -189,8 +184,8 @@ export default function IDE() {
       {/* Complete Profile Modal */}
       {showCompleteProfile && (
         <CompleteProfile
-          onComplete={() => setShowCompleteProfile(false)}
-          onCancel={() => setShowCompleteProfile(false)}
+          onComplete={() => setProfileDismissed(true)}
+          onCancel={() => setProfileDismissed(true)}
         />
       )}
 
