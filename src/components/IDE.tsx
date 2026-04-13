@@ -1,10 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  useProjects,
-  useCreateProject,
-  useDeleteProject,
-  useMoveFileToProject,
-} from "@/hooks/use-projects";
+import { useProjectData } from "@/hooks/use-project-data";
 import {
   usePackages,
   useAddPackage,
@@ -60,10 +55,7 @@ export default function IDE() {
     useUserProfile(isSignedIn);
 
   // Project hooks
-  const { data: projectsData } = useProjects(userId);
-  const createProject = useCreateProject();
-  const deleteProject = useDeleteProject();
-  const moveFileToProject = useMoveFileToProject();
+  const { projects, createProject, deleteProject, moveFileToProject } = useProjectData(userId);
 
   const {
     isReady,
@@ -91,8 +83,6 @@ export default function IDE() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [isOpenImportDialogOpen, setIsOpenImportDialogOpen] = useState(false);
-
-  const projects = projectsData ?? [];
 
   // Remove the static loading placeholder once React has mounted
   useEffect(() => {
