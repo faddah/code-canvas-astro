@@ -4,7 +4,8 @@ import { usePackageData } from "@/hooks/use-package-data";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { usePythonExecution } from "@/hooks/use-python-execution";
 import { ResizablePanelGroup } from "@/components/ui/resizable";
-import { Loader2 } from "lucide-react";
+import { LoadingScreen } from "@/components/LoadingScreen";
+import { useLoadingStateCleanup } from "@/hooks/use-loading-state-cleanup";
 import { ExplorerPane } from "@/components/ExplorerPane";
 import { SaveDialog } from "@/components/SaveDialog";
 import { OpenImportDialog } from "@/components/OpenImportDialog";
@@ -88,11 +89,8 @@ export default function IDE() {
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [isOpenImportDialogOpen, setIsOpenImportDialogOpen] = useState(false);
 
-  // Remove the static loading placeholder once React has mounted
-  useEffect(() => {
-    const el = document.getElementById("app-loading");
-    if (el) el.remove();
-  }, []);
+  // Loading state cleanup + "taking too long" timer
+  const { loadingTooLong } = useLoadingStateCleanup(isLoadingFiles);
 
   // Use Keyboard Shortcuts hook for Cmd+S / Ctrl+S
   useKeyboardShortcuts({
@@ -103,17 +101,6 @@ export default function IDE() {
     onNoChanges: () =>
       toast({ title: "No changes", description: "File is already saved." }),
   });
-
-  // Track how long we've been loading — show a retry hint after 10 seconds
-  const [loadingTooLong, setLoadingTooLong] = useState(false);
-  useEffect(() => {
-    if (!isLoadingFiles) {
-      setLoadingTooLong(false);
-      return;
-    }
-    const timer = setTimeout(() => setLoadingTooLong(true), 10_000);
-    return () => clearTimeout(timer);
-  }, [isLoadingFiles]);
 
   if (isLoadingFiles) {
     return <LoadingScreen showRetry={loadingTooLong} />;
