@@ -53,17 +53,25 @@ export default function IDE() {
   // Project hooks
   const { projects, createProject, deleteProject, moveFileToProject } = useProjectData(userId);
 
+  // Package hooks (scoped to active project)
+  const { packages, addPackage, removePackage } = usePackageData(userId, activeProjectId );
+
+  // Toast hook
+  const { toast } = useToast();
+
+  // Python execution (wraps usePyodide + handleRun logic)
   const {
     isReady,
     isRunning,
     output,
     htmlOutput,
-    runCode,
     clearConsole,
     isWaitingForInput,
     submitInput,
-  } = usePyodide();
-  const { toast } = useToast();
+    handleRun: runPython,
+  } = usePythonExecution({ files: files ?? [], packages, unsavedChanges, toast });
+
+  const handleRun = () => runPython(activeContent);
 
   // Show complete profile modal after first signup
   const [showCompleteProfile, setShowCompleteProfile] = useState(false);
@@ -86,9 +94,6 @@ export default function IDE() {
     if (el) el.remove();
   }, []);
 
-  // Package hooks (scoped to active project)
-  const { packages, addPackage, removePackage } = usePackageData(userId, activeProjectId);
-
   // Use Keyboard Shortcuts hook for Cmd+S / Ctrl+S
   useKeyboardShortcuts({
     isSignedIn,
@@ -98,28 +103,6 @@ export default function IDE() {
     onNoChanges: () =>
       toast({ title: "No changes", description: "File is already saved." }),
   });
-
-  const handleRun = async () => {
-    if (!activeContent) return;
-    if (!isReady) {
-      toast({
-        title: "Wait a moment",
-        description: "Python environment is still loading...",
-      });
-      return;
-    }
-
-    // Prepare all files for the virtual filesystem
-    const fileSystem = (files || []).map((f: any) => ({
-      name: f.name,
-      content: unsavedChanges[f.id] ?? f.content,
-    }));
-
-    // Collect saved package names for micropip
-    const packageNames = (packages || []).map((p: any) => p.packageName);
-
-    await runCode(activeContent, fileSystem, packageNames);
-  };
 
   // Track how long we've been loading — show a retry hint after 10 seconds
   const [loadingTooLong, setLoadingTooLong] = useState(false);
@@ -133,24 +116,7 @@ export default function IDE() {
   }, [isLoadingFiles]);
 
   if (isLoadingFiles) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center bg-background text-primary">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 animate-spin" />
-          <p className="text-muted-foreground font-mono animate-pulse">
-            Initializing Environment...
-          </p>
-          {loadingTooLong && (
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-2 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
-            >
-              Taking too long? Click to reload
-            </button>
-          )}
-        </div>
-      </div>
-    );
+    return <LoadingScreen showRetry={loadingTooLong} />;
   }
 
   return (
