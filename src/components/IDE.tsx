@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
 import { useProjectData } from "@/hooks/use-project-data";
-import {
-  usePackages,
-  useAddPackage,
-  useRemovePackage,
-} from "@/hooks/use-packages";
+import { usePackageData } from "@/hooks/use-package-data";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { usePyodide } from "@/hooks/use-pyodide";
 import { ResizablePanelGroup } from "@/components/ui/resizable";
@@ -91,9 +87,7 @@ export default function IDE() {
   }, []);
 
   // Package hooks (scoped to active project)
-  const { data: packagesData } = usePackages(userId, activeProjectId);
-  const addPackage = useAddPackage();
-  const removePackage = useRemovePackage();
+  const { packages, addPackage, removePackage } = usePackageData(userId, activeProjectId);
 
   // Use Keyboard Shortcuts hook for Cmd+S / Ctrl+S
   useKeyboardShortcuts({
@@ -122,7 +116,7 @@ export default function IDE() {
     }));
 
     // Collect saved package names for micropip
-    const packageNames = (packagesData || []).map((p: any) => p.packageName);
+    const packageNames = (packages || []).map((p: any) => p.packageName);
 
     await runCode(activeContent, fileSystem, packageNames);
   };
@@ -197,7 +191,7 @@ export default function IDE() {
             moveFileToProject.mutate({ fileId, projectId })
           }
           onRetry={() => refetchUserFiles()}
-          packages={packagesData ?? []}
+          packages={packages}
           onAddPackage={(packageName) =>
             addPackage.mutate({ packageName, projectId: activeProjectId })
           }
