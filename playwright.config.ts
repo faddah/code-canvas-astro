@@ -11,16 +11,29 @@ export default defineConfig({
   workers: process.env.CI ? 2 : 2,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:4321",
+    baseURL: "https://localhost:4321",
+    ignoreHTTPSErrors: true,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
   projects: [
     // ─── Setup: runs once before any authenticated-* project. Signs in
     //     the test user via Clerk and persists storageState to disk. ───
+
     {
-      name: "setup",
+      name: "setup-chromium",
       testMatch: /auth\.setup\.ts$/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "setup-firefox",
+      testMatch: /auth\.setup\.ts$/,
+      use: { ...devices["Desktop Firefox"] },
+    },
+    {
+      name: "setup-webkit",
+      testMatch: /auth\.setup\.ts$/,
+      use: { ...devices["Desktop Safari"] },
     },
 
     // ─── Anonymous projects (existing behavior) ──────────────────────
@@ -50,34 +63,35 @@ export default defineConfig({
       name: "authenticated-chromium",
       use: {
         ...devices["Desktop Chrome"],
-        storageState: STORAGE_STATE,
+        storageState: "e2e/.auth/setup-chromium.json",
       },
       testMatch: /\.auth\.spec\.ts$/,
-      dependencies: ["setup"],
+      dependencies: ["setup-chromium"],
     },
     {
       name: "authenticated-firefox",
       use: {
         ...devices["Desktop Firefox"],
-        storageState: STORAGE_STATE,
+        storageState: "e2e/.auth/setup-firefox.json",
       },
       testMatch: /\.auth\.spec\.ts$/,
-      dependencies: ["setup"],
+      dependencies: ["setup-firefox"],
     },
     {
       name: "authenticated-webkit",
       use: {
         ...devices["Desktop Safari"],
-        storageState: STORAGE_STATE,
+        storageState: "e2e/.auth/setup-webkit.json",
       },
       testMatch: /\.auth\.spec\.ts$/,
-      dependencies: ["setup"],
+      dependencies: ["setup-webkit"],
     },
   ],
   webServer: {
     command: process.env.CI ? "npm run preview" : "npm run dev",
-    url: "http://localhost:4321",
-    reuseExistingServer: false,
+    url: "https://localhost:4321",
+    ignoreHTTPSErrors: true,
+    reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
 });
