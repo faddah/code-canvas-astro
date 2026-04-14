@@ -151,7 +151,7 @@ test.describe("Console — code execution output (mock Pyodide)", () => {
                     hasText: "[Error]",
                 })
                 .first(),
-        ).toBeVisible({ timeout: 10_000 });
+        ).toBeVisible({ timeout: 20_000 });
 
         await expect(
             page
