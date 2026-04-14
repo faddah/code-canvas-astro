@@ -72,3 +72,4 @@ e2e/.auth/
 distance.py
 .gstack/
 cpu_ram_monitor.py
+.certs/
