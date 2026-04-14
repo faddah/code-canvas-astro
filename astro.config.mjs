@@ -8,6 +8,21 @@ import tailwindcss from '@tailwindcss/vite';
 
 import node from '@astrojs/node';
 
+import fs from 'fs';
+
+const certKey  = '.certs/localhost+2-key.pem';
+const certCert = '.certs/localhost+2.pem';
+const hasCerts = fs.existsSync(certKey) && fs.existsSync(certCert);
+
+const viteServer = hasCerts
+  ? {
+      https: {
+        key:  fs.readFileSync(certKey),
+        cert: fs.readFileSync(certCert),
+      },
+    }
+  : undefined;
+
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
@@ -28,7 +43,9 @@ export default defineConfig({
     }),
   ],
 
+  // ...existing config...
   vite: {
+    ...(viteServer ? { server: viteServer } : {}),
     // @ts-ignore - Vite plugin version mismatch between Astro and @tailwindcss/vite
     plugins: [
       tailwindcss(),
