@@ -3,11 +3,9 @@ import { test as setup } from "@playwright/test";
 import fs from "fs";
 import path from "path";
 
-export const STORAGE_STATE = "e2e/.auth/user.json";
-
-setup("authenticate with Clerk", async ({ page }) => {
-    setup.setTimeout(120_000);
-    fs.mkdirSync(path.dirname(STORAGE_STATE), { recursive: true });
+setup("authenticate with Clerk", async ({ page }, testInfo) => {
+    const storageState = `e2e/.auth/${testInfo.project.name}.json`;
+    fs.mkdirSync(path.dirname(storageState), { recursive: true });
 
     // ─── Browser diagnostics ──────────────────────────────────────────
     page.on("console", (msg) => {
@@ -145,6 +143,6 @@ setup("authenticate with Clerk", async ({ page }) => {
 
     // ─── Persist ─────────────────────────────────────────────────────
     console.log("[setup] step 7: persisting storageState");
-    await page.context().storageState({ path: STORAGE_STATE });
+    await page.context().storageState({ path: storageState });
     console.log("[setup] done ✓");
 });
