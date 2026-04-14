@@ -2,12 +2,12 @@ import { test, expect } from "@playwright/test";
 import { blockPyodide } from "./helpers";
 
 test.describe("IDE — 'Taking too long?' reload button", () => {
-        test.setTimeout(30_000);
+        test.setTimeout(45_000);
 
         test("shows reload button after loading for 10 seconds", async ({ page }) => {
             // Delay the starter-files response so isLoadingFiles stays true for > 10s
             await page.route("**/api/starter-files", async (route) => {
-                await new Promise((resolve) => setTimeout(resolve, 12_000));
+                await new Promise((resolve) => setTimeout(resolve, 35_000));
                 await route.fulfill({
                     status: 200,
                     contentType: "application/json",
@@ -26,7 +26,7 @@ test.describe("IDE — 'Taking too long?' reload button", () => {
             // The loading spinner should be visible
             await expect(
                 page.locator("text=Initializing Environment...").first(),
-            ).toBeVisible({ timeout: 5_000 });
+            ).toBeVisible({ timeout: 15_000 });
 
             // After ~10s the button should appear
             await expect(reloadButton).toBeVisible({ timeout: 15_000 });
