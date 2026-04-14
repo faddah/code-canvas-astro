@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const STORAGE_STATE = "e2e/.auth/user.json";
+const BASE_URL = process.env.CI
+    ? "http://localhost:4321"
+    : "https://localhost:4321";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -11,7 +13,7 @@ export default defineConfig({
   workers: process.env.CI ? 2 : 2,
   reporter: "html",
   use: {
-    baseURL: "https://localhost:4321",
+    baseURL: BASE_URL,
     ignoreHTTPSErrors: true,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
@@ -89,7 +91,7 @@ export default defineConfig({
   ],
   webServer: {
     command: process.env.CI ? "npm run preview" : "npm run dev",
-    url: "https://localhost:4321",
+    url: BASE_URL,
     ignoreHTTPSErrors: true,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
