@@ -92,6 +92,8 @@ export default defineConfig({
     url: BASE_URL,
     ignoreHTTPSErrors: true,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 180_000,
+    stdout: "pipe",
+    stderr: "pipe",
   },
 });
