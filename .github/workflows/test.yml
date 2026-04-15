@@ -46,6 +46,15 @@ jobs:
           key: astro-build-${{ hashFiles('src/**', 'astro.config.mjs', 'package-lock.json') }}
           restore-keys: |
             astro-build-
+      - name: Generate self-signed TLS cert for HTTPS preview proxy
+        run: |
+          mkdir -p .certs
+          openssl req -x509 -nodes -newkey rsa:2048 \
+            -keyout .certs/localhost+2-key.pem \
+            -out .certs/localhost+2.pem \
+            -days 30 \
+            -subj "/CN=localhost" \
+            -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
       - run: npx playwright install --with-deps chromium firefox webkit
       - name: Build Astro for preview
         run: npm run build
