@@ -27,10 +27,10 @@
     "test:all:watch": "vitest --watch && playwright test --watch"
   },
   "dependencies": {
-    "@astrojs/node": "^10.0.4",
+    "@astrojs/node": "^10.0.5",
     "@astrojs/react": "^5.0.3",
-    "@clerk/astro": "^3.0.14",
-    "@clerk/react": "^6.4.0",
+    "@clerk/astro": "^3.0.15",
+    "@clerk/react": "^6.4.1",
     "@hookform/resolvers": "^5.2.2",
     "@libsql/client": "^0.17.2",
     "@monaco-editor/react": "^4.7.0",
