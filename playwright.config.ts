@@ -1,8 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const BASE_URL = process.env.CI
-    ? "http://localhost:4321"
-    : "https://localhost:4321";
+const BASE_URL = "https://localhost:4321";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -90,7 +88,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: process.env.CI ? "npm run preview" : "npm run dev",
+    command: process.env.CI ? "npm run preview:ci" : "npm run dev",
     url: BASE_URL,
     ignoreHTTPSErrors: true,
     reuseExistingServer: !process.env.CI,
