@@ -8,6 +8,7 @@ on:
 
 env:
   CI: true
+  HOME: /root
 
 jobs:
   unit-tests:
