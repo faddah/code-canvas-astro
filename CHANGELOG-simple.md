@@ -4,6 +4,84 @@ A plain-language summary of what changed in each version of the app.
 
 ---
 
+## Version 2.3.0 — April 16, 2026
+
+### IDE.tsx broken into focused modules, big test-coverage push, and a much faster, more reliable CI pipeline
+
+This release is a large refactor / quality push. The user-facing app behaves the same as 2.2.1 in most places, but the internals are dramatically more modular, the test suite is substantially larger, and the GitHub Actions pipeline now runs the full Vitest unit suite plus the full Playwright e2e suite (Chromium, Firefox, and WebKit) reliably and quickly. Highlights:
+
+#### What's new in the app
+
+- **Better loading experience** — added a dedicated `<LoadingScreen>` component that shows a "Taking too long? Reload" button after a configurable timeout. Backed by a new `useLoadingStateCleanup` hook that tracks how long loading has been going so the screen can react instead of just spinning forever
+- **Profile-completion modal can be dismissed** — the "Complete Your Profile" modal now properly closes when you click Cancel or finish the form, instead of stubbornly re-appearing
+- **Accessibility fix in the Command palette** — added a hidden `<DialogTitle>` so screen readers announce the palette correctly
+- **Better mobile layout** — Explorer header is now hidden on small (mobile-sized) viewports
+- **Long filenames are truncated cleanly in the Explorer** — they no longer break the sidebar layout
+
+#### Big internal refactor — `IDE.tsx` broken into modules
+
+The monolithic `src/components/IDE.tsx` has been split into focused, individually-testable hooks and components:
+
+- New hooks: `useAuthState`, `useClerkUser`, `useFileManagement`, `useKeyboardShortcuts`, `useProjectData`, `usePackageData`, `usePythonExecution`, `useLoadingStateCleanup`
+- New components extracted from `IDE.tsx`: `<TopNavBar>`, `<EditorPanel>`, `<ExecutionPanel>`, `<LoadingScreen>`
+
+This makes the IDE much easier to reason about, test, and extend. No user-facing behavior changes from the refactor itself.
+
+#### Massive test-coverage expansion
+
+- New Vitest unit tests for every hook listed above, plus `use-toast`, the `cn()` Tailwind helper, and the new components (`EditorPanel`, `ExecutionPanel`, `TopNavBar`, `LoadingScreen`)
+- New Vitest unit tests for every API route: `/api/health`, `/api/files`, `/api/user-files`, `/api/projects`, `/api/packages`, `/api/starter-files`, `/api/user-profile`
+- New Vitest helpers — `mock-storage.ts`, `mock-api-context.ts`, `response-helpers.ts` — so route tests are short and uniform
+- A pile of new Playwright end-to-end specs covering: Clerk sign-in setup, profile completion, project CRUD, package management, file drag-and-drop, file delete, loading-screen reload button, Explorer error state with Retry, Escape-closes-dialogs, console output, the User Profile modal (8 view/edit/delete tests), the New File dialog, the Save As dialog, `Cmd+S` / `Ctrl+S` keyboard save, panel resizing via drag handles, mobile vs desktop responsive layout, and IDE Console + Web Preview interactions
+- Tracked all 14 prioritized e2e coverage gaps in `E2E-Coverage-Gaps-Remaining.md` and finished every one of them
+
+#### CI / test infrastructure overhaul
+
+- **HTTPS everywhere** — local dev and CI preview now both run under HTTPS. This was required to make Firefox and WebKit accept Clerk's `SameSite=None; Secure` session cookies
+- **Self-signed local TLS certs** — generated under `.certs/` (gitignored). CI generates them on the fly via `openssl`
+- **Switched the e2e CI job to the official Playwright Docker container** (`mcr.microsoft.com/playwright:v1.59.1-noble`) — Node 22 and all three browsers come pre-installed. This eliminates a ~29-minute `npx playwright install --with-deps` step that was the slowest part of every CI run
+- **New `npm run preview:ci` script** that uses `concurrently` to run `astro preview` and a custom HTTPS reverse proxy in parallel
+- **Custom HTTPS proxy** — `e2e/https-proxy.mjs`, a tiny Node reverse proxy that targets `127.0.0.1:4322` directly. Replaces the old `local-ssl-proxy` package, which was dropping connections in CI due to IPv6/IPv4 DNS resolution mismatches
+- **Per-browser-engine Clerk auth** — each `authenticated-{chromium,firefox,webkit}` Playwright project depends on its own `setup-<engine>` step and writes its own `e2e/.auth/<engine>.json` storageState. Without this, Firefox and WebKit silently drop Clerk's secure cookies and every authenticated test fails
+- **`.env.test` support** — `e2e/global-setup.ts` loads it locally if present and falls back to GitHub Actions secrets in CI; required env vars are validated up front so you get a clear error instead of a cryptic Clerk 401 mid-test
+- **Container compatibility fixes** — `HOME: /root` set on the e2e job (so Firefox can launch inside the container without an `$HOME` ownership error), `pretest:e2e` guarded behind `!process.env.CI` (the Playwright container has no `lsof`), `stdout`/`stderr` piped from the webServer, and the webServer timeout raised to 180 s for better CI debugging
+- **Workflow-level `env:` kept minimal** — the unit-tests job runs on the bare runner as `runner`, so `HOME: /root` lives only on the e2e-tests job to avoid a `permission denied, stat '/root/.gitconfig'` failure during checkout
+- **GitHub Actions secrets added** — `E2E_CLERK_USER_USERNAME` / `E2E_CLERK_USER_PASSWORD`. Use Clerk **Development** keys (`pk_test_…` / `sk_test_…`) — the Production keys are domain-locked to `pyrepl.dev` and won't work on `localhost`
+- **Reduced Playwright workers from 3 to 2** to avoid race conditions where the dev server couldn't keep up under heavy parallel load with 7 projects
+- **Build cache** — added `actions/cache@v5` for the Astro build output (`dist/`, `node_modules/.astro`)
+- **npm version alignment** — CI now uses `npx -y npm@11 ci` to match the local environment, fixing rollup-related `npm ci` failures
+
+#### Bug fixes & code modernization
+
+- Replaced deprecated React `ElementRef` with the modern `ComponentRef` across all UI components
+- Switched test selectors from fragile CSS classes to stable `data-testid` / `data-active` attributes for file tabs
+- Refactored `<Calendar>` chevron icons (`IconLeft` / `IconRight` → `Chevron`) to match the latest `react-day-picker` API
+- Hardened `tailwind.config.ts` (`darkMode: ["class"]` → `darkMode: "class"`)
+- Updated `tsconfig.json` for TypeScript 6.x — explicit `extends` path, plus `target: "ESNext"`, `moduleDetection: "force"`, `moduleResolution: "Bundler"`
+- Excluded `e2e/` from the main TypeScript program and gave Playwright its own `e2e/tsconfig.json` to silence cross-project compile errors
+- Added `aria-describedby={undefined}` to several `<DialogContent>` elements to silence Radix dialog warnings during Vitest runs
+
+#### Dependency updates
+
+- Astro v6.1.7 (was v6.1.5)
+- `@astrojs/node` v10.0.5
+- `@clerk/astro` v3.0.15, `@clerk/react` v6.4.1, `@clerk/testing` v2.0.15
+- `@tanstack/react-query` v5.99.0, `react-resizable-panels` v4.10.0
+- React + `react-dom` v19.2.5, `lucide-react` v1.8.0, `aws-cdk` v2.1118.0
+- Vitest + `@vitest/coverage-v8` v4.1.4, `jsdom` v29.0.2
+- TypeScript v6.0.2, `@playwright/test` v1.59.1, `react-hook-form` v7.72.1, `eslint` v10.2.0
+- `autoprefixer` v10.5.0
+- Added: `concurrently` v9.2.1 (devDep), `cross-fetch` v4.1.0
+- Removed: `local-ssl-proxy` (replaced by `e2e/https-proxy.mjs`)
+
+#### Docs
+
+- README rewritten to reflect Astro 6, TypeScript 6, the new feature set, the actual current project structure, the full API endpoint table, and brand-new Testing and Continuous Integration sections
+- Added `IDE.tsx-Modularization-Test-Coverage-Plan.md` for tracking the modularization effort
+- Added (and progressively completed) `E2E-Coverage-Gaps-Remaining.md` — all 14 prioritized e2e gaps now closed
+
+---
+
 ## Version 2.2.1 — April 1, 2026
 
 ### micropip loading fix
