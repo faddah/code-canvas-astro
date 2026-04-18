@@ -187,7 +187,7 @@ test.describe("UserProfileModal — delete flow", () => {
         await page.goto("/");
         await waitForIDEShell(page);
         await waitForFiles(page);
-i
+
         // Open the modal
         const profileBtn = page.locator("button", { hasText: "@" }).first();
         await expect(profileBtn).toBeVisible({ timeout: 20_000 });
