@@ -2,7 +2,7 @@
 
 ![Python REPL IDE App Screen Shot](https://github.com/faddah/code-canvas-astro/raw/main/public/python-repl-ide-app-screenshot.png)
 
-**Current Version:** 2.3.0
+**Current Version:** 2.4.0
 
 A full-stack web-based IDE for executing Python code with an integrated REPL (Read-Eval-Print Loop). Built on **Astro 6** with server-side rendering, React 19 interactive islands, Clerk authentication, and a **Turso** (libSQL) cloud database. The app provides a modern development environment with a file explorer, Monaco code editor, console panel, live web preview, project management, and package installation.
 
@@ -47,6 +47,11 @@ This project started with inspiration from [Replit's](https://replit.com) "vibe 
 - **Loading States** — Dedicated loading screen with timeout handling for slow network conditions
 - **HTTPS Everywhere** — Local dev and preview both run under HTTPS (required for modern auth cookies)
 
+### Accessibility
+
+- **WCAG 2.0 / 2.1 A + AA automated testing** — every unit test can call `axeCheck()` and every e2e test can run an axe audit against the live DOM
+- **Instrumented components** — ARIA attributes added systematically per component; `<LoadingScreen>` was first (`role="status"` + `aria-live="polite"` on the message, `aria-hidden` on the decorative spinner)
+
 ### Deployment
 
 - **Docker Support** — Multi-stage containerized builds with Docker Compose
@@ -85,6 +90,9 @@ This project started with inspiration from [Replit's](https://replit.com) "vibe 
 - **[@testing-library/react](https://testing-library.com/docs/react-testing-library/intro/)** — Component testing
 - **[Playwright](https://playwright.dev)** — End-to-end tests across Chromium, Firefox, and WebKit
 - **[@clerk/testing](https://clerk.com/docs/testing/playwright/overview)** — Automated Clerk sign-in in e2e tests
+- **[vitest-axe](https://github.com/chaance/vitest-axe)** — jest-axe bindings for Vitest; adds `toHaveNoViolations()` for unit-level a11y assertions
+- **[@axe-core/playwright](https://github.com/dequelabs/axe-core-npm/tree/develop/packages/playwright)** — axe-core bindings for Playwright; e2e-level a11y audits against the live DOM
+- **[axe-core](https://github.com/dequelabs/axe-core)** — WCAG 2.0 / 2.1 A + AA accessibility rule engine (shared by both harnesses)
 
 ### DevOps
 

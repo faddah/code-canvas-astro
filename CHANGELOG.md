@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [2.4.0](https://github.com/faddah/code-canvas-astro/compare/v2.3.0...v2.4.0) (2026-04-18)
 
+
+### Features
+
+* add accessibility testing infrastructure — new devDeps `vitest-axe`, `axe-core`, and `@axe-core/playwright` for WCAG 2.0 / 2.1 Level A + AA checks across both Vitest unit tests and Playwright e2e tests ([TBD])
+* add `src/test/helpers/a11y.ts` — `axeCheck()` wrapper around `axe-core` with WCAG 2.0 / 2.1 A + AA rule set; the `color-contrast` check is disabled under jsdom since it can't compute computed styles ([TBD])
+* wire `src/test/setup.ts` to import `@/test/helpers/a11y` so `toHaveNoViolations()` is globally registered on every Vitest suite ([TBD])
+* instrument `<LoadingScreen>` for screen readers — `role="status"` + `aria-live="polite"` on the message so assistive tech announces loading state changes; `aria-hidden="true"` on the decorative spinner so it isn't announced ([TBD])
+
+
+### Tests
+
+* add `src/test/components/LoadingScreen.test.tsx` a11y coverage — `axeCheck()` runs against the rendered component, plus unit assertions that verify the new ARIA attributes are present ([TBD])
+
+
+### Bug Fixes
+
+* harden `clerk.loaded` wait in `e2e/auth.setup.ts` — replaced `clerk.loaded({ page })` with an explicit `page.waitForFunction(() => window.Clerk.loaded === true)` + 60 s timeout + diagnostic payload `{ defined, loaded, hasClient, version }` logged on failure; added `setup.setTimeout(90_000)` to give the whole flow room ([TBD])
+* de-flake `e2e/user-profile-modal.auth.spec.ts` delete flow on Firefox — switched from text-based locators (`text=Delete Account`) to the semantic `[role="alertdialog"]` locator with 20 s timeouts across all three delete-flow tests; Radix sets the role attribute synchronously on portal mount while text-content lags one React commit ([TBD])
+* de-flake `e2e/console-output.spec.ts:119` on WebKit — split the combined `.whitespace-pre-wrap.text-red-400` + `hasText: "[Error]"` locator into two decoupled assertions (text visibility first at 30 s, then `toHaveClass(/text-red-400/)`) so slow paint no longer races the conditional class swap ([TBD])
+
+
+### Docs
+
+* update `README.md` — add Accessibility subsection, add `vitest-axe` + `@axe-core/playwright` + `axe-core` to the Testing stack, bump Current Version to 2.4.0 ([TBD])
+* update `CHANGELOG.md` and `CHANGELOG-simple.md` for v2.4.0 ([TBD])
+
+
 ## [2.3.0](https://github.com/faddah/code-canvas-astro/compare/v2.2.1...v2.3.0) (2026-04-16)
 
 
