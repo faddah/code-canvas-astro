@@ -211,9 +211,7 @@ test.describe("UserProfileModal — delete flow", () => {
 
         await expect(alertDialog.locator("text=Delete Account")).toBeVisible();
         await expect(
-            page
-                .locator("text=Are you certain you wish to completely delete")
-                .first(),
+            alertDialog.locator("text=Are you certain you wish to completely delete"),
         ).toBeVisible();
     });
     
