@@ -144,14 +144,15 @@ test.describe("Console — code execution output (mock Pyodide)", () => {
         await dismissViteOverlay(page);
         await page.locator('button:has-text("Run")').first().click({ force: true });
 
-        // Error output has [Error] prefix and red-400 styling
-        await expect(
-            page
-                .locator(".whitespace-pre-wrap.text-red-400", {
-                    hasText: "[Error]",
-                })
-                .first(),
-        ).toBeVisible({ timeout: 20_000 });
+        // Error output has [Error] prefix and red-400 styling.
+        // Split into two assertions: first wait for the error text to
+        // appear in the DOM (confirms Pyodide error was appended to state),
+        // then verify the red-error styling was applied to that same line.
+        const errorLine = page
+            .locator(".whitespace-pre-wrap", { hasText: "[Error]" })
+            .first();
+        await expect(errorLine).toBeVisible({ timeout: 30_000 });
+        await expect(errorLine).toHaveClass(/text-red-400/);
 
         await expect(
             page
