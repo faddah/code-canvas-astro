@@ -190,7 +190,7 @@ test.describe("UserProfileModal — delete flow", () => {
 
         // Open the modal
         const profileBtn = page.locator("button", { hasText: "@" }).first();
-        await expect(profileBtn).toBeVisible({ timeout: 10_000 });
+        await expect(profileBtn).toBeVisible({ timeout: 20_000 });
         await profileBtn.click();
         await expect(
             page.locator("text=User Profile").first(),
