@@ -203,37 +203,34 @@ test.describe("UserProfileModal — delete flow", () => {
         await dismissViteOverlay(page);
         await page.locator('button:has-text("Delete Profile")').click({ force: true });
 
-        await expect(
-            page.locator("text=Delete Account").first(),
-        ).toBeVisible({ timeout: 5_000 });
+        // Wait on the semantic role — Radix sets [role="alertdialog"] synchronously
+        // when the portal mounts. Text-only locators race against Firefox's slower
+        // portal paint.
+        const alertDialog = page.locator('[role="alertdialog"]');
+        await expect(alertDialog).toBeVisible({ timeout: 20_000 });
 
+        await expect(alertDialog.locator("text=Delete Account")).toBeVisible();
         await expect(
             page
                 .locator("text=Are you certain you wish to completely delete")
                 .first(),
         ).toBeVisible();
     });
-
+    
     test("Cancel dismisses the delete confirmation", async ({ page }) => {
         await dismissViteOverlay(page);
         await page.locator('button:has-text("Delete Profile")').click({ force: true });
 
-        await expect(
-            page.locator("text=Delete Account").first(),
-        ).toBeVisible({ timeout: 5_000 });
+        const alertDialog = page.locator('[role="alertdialog"]');
+        await expect(alertDialog).toBeVisible({ timeout: 20_000 });
 
         // Click Cancel in the AlertDialog
         const alertDialog = page.locator('[role="alertdialog"]');
         await alertDialog.locator('button:has-text("Cancel")').click({ force: true });
 
-        // Confirmation should disappear, but modal stays open
-        await expect(
-            page.locator("text=Delete Account").first(),
-        ).not.toBeVisible({ timeout: 5_000 });
-
-        await expect(
-            page.locator("text=User Profile").first(),
-        ).toBeVisible();
+        // AlertDialog closes; outer User Profile modal stays open.
+        await expect(alertDialog).not.toBeVisible({ timeout: 5_000 });
+        await expect(page.locator("text=User Profile").first()).toBeVisible();
     });
 
     test("Confirm delete calls DELETE /api/user-profile", async ({
@@ -242,9 +239,8 @@ test.describe("UserProfileModal — delete flow", () => {
         await dismissViteOverlay(page);
         await page.locator('button:has-text("Delete Profile")').first().click({ force: true });
 
-        await expect(
-            page.locator("text=Delete Account").first(),
-        ).toBeVisible({ timeout: 5_000 });
+        const alertDialog = page.locator('[role="alertdialog"]');
+        await expect(alertDialog).toBeVisible({ timeout: 20_000 });
 
         // Set up request interception before clicking confirm
         const deletePromise = page.waitForRequest(
