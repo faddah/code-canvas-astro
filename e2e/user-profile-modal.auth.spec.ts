@@ -187,7 +187,7 @@ test.describe("UserProfileModal — delete flow", () => {
         await page.goto("/");
         await waitForIDEShell(page);
         await waitForFiles(page);
-
+i
         // Open the modal
         const profileBtn = page.locator("button", { hasText: "@" }).first();
         await expect(profileBtn).toBeVisible({ timeout: 20_000 });
@@ -223,7 +223,6 @@ test.describe("UserProfileModal — delete flow", () => {
         await expect(alertDialog).toBeVisible({ timeout: 20_000 });
 
         // Click Cancel in the AlertDialog
-        const alertDialog = page.locator('[role="alertdialog"]');
         await alertDialog.locator('button:has-text("Cancel")').click({ force: true });
 
         // AlertDialog closes; outer User Profile modal stays open.
@@ -250,7 +249,6 @@ test.describe("UserProfileModal — delete flow", () => {
         // The AlertDialog has TWO buttons: "Cancel" and "Delete Profile"
         // Click the "Delete Profile" action button inside the AlertDialog
         await dismissViteOverlay(page);
-        const alertDialog = page.locator('[role="alertdialog"]');
         await alertDialog
             .locator('button:has-text("Delete Profile")')
             .click({ force: true });
