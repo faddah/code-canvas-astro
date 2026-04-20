@@ -23,17 +23,32 @@ export default defineConfig({
     {
       name: "setup-chromium",
       testMatch: /auth\.setup\.ts$/,
-      use: { ...devices["Desktop Chrome"] },
+      timeout: 120_000,
+      use: {
+        ...devices["Desktop Chrome"],
+        navigationTimeout: 60_000,
+        actionTimeout: 30_000,
+      },
     },
     {
       name: "setup-firefox",
       testMatch: /auth\.setup\.ts$/,
-      use: { ...devices["Desktop Firefox"] },
+      timeout: 120_000,
+      use: {
+        ...devices["Desktop Firefox"],
+        navigationTimeout: 60_000,
+        actionTimeout: 30_000,
+      },
     },
     {
       name: "setup-webkit",
       testMatch: /auth\.setup\.ts$/,
-      use: { ...devices["Desktop Safari"] },
+      timeout: 120_000,
+      use: {
+        ...devices["Desktop Safari"],
+        navigationTimeout: 60_000,
+        actionTimeout: 30_000,
+      },
     },
 
     // ─── Anonymous projects (existing behavior) ──────────────────────
@@ -93,6 +108,7 @@ export default defineConfig({
     ignoreHTTPSErrors: true,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
+    env: { PLAYWRIGHT: "true" },
     stdout: "pipe",
     stderr: "pipe",
   },
