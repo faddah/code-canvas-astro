@@ -47,7 +47,7 @@ Getting the e2e suite to 396 / 396 clean across Chromium, Firefox, and WebKit re
 
 This release is a large refactor / quality push. The user-facing app behaves the same as 2.2.1 in most places, but the internals are dramatically more modular, the test suite is substantially larger, and the GitHub Actions pipeline now runs the full Vitest unit suite plus the full Playwright e2e suite (Chromium, Firefox, and WebKit) reliably and quickly. Highlights:
 
-#### What's new in the app
+#### What's new in v2.3.0 for the app
 
 - **Better loading experience** — added a dedicated `<LoadingScreen>` component that shows a "Taking too long? Reload" button after a configurable timeout. Backed by a new `useLoadingStateCleanup` hook that tracks how long loading has been going so the screen can react instead of just spinning forever
 - **Profile-completion modal can be dismissed** — the "Complete Your Profile" modal now properly closes when you click Cancel or finish the form, instead of stubbornly re-appearing
