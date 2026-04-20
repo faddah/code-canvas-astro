@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import TopNavBar , { type ClerkUser, type TopNavBarProps }from "@/components/TopNavBar";
 import { version } from "../../../package.json";
+import { axeCheck } from "@/test/helpers/a11y";
 
 describe("TopNavBar", () => {
     const makeDefaults = (): TopNavBarProps => ({
@@ -189,5 +190,52 @@ describe("TopNavBar", () => {
         expect(container.querySelector("span.bg-green-500")).toBeInTheDocument();
         expect(screen.getByText(/Environment Ready/i)).toBeInTheDocument();
         expect(screen.getByText(new RegExp(`Version ${version}`))).toBeInTheDocument();
+    });
+
+    it("has no axe a11y violations when signed out", async () => {
+        const { container } = renderTopNavBar({ isSignedIn: false });
+        expect(await axeCheck(container)).toHaveNoViolations();
+    });
+
+    it("has no axe a11y violations when signed in", async () => {
+        const user: ClerkUser = { id: "u1", primaryEmailAddress: { emailAddress: "a@b.com" } };
+        const { container } = renderTopNavBar({ isSignedIn: true, user, isReady: true, activeFileId: 1 });
+        expect(await axeCheck(container)).toHaveNoViolations();
+    });
+
+    it("exposes the header as a banner landmark", () => {
+        renderTopNavBar();
+        expect(screen.getByRole("banner")).toBeInTheDocument();
+    });
+
+    it("groups action buttons in a labelled toolbar landmark", () => {
+        renderTopNavBar({ isSignedIn: true, isReady: true, activeFileId: 1 });
+        const toolbar = screen.getByRole("toolbar", { name: /file actions/i });
+        expect(toolbar).toBeInTheDocument();
+        expect(toolbar).toContainElement(screen.getByRole("button", { name: /run/i }));
+        expect(toolbar).toContainElement(screen.getByRole("button", { name: /^save$/i }));
+    });
+
+    it("exposes the environment status as a polite live region", () => {
+        renderTopNavBar({ isReady: false });
+        const status = screen.getByRole("status", { name: /python environment status/i });
+        expect(status).toHaveTextContent(/loading python/i);
+        expect(status).toHaveAttribute("aria-live", "polite");
+    });
+
+    it("announces the ready state in the status live region", () => {
+        renderTopNavBar({ isReady: true });
+        const status = screen.getByRole("status", { name: /python environment status/i });
+        expect(status).toHaveTextContent(/environment ready/i);
+    });
+
+    it("marks all decorative icons as aria-hidden", () => {
+        const user: ClerkUser = { id: "u1", primaryEmailAddress: { emailAddress: "a@b.com" } };
+        const { container } = renderTopNavBar({ isSignedIn: true, user, isReady: true, activeFileId: 1 });
+        const icons = container.querySelectorAll("svg");
+        expect(icons.length).toBeGreaterThan(0);
+        icons.forEach((icon) => {
+            expect(icon).toHaveAttribute("aria-hidden", "true");
+        });
     });
 });
