@@ -221,12 +221,18 @@ test.describe("UserProfileModal — delete flow", () => {
 
         const alertDialog = page.locator('[role="alertdialog"]');
         await expect(alertDialog).toBeVisible({ timeout: 20_000 });
+        // Wait for Radix to finish its open animation before clicking Cancel.
+        // Firefox's slower portal paint can drop clicks that land mid-mount.
+        await expect(alertDialog).toHaveAttribute("data-state", "open", {
+            timeout: 5_000,
+        });
 
         // Click Cancel in the AlertDialog
         await alertDialog.locator('button:has-text("Cancel")').click({ force: true });
 
         // AlertDialog closes; outer User Profile modal stays open.
-        await expect(alertDialog).not.toBeVisible({ timeout: 5_000 });
+        // Bumped to 10s — Firefox can be slow to unmount the Radix portal.
+        await expect(alertDialog).toBeHidden({ timeout: 10_000 });
         await expect(page.locator("text=User Profile").first()).toBeVisible();
     });
 

@@ -234,10 +234,12 @@ describe("DELETE /api/user-profile", () => {
     });
 
     it("returns 500 on database error", async () => {
+        const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
         mockStorage.deleteAllUserFiles.mockRejectedValue(new Error("DB down"));
 
         const ctx = createAuthContext("user_123");
         const res = await DELETE(ctx);
         await expectJson(res, 500, { message: "Failed to delete profile" });
+        errSpy.mockRestore();
     });
 });

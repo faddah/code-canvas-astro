@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { mockStarterFilesAPI, blockPyodide, waitForIDEShell, waitForFiles } from "./helpers";
+import { mockStarterFilesAPI, blockPyodide, waitForIDEShell, waitForFiles, waitForMonaco } from "./helpers";
 
 /**
  * E2E tests targeting branch-coverage gaps that cannot be reached in jsdom.
@@ -45,9 +45,7 @@ test.describe("IDE — Run button while Pyodide is loading", () => {
     // Click the first file to ensure there's active content in the editor
     const firstFile = page.locator(".truncate.flex-1").first();
     await firstFile.click();
-    await expect(page.locator(".monaco-editor").first()).toBeVisible({
-      timeout: 45_000,
-    });
+    await expect(await waitForMonaco(page)).toBe(true);
 
     // The Run button is disabled={!isReady}. React 18's event delegation checks
     // props.disabled from its INTERNAL fiber props (stored as __reactProps$xxx on
@@ -230,9 +228,7 @@ test.describe("IDE — Environment status", () => {
     // Open a file so activeFileId is set
     const firstFile = page.locator(".truncate.flex-1").first();
     await firstFile.click();
-    await expect(page.locator(".monaco-editor").first()).toBeVisible({
-      timeout: 45_000,
-    });
+    await expect(await waitForMonaco(page)).toBe(true);
 
     // Run button should be disabled (isReady is false)
     const runButton = page.locator('button:has-text("Run")').first();

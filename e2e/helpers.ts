@@ -398,6 +398,25 @@ export async function mockDeleteFileAPI(page: Page) {
   });
 }
 
+export async function waitForMonaco(page: Page): Promise<boolean> {
+  // file tab present = activeFileId set = Editor is mounting
+  await expect(page.locator('[data-testid="file-tab"]').first())
+    .toBeVisible({ timeout: 15_000 });
+  // Monaco CDN loaded + editor instance registered
+  await page.waitForFunction(
+    () => !!(window as any).monaco?.editor?.getEditors?.()?.length,
+    null,
+    { timeout: 45_000 },
+  );
+  // Settle: wait for Monaco to render initial content (.view-line present).
+  // This guarantees @monaco-editor/react's mount useEffects have run and
+  // the onChange → setUnsavedChanges subscription is bound BEFORE any test
+  // edit lands. Closes the remaining chromium/firefox race on setValue /
+  // executeEdits missing the subscription window.
+  await expect(page.locator(".view-line").first()).toBeVisible({ timeout: 10_000 });
+  return true;
+}
+
 /** Convenience: set up all authenticated API mocks at once */
 export async function mockAllAuthenticatedAPIs(page: Page) {
   await mockUserProfileAPI(page);

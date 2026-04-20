@@ -61,11 +61,17 @@ export default function EditorPanel({
     onEditorChange,
     onQuickSave,
 }: EditorPanelProps): JSX.Element {
+    const activeContent = activeFileId
+        ? (unsavedChanges[activeFileId] ?? activeFile?.content ?? "")
+        : "";
 
     /* Editor Panel */
     return (
         <ResizablePanel defaultSize={50} minSize={30}>
             <div className="h-full flex flex-col">
+                <span data-testid="editor-state-content" style={{ display: 'none' }}>
+                    {activeContent}
+                </span>
                 {/* Tabs Bar */}
                 <div className="h-9 flex bg-muted/30 border-b border-border overflow-x-auto no-scrollbar">
                     {openFileIds.map(id => {

@@ -133,10 +133,12 @@ describe("DELETE /api/files/:id", () => {
     });
 
     it("returns 500 on unexpected database error", async () => {
+        const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
         mockStorage.getFile.mockRejectedValue(new Error("DB connection lost"));
 
         const ctx = createMockAPIContext({ params: { id: "1" } });
         const res = await DELETE(ctx);
         await expectJson(res, 500, { error: "DB connection lost" });
+        errSpy.mockRestore();
     });
 });

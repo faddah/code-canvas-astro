@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import path from "path";
 import fs from "fs";
 import os from "os";
-import { mockStarterFilesAPI, blockPyodide, waitForIDEShell } from "./helpers";
+import { mockStarterFilesAPI, blockPyodide, waitForIDEShell, waitForMonaco } from "./helpers";
 
 test.describe("Explorer Pane & Dialogs (Anonymous)", () => {
   // Firefox needs extra time — IDE hydration + asset loading can exceed 30s
@@ -43,7 +43,7 @@ test.describe("Explorer Pane & Dialogs (Anonymous)", () => {
     });
 
     // Monaco editor should be visible — Firefox can be slow to init Monaco's web workers
-    await expect(page.locator(".monaco-editor").first()).toBeVisible({ timeout: 45_000 });
+    await expect(await waitForMonaco(page)).toBe(true);
   });
 
   test("shows Create An Account and Log In buttons when not signed in", async ({

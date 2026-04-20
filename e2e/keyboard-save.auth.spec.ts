@@ -4,6 +4,7 @@ import {
     dismissViteOverlay,
     waitForIDEShell,
     waitForFiles,
+    waitForMonaco,
     mockUserProfileAPI,
     mockUserFilesAPI,
     mockProjectsAPI,
@@ -37,9 +38,7 @@ test("Ctrl+S saves the active file when there are unsaved changes", async ({
         .click({ force: true });
 
     // Wait for the editor to load
-    await expect(page.locator(".monaco-editor").first()).toBeVisible({
-        timeout: 10_000,
-    });
+    await expect(await waitForMonaco(page)).toBe(true);
 
     // Modify the editor content via Monaco API to trigger handleEditorChange
     await page.evaluate(() => {
@@ -48,9 +47,22 @@ test("Ctrl+S saves the active file when there are unsaved changes", async ({
             instance.setValue("# edited via monaco API\nprint('changed')\n");
         }
     });
-
+    await expect(
+        page.locator(".view-line", { hasText: "edited via monaco API" }).first(),
+    ).toBeVisible({ timeout: 20_000 });
     // Small wait for React state to propagate the unsaved change
-    await page.waitForTimeout(500);
+    await page.evaluate(() => new Promise<void>((r) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => r()));
+    }));
+    // Verify the activeContent mirror before pressing Ctrl+S.
+    // Prevents WebKit race where keyboard event fires
+    // before unsavedChanges state commits.
+    await page.waitForFunction(
+        (expected) => 
+            document.querySelector('[data-testid="editor-state-content"]')?.textContent?.includes(expected),
+        "edited via monaco API",
+        { timeout: 20_000 },
+    );
 
     // Set up the request listener BEFORE pressing the key
     const putPromise = page.waitForRequest(
@@ -82,9 +94,7 @@ test("Ctrl+S shows 'No changes' toast when file has no unsaved changes", async (
             .click({ force: true });
 
         // Wait for the editor to load
-        await expect(page.locator(".monaco-editor").first()).toBeVisible({
-            timeout: 10_000,
-        });
+        await expect(await waitForMonaco(page)).toBe(true);
 
         // Press Ctrl+S without editing — should show "No changes"
         await page.keyboard.press("Control+s");
