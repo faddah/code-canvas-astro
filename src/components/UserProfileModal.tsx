@@ -5,6 +5,7 @@ import { z } from 'zod';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -183,12 +184,15 @@ export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent aria-describedby={undefined} className="sm:max-w-md bg-white text-black rounded-xl">
+      <DialogContent className="sm:max-w-md bg-white text-black rounded-xl">
         <DialogHeader>
           <DialogTitle className="text-black flex items-center gap-2">
-            <User className="w-5 h-5" />
+            <User aria-hidden="true" className="w-5 h-5" />
             User Profile
           </DialogTitle>
+          <DialogDescription>
+            {isEditing ? "Edit your profile information below." : "Your current profile information."}
+          </DialogDescription>
         </DialogHeader>
 
         {!isEditing ? (
@@ -240,11 +244,13 @@ export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile
               <>
                 <div className="space-y-1">
                   {errors.password && (
-                    <p className="text-xs text-red-600">{errors.password.message}</p>
+                    <p id="password-error" className="text-xs text-red-600">{errors.password.message}</p>
                   )}
                   <Label htmlFor="password" className="text-black text-sm">New Password</Label>
                   <Input
                     id="password"
+                    aria-invalid={!!errors.password}
+                    aria-describedby={errors.password ? "password-error" : undefined}
                     type="password"
                     placeholder="Leave blank to keep current"
                     className="bg-white text-black border-gray-300"
@@ -254,11 +260,13 @@ export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile
 
                 <div className="space-y-1">
                   {errors.confirmPassword && (
-                    <p className="text-xs text-red-600">{errors.confirmPassword.message}</p>
+                    <p id="confirmPassword-error" className="text-xs text-red-600">{errors.confirmPassword.message}</p>
                   )}
                   <Label htmlFor="confirmPassword" className="text-black text-sm">Confirm Password</Label>
                   <Input
                     id="confirmPassword"
+                    aria-invalid={!!errors.confirmPassword}
+                    aria-describedby={errors.confirmPassword ? "confirmPassword-error" : undefined}
                     type="password"
                     placeholder="Confirm new password"
                     className="bg-white text-black border-gray-300"
@@ -275,7 +283,7 @@ export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile
               )}
               <Label htmlFor="country" className="text-black text-sm">Country</Label>
               <Select value={selectedCountry} onValueChange={handleCountryChange}>
-                <SelectTrigger className="bg-white text-black border-gray-300">
+                <SelectTrigger id="country" className="bg-white text-black border-gray-300">
                   <SelectValue placeholder="Select country" />
                 </SelectTrigger>
                 <SelectContent className="bg-white text-black">
@@ -291,7 +299,7 @@ export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile
             {/* Phone */}
             <div className="space-y-1">
               {errors.phone && (
-                <p className="text-xs text-red-600">{errors.phone.message}</p>
+                <p id="phone-error" className="text-xs text-red-600">{errors.phone.message}</p>
               )}
               <Label htmlFor="phone" className="text-black text-sm">Phone Number</Label>
               <div className="flex gap-2 items-center">
@@ -300,6 +308,8 @@ export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile
                 </span>
                 <Input
                   id="phone"
+                  aria-invalid={!!errors.phone}
+                  aria-describedby={errors.phone ? "phone-error" : undefined}
                   placeholder="555-123-4567"
                   className="bg-white text-black border-gray-300"
                   {...register('phone')}
@@ -310,11 +320,13 @@ export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile
             {/* City */}
             <div className="space-y-1">
               {errors.city && (
-                <p className="text-xs text-red-600">{errors.city.message}</p>
+                <p id="city-error" className="text-xs text-red-600">{errors.city.message}</p>
               )}
               <Label htmlFor="city" className="text-black text-sm">City</Label>
               <Input
                 id="city"
+                aria-invalid={!!errors.city}
+                aria-describedby={errors.city ? "city-error" : undefined}
                 placeholder="City"
                 className="bg-white text-black border-gray-300"
                 {...register('city')}
@@ -324,10 +336,12 @@ export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile
             {/* State */}
             <div className="space-y-1">
               {errors.state && (
-                <p className="text-xs text-red-600">{errors.state.message}</p>
+                <p id="state-error" className="text-xs text-red-600">{errors.state.message}</p>
               )}
               <Label htmlFor="state" className="text-black text-sm">State / Province</Label>
               <Input
+                aria-invalid={!!errors.state}
+                aria-describedby={errors.state ? "state-error" : undefined}
                 id="state"
                 placeholder="State or Province"
                 className="bg-white text-black border-gray-300"
@@ -338,11 +352,13 @@ export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile
             {/* Postal Code */}
             <div className="space-y-1">
               {errors.postalCode && (
-                <p className="text-xs text-red-600">{errors.postalCode.message}</p>
+                <p id="postalCode-error" className="text-xs text-red-600">{errors.postalCode.message}</p>
               )}
               <Label htmlFor="postalCode" className="text-black text-sm">Postal Code</Label>
               <Input
                 id="postalCode"
+                aria-invalid={!!errors.postalCode}
+                aria-describedby={errors.postalCode ? "postalCode-error" : undefined}
                 placeholder="Postal Code"
                 className="bg-white text-black border-gray-300"
                 {...register('postalCode')}
@@ -376,7 +392,7 @@ export function UserProfileModal({ open, onClose, onDeleteProfile, user, profile
 
       {/* Delete confirmation dialog */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <AlertDialogContent aria-describedby={undefined}className="bg-white text-black rounded-xl">
+        <AlertDialogContent className="bg-white text-black rounded-xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-black">Delete Account</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-600">
