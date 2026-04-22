@@ -59,13 +59,13 @@ interface ExplorerPaneProps {
 }
 
 function getFileIcon(name: string) {
-  if (name.endsWith(".py")) return <FileCode className="w-4 h-4 opacity-70" />;
-  if (name.endsWith(".txt")) return <FileText className="w-4 h-4 opacity-70" />;
-  return <FileCode className="w-4 h-4 opacity-70" />;
+  if (name.endsWith(".py")) return <FileCode aria-hidden="true" className="w-4 h-4 opacity-70" />;
+  if (name.endsWith(".txt")) return <FileText aria-hidden="true" className="w-4 h-4 opacity-70" />;
+  return <FileCode aria-hidden="true" className="w-4 h-4  opacity-70" />;
 }
 
 // Mini component for delete confirmation
-function Trash2Btn({ onConfirm, disabled }: { onConfirm: () => void; disabled: boolean }) {
+function Trash2Btn({ onConfirm, disabled, label }: { onConfirm: () => void; disabled: boolean; label: string }) {
   const [showConfirm, setShowConfirm] = useState(false);
 
   if (disabled) return null;
@@ -74,6 +74,7 @@ function Trash2Btn({ onConfirm, disabled }: { onConfirm: () => void; disabled: b
     return (
       <div className="flex items-center gap-1 animate-in slide-in-from-right-2">
         <button
+          aria-label={`Confirm deleting ${label}`}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             setShowConfirm(false);
@@ -84,13 +85,14 @@ function Trash2Btn({ onConfirm, disabled }: { onConfirm: () => void; disabled: b
           Confirm
         </button>
         <button
+          aria-label={`Cancel deleting ${label}`}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             setShowConfirm(false);
           }}
           className="p-0.5 hover:bg-white/10 rounded"
         >
-          <X className="w-3 h-3" />
+          <X aria-hidden="true" className="w-3 h-3" />
         </button>
       </div>
     );
@@ -98,15 +100,16 @@ function Trash2Btn({ onConfirm, disabled }: { onConfirm: () => void; disabled: b
 
   return (
     <button
+      aria-label={`Delete ${label}`}
       onClick={(e: React.MouseEvent) => {
         e.stopPropagation();
         setShowConfirm(true);
       }}
       className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded transition-opacity"
     >
-      <Trash2 className="w-3 h-3 text-muted-foreground hover:text-red-400" />
+      <Trash2 aria-hidden="true" className="w-3 h-3  text-muted-foreground hover:text-red-400" />
     </button>
-  );
+  );;
 }
 
 export function ExplorerPane({
@@ -229,6 +232,11 @@ export function ExplorerPane({
   const renderFileItem = (file: FileItem, indented: boolean = false) => (
     <div
       key={file.id}
+      role="listitem"
+      tabIndex={0}
+      aria-current={activeFileId === file.id ? "true" : undefined}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault(); onOpenFile(file.id); } }}
       draggable={isSignedIn}
       onDragStart={(e) => handleDragStart(e, file.id)}
       onDragEnd={handleDragEnd}
@@ -241,32 +249,44 @@ export function ExplorerPane({
           : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
       } ${draggedFileId === file.id ? "opacity-40" : ""}`}
     >
-      {isSignedIn && (
-        <GripVertical className="w-3 h-3 opacity-0 group-hover:opacity-40 cursor-grab shrink-0" />
-      )}
-      {getFileIcon(file.name)}
+      { isSignedIn && (<GripVertical aria-hidden="true" className="w-3 h-3" />) }
+      { getFileIcon(file.name) }
       <span className="truncate flex-1">{file.name}</span>
-      {unsavedChanges[file.id] && <div className="w-2 h-2 rounded-full bg-yellow-500" />}
-      <Trash2Btn onConfirm={() => onDeleteFile(file.id)} disabled={files.length <= 1} />
+      {unsavedChanges[file.id] && (
+        <>
+          <div aria-hidden="true" className="w-2 h-2 rounded-full bg-yellow-500" />
+          <span className="sr-only">unsaved changes</span>
+        </>
+      )}
+      <Trash2Btn
+        onConfirm={() => onDeleteFile(file.id)}
+        disabled={files.length <= 1}
+        label={file.name}
+      />
     </div>
-  );
+);
 
   return (
-    <div className="w-64 bg-secondary/30 border-r border-border flex-col shrink-0 hidden md:flex">
+    <aside
+      role="complementary"
+      aria-label="Explorer"
+      className="w-64 bg-secondary/30 border-r border-border flex-col shrink-0 hidden md:flex"
+    >
       {/* Header */}
-      <div className="p-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
-        <span>Explorer</span>
-        <div className="flex items-center gap-1">
-          {isSignedIn && (
-            <Dialog open={isNewProjectDialogOpen} onOpenChange={setIsNewProjectDialogOpen}>
-              <DialogTrigger asChild>
-                <button
-                  className="hover:text-primary hover:bg-primary/10 p-1 rounded transition-colors"
-                  title="New Project"
-                >
-                  <FolderOpen className="w-4 h-4" />
-                </button>
-              </DialogTrigger>
+        <div className="p-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+          <span role="heading" aria-level={2}>Explorer</span>
+          <div className="flex items-center gap-1">
+            {isSignedIn && (
+              <Dialog open={isNewProjectDialogOpen} onOpenChange={setIsNewProjectDialogOpen}>
+                <DialogTrigger asChild>
+                  <button
+                    aria-label="New Project"
+                    className="hover:text-primary hover:bg-primary/10 p-1 rounded transition-colors"
+                    title="New Project"
+                  >
+                    <FolderOpen aria-hidden="true" className="w-4<DropdownMenu> h-4" />
+                  </button>
+                </DialogTrigger>
               <DialogContent aria-describedby={undefined} className="bg-white text-black min-h-55 sm:rounded-xl">
                 <DialogHeader>
                   <DialogTitle className="text-black font-bold text-xl">Create New Project</DialogTitle>
@@ -306,8 +326,11 @@ export function ExplorerPane({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="hover:text-primary hover:bg-primary/10 p-1 rounded transition-colors">
-                <Plus className="w-4 h-4" />
+              <button
+                aria-label="Add new file"
+                className="hover:text-primary hover:bg-primary/10 p-1 rounded transition-colors"
+              >
+                <Plus aria-hidden="true" className="w-4 h-4" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-white text-black">
@@ -374,6 +397,8 @@ export function ExplorerPane({
 
       {/* File List */}
       <div
+        role="list"
+        aria-label="Explorer files and projects"
         className={`flex-1 overflow-y-auto px-2 ${
           dropTarget?.type === "root" ? "bg-blue-500/10 ring-1 ring-blue-500/30 ring-inset" : ""
         }`}
@@ -385,22 +410,28 @@ export function ExplorerPane({
         onDrop={handleDropOnRoot}
       >
         {isSignedIn && isLoading && (
-          <div className="flex flex-col items-center gap-2 py-6 text-xs text-muted-foreground">
-            <div className="w-4 h-4 animate-spin border-2 border-current border-t-transparent rounded-full" />
-            <span>Loading your files...</span>
-          </div>
-        )}
-        {isSignedIn && isError && (
-          <div className="flex flex-col items-center gap-2 py-6 text-xs text-muted-foreground">
-            <p className="text-red-400">Could not load files</p>
-            <button
-              onClick={onRetry}
-              className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+            <div
+              role="status"
+              aria-live="polite"
+              className="flex flex-col items-center gap-2 py-6 text-xs text-muted-foreground"
             >
-              Retry
-            </button>
-          </div>
-        )}
+              <div aria-hidden="true" className="w-4 h-4 animate-spin border-2 border-current border-t-transparent rounded-full" />
+            </div>
+          )}
+          {isSignedIn && isError && (
+            <div
+              role="alert"
+              className="flex flex-col items-center gap-2 py-6 text-xs text-muted-foreground"
+            >
+              <p className="text-red-400">Could not load files</p>
+              <button
+                onClick={onRetry}
+                className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          )}
         {isSignedIn && !isLoading && !isError && (!files || files.length === 0) && projects.length === 0 && (
           <div className="flex flex-col items-center gap-2 py-6 text-xs text-muted-foreground">
             <p>No files yet</p>
@@ -415,8 +446,13 @@ export function ExplorerPane({
           const isDropTargetProject = dropTarget?.type === "project" && dropTarget.id === project.id;
 
           return (
-            <div key={project.id} className="mb-1">
+            <div key={project.id} role="listitem" className="mb-1">
               <div
+                role="button"
+                aria-expanded={isExpanded}
+                aria-label={project.name}
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleProject(project.id); } }}
                 className={`group flex items-center gap-1 px-2 py-1.5 rounded-md text-sm cursor-pointer transition-colors ${
                   isDropTargetProject
                     ? "bg-blue-500/20 ring-1 ring-blue-500/40"
@@ -436,19 +472,19 @@ export function ExplorerPane({
                 onDrop={(e) => handleDropOnProject(e, project.id)}
               >
                 {isExpanded ? (
-                  <ChevronDown className="w-3.5 h-3.5 shrink-0" />
-                ) : (
-                  <ChevronRight className="w-3.5 h-3.5 shrink-0" />
-                )}
-                {isExpanded ? (
-                  <FolderOpen className="w-4 h-4 text-yellow-500 shrink-0" />
-                ) : (
-                  <FolderClosed className="w-4 h-4 text-yellow-500 shrink-0" />
-                )}
-                <span className="truncate flex-1 font-medium">{project.name}</span>
-                <span className="text-[10px] text-muted-foreground/60">{projectFiles.length}</span>
-                <Trash2Btn onConfirm={() => onDeleteProject(project.id)} disabled={false} />
-              </div>
+                  <ChevronDown aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
+                  ) : (
+                    <ChevronRight aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
+                  )}
+                  {isExpanded ? (
+                    <FolderOpen aria-hidden="true" className="w-4 h-4 text-yellow-500 shrink-0" />
+                  ) : (
+                    <FolderClosed aria-hidden="true" className="w-4 h-4 text-yellow-500 shrink-0" />
+                  )}
+                  <span className="truncate flex-1 font-medium">{project.name}</span>
+                  <span aria-label={`${projectFiles.length} files`} className="text-[10px] text-muted-foreground/60">{projectFiles.length}</span>
+                  <Trash2Btn onConfirm={() => onDeleteProject(project.id)} disabled={false} label={`project ${project.name}`} />
+                </div>
 
               {/* Project files (when expanded) */}
               {isExpanded && (
@@ -491,7 +527,7 @@ export function ExplorerPane({
                 items-center
                 gap-1.5"
               >
-                <Package className="w-3.5 h-3.5" />
+                <Package aria-hidden="true" className="w-3.5 h-3.5" />
                 Packages
                   {activeProjectName && (
                     <span
@@ -508,11 +544,12 @@ export function ExplorerPane({
                   )}
               </span>
               <button
+                aria-label="Add Package"
                 onClick={() => setIsAddPackageOpen(true)}
                 className="hover:text-primary hover:bg-primary/10 p-1 rounded transition-colors"
                 title="Add Package"
               >
-                <Plus className="w-4 h-4" />
+                <Plus aria-hidden="true" className="w-4 h-4" />
               </button>
             </div>
 
@@ -525,22 +562,22 @@ export function ExplorerPane({
                 {packages.map((pkg) => (
                   <div
                     key={pkg.id}
-                    className="group flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground
-  hover:bg-white/5"
+                    className="group flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:bg-white/5"
                   >
-                    <Package className="w-3.5 h-3.5 opacity-50" />
+                    <Package aria-hidden="true" className="w-3.5 h-3.5 opacity-50" />
                     <span className="truncate flex-1">{pkg.packageName}</span>
                     {pkg.versionSpec && (
                       <span className="text-[10px] text-muted-foreground/60">{pkg.versionSpec}</span>
                     )}
                     <button
+                      aria-label={`Remove package ${pkg.packageName}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         onRemovePackage(pkg.id);
                       }}
                       className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded transition-opacity"
                     >
-                      <Trash2 className="w-3 h-3 text-muted-foreground hover:text-red-400" />
+                      <Trash2 aria-hidden="true" className="w-3 h-3 text-muted-foreground hover:text-red-400" />
                     </button>
                   </div>
                 ))}
@@ -560,8 +597,7 @@ export function ExplorerPane({
                     onChange={(e) => setNewPackageName(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleAddPackage()}
                     autoFocus
-                    className="bg-white text-black font-bold text-base border-2 border-gray-400 h-12
-  placeholder:text-gray-400 focus-visible:ring-blue-500"
+                    className="bg-white text-black font-bold text-base border-2 border-gray-400 h-12 placeholder:text-gray-400 focus-visible:ring-blue-500"
                   />
                   <p className="text-gray-500 text-xs mt-2">
                     Enter a PyPI package name (e.g. numpy, pandas, matplotlib)
@@ -607,6 +643,6 @@ export function ExplorerPane({
           Send Feedback
         </a>
       </div>
-    </div>
+    </aside>
   );
 }
