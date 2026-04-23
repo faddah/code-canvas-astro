@@ -267,7 +267,7 @@ describe("ExplorerPane", () => {
 
   it("calls onDeleteProject after project trash click + Confirm", () => {
     const { handlers } = renderExplorer();
-    const projectRow = screen.getByText("My Project").closest("div[class*='cursor-pointer']") as HTMLElement;
+    const projectRow = screen.getByText("My Project").closest("[role='listitem']") as HTMLElement;
     const trashBtn = within(projectRow).getAllByRole("button").pop()!;
     fireEvent.click(trashBtn);
 
@@ -611,17 +611,17 @@ describe("ExplorerPane", () => {
 
   it("passes axe audit in default signed-in state", async() => {
     const { container } = renderExplorer();
-    await axeCheck(container);
+    expect(await axeCheck(container)).toHaveNoViolations();
   });
 
   it("passes axe audit in loading state", async () => {
     const { container } = renderExplorer({ files: [], projects: [], isLoading: true });
-    await axeCheck(container);
+    expect(await axeCheck(container)).toHaveNoViolations();
   });
 
   it("passes axe audit in error state", async () => {
     const { container } = renderExplorer({ files: [], projects: [], isError: true });
-    await axeCheck(container);
+    expect(await axeCheck(container)).toHaveNoViolations();
   });
 
   it("aside has role complementary and aria-label Explorer", () => {
@@ -718,7 +718,7 @@ describe("ExplorerPane", () => {
     expect(screen.getByRole("button", { name: /Confirm deleting main\.py/ })).toBeInTheDocument();
   });
 
-  it("all decorative SVGs have aria-hidden true", () => {
+  it("all SVGs have aria-hidden true — every icon in ExplorerPane is decorative", () => {
     const { container } = renderExplorer();
     const svgs = container.querySelectorAll("svg");
     svgs.forEach((svg) => {
