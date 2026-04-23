@@ -45,13 +45,14 @@ export function FileTab({ name, isActive, isUnsaved, onClick, onClose }: FileTab
       )}
       
       <button
+        aria-label={`Close ${name}`}
         onClick={onClose}
         className={cn(
           "absolute right-2 opacity-0 group-hover:opacity-100 hover:bg-white/10 p-0.5 rounded transition-all",
           isActive && "opacity-100"
         )}
       >
-        <X className="w-3 h-3" />
+        <X aria-hidden="true" className="w-3 h-3" />
       </button>
     </div>
   );
