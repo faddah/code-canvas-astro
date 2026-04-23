@@ -397,8 +397,6 @@ export function ExplorerPane({
 
       {/* File List */}
       <div
-        role="list"
-        aria-label="Explorer files and projects"
         className={`flex-1 overflow-y-auto px-2 ${
           dropTarget?.type === "root" ? "bg-blue-500/10 ring-1 ring-blue-500/30 ring-inset" : ""
         }`}
