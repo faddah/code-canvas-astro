@@ -437,78 +437,83 @@ export function ExplorerPane({
           </div>
         )}
 
-        {/* Projects */}
-        {projects.map((project) => {
-          const projectFiles = projectFileMap.get(project.id) || [];
-          const isExpanded = expandedProjects.has(project.id);
-          const isDropTargetProject = dropTarget?.type === "project" && dropTarget.id === project.id;
+        <div role="list" aria-label="Explorer files and projects">
+          {/* Projects */}
+          {projects.map((project) => {
 
-          return (
-            <div key={project.id} role="listitem" className="mb-1">
-              <div
-                role="button"
-                aria-expanded={isExpanded}
-                aria-label={project.name}
-                tabIndex={0}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleProject(project.id); } }}
-                className={`group flex items-center gap-1 px-2 py-1.5 rounded-md text-sm cursor-pointer transition-colors ${
+            const projectFiles: FileItem[] = projectFileMap.get(project.id) || [];
+            const isExpanded: boolean = expandedProjects.has(project.id);
+            const isDropTargetProject: boolean = dropTarget?.type === "project" && dropTarget.id === project.id;
+
+            return (
+              <div key={project.id} role="listitem" className="mb-1">
+                <div className={`group flex items-center gap-1 px-2 py-1.5 rounded-md" ${
                   isDropTargetProject
                     ? "bg-blue-500/20 ring-1 ring-blue-500/40"
                     : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
-                }`}
-                onClick={() => toggleProject(project.id)}
-                onDragOver={(e) => {
-                  handleDragOver(e);
-                  setDropTarget({ type: "project", id: project.id });
-                }}
-                onDragLeave={(e) => {
-                  // Only clear if leaving the project element itself
-                  if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                    setDropTarget(null);
-                  }
-                }}
-                onDrop={(e) => handleDropOnProject(e, project.id)}
-              >
-                {isExpanded ? (
-                  <ChevronDown aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
-                  ) : (
-                    <ChevronRight aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
-                  )}
-                  {isExpanded ? (
-                    <FolderOpen aria-hidden="true" className="w-4 h-4 text-yellow-500 shrink-0" />
-                  ) : (
-                    <FolderClosed aria-hidden="true" className="w-4 h-4 text-yellow-500 shrink-0" />
-                  )}
-                  <span className="truncate flex-1 font-medium">{project.name}</span>
-                  <span aria-label={`${projectFiles.length} files`} className="text-[10px] text-muted-foreground/60">{projectFiles.length}</span>
-                  <Trash2Btn onConfirm={() => onDeleteProject(project.id)} disabled={false} label={`project ${project.name}`} />
-                </div>
-
-              {/* Project files (when expanded) */}
-              {isExpanded && (
-                <div
-                  className="ml-2 border-l border-border/40 pl-1"
-                  onDragOver={(e) => {
-                    handleDragOver(e);
-                    setDropTarget({ type: "project", id: project.id });
-                  }}
-                  onDrop={(e) => handleDropOnProject(e, project.id)}
-                >
-                  {projectFiles.length === 0 ? (
-                    <div className="ml-4 py-1 text-[10px] text-muted-foreground/50 italic">
-                      No files — drag files here
+                }`}>
+                  <div
+                    role="button"
+                    aria-expanded={isExpanded}
+                    aria-label={project.name}
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleProject(project.id); } }}
+                    className="flex items-center gap-1 flex-1 cursor-pointer"
+                    onClick={() => toggleProject(project.id)}
+                    onDragOver={(e) => {
+                      handleDragOver(e);
+                      setDropTarget({ type: "project", id: project.id });
+                    }}
+                    onDragLeave={(e) => {
+                      // Only clear if leaving the project element itself
+                      if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                        setDropTarget(null);
+                      }
+                    }}
+                    onDrop={(e) => handleDropOnProject(e, project.id)}
+                  >
+                    {isExpanded ? (
+                      <ChevronDown aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
+                      ) : (
+                        <ChevronRight aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
+                      )}
+                      {isExpanded ? (
+                        <FolderOpen aria-hidden="true" className="w-4 h-4 text-yellow-500 shrink-0" />
+                      ) : (
+                        <FolderClosed aria-hidden="true" className="w-4 h-4 text-yellow-500 shrink-0" />
+                      )}
+                      <span className="truncate flex-1 font-medium">{project.name}</span>
+                      <span aria-label={`${projectFiles.length} files`} className="text-[10px] text-muted-foreground/60">{projectFiles.length}</span>
                     </div>
-                  ) : (
-                    projectFiles.map((file) => renderFileItem(file, true))
+                    <Trash2Btn onConfirm={() => onDeleteProject(project.id)} disabled={false} label={`project ${project.name}`} />
+
+                  </div>
+                  {/* Project files (when expanded) */}
+                  {isExpanded && (
+                    <div
+                      className="ml-2 border-l border-border/40 pl-1"
+                      onDragOver={(e) => {
+                        handleDragOver(e);
+                        setDropTarget({ type: "project", id: project.id });
+                      }}
+                      onDrop={(e) => handleDropOnProject(e, project.id)}
+                    >
+                      {projectFiles.length === 0 ? (
+                        <div className="ml-4 py-1 text-[10px] text-muted-foreground/50 italic">
+                          No files — drag files here
+                        </div>
+                      ) : (
+                        projectFiles.map((file) => renderFileItem(file, true))
+                      )}
+                    </div>
                   )}
                 </div>
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
 
-        {/* Loose files (not in any project) */}
-        {looseFiles.map((file) => renderFileItem(file, false))}
+          {/* Loose files (not in any project) */}
+          {looseFiles.map((file) => renderFileItem(file, false))}
+        </div>
       </div>
 
       {/* Packages */}
