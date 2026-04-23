@@ -120,7 +120,7 @@ export default function IDE() {
       />
 
       {/* Main Layout */}
-      <div className="flex-1 flex overflow-hidden">
+      <div role="main" className="flex-1 flex overflow-hidden">
         {/* Sidebar - File Explorer */}
         <ExplorerPane
           files={files ?? []}
