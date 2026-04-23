@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, type JSX } from "react";
 import {
   Plus,
   FileCode,
