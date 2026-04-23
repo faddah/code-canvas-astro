@@ -58,7 +58,7 @@ interface ExplorerPaneProps {
   onRemovePackage: (id: number) => void;
 }
 
-function getFileIcon(name: string) {
+function getFileIcon(name: string): JSX.Element {
   if (name.endsWith(".py")) return <FileCode aria-hidden="true" className="w-4 h-4 opacity-70" />;
   if (name.endsWith(".txt")) return <FileText aria-hidden="true" className="w-4 h-4 opacity-70" />;
   return <FileCode aria-hidden="true" className="w-4 h-4  opacity-70" />;
