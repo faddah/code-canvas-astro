@@ -15,8 +15,7 @@ interface FileTabProps {
 // TODO: consolidate with src/components/FileTab.tsx in a follow-up PR.
 // Both implement the same tab semantics; EditorPanel keeps its own copy
 // because the callback signatures and styling differ slightly.
-
-function FileTab({ name, isActive, isUnsaved, onClick, onClose }: FileTabProps) {
+function FileTab({ name, isActive, isUnsaved, onClick, onClose }: FileTabProps): JSX.Element {
     return (
         <div
             data-testid="file-tab"
@@ -81,7 +80,7 @@ export default function EditorPanel({
     onEditorChange,
     onQuickSave,
 }: EditorPanelProps): JSX.Element {
-    const activeContent = activeFileId
+    const activeContent: string = activeFileId
         ? (unsavedChanges[activeFileId] ?? activeFile?.content ?? "")
         : "";
 
