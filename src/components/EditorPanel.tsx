@@ -12,6 +12,10 @@ interface FileTabProps {
     onClose: (e: React.MouseEvent) => void;
 }
 
+// TODO: consolidate with src/components/FileTab.tsx in a follow-up PR.
+// Both implement the same tab semantics; EditorPanel keeps its own copy
+// because the callback signatures and styling differ slightly.
+
 function FileTab({ name, isActive, isUnsaved, onClick, onClose }: FileTabProps) {
     return (
         <div
