@@ -25,7 +25,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
     render() {
         if (this.state.hasError) {
             return (
-                <div style={{
+                <div role="alert" style={{
                     height: "100vh",
                     display: "flex",
                     flexDirection: "column",
