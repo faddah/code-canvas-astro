@@ -284,7 +284,7 @@ export function ExplorerPane({
                     className="hover:text-primary hover:bg-primary/10 p-1 rounded transition-colors"
                     title="New Project"
                   >
-                    <FolderOpen aria-hidden="true" className="w-4<DropdownMenu> h-4" />
+                    <FolderOpen aria-hidden="true" className="w-4 h-4" />
                   </button>
                 </DialogTrigger>
               <DialogContent aria-describedby={undefined} className="bg-white text-black min-h-55 sm:rounded-xl">
