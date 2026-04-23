@@ -17,20 +17,36 @@ function FileTab({ name, isActive, isUnsaved, onClick, onClose }: FileTabProps) 
         <div
             data-testid="file-tab"
             data-active={isActive ? "true" : undefined}
+            role="tab"
+            aria-selected={isActive}
+            tabIndex={0}
+            onKeyDown={(e) => { 
+                    if (e.key === "Enter" || e.key === " ") { 
+                        e.preventDefault();
+                        onClick(); 
+                    } 
+                }
+            }
             className={`flex items-center px-3 py-1 cursor-pointer border-r border-border hover:bg-muted/50 ${
                 isActive ? 'bg-background border-b-2 border-primary' : ''
             }`}
             onClick={onClick}
         >
             <span className={`text-sm ${isUnsaved ? 'font-semibold' : ''}`}>{name}</span>
-            {isUnsaved && <span className="ml-1 text-xs text-orange-500">•</span>}
+            {isUnsaved && (
+                <>
+                    <span aria-hidden="true" className="ml-1 text-xs text-orange-500">•</span>
+                    <span className="sr-only">unsaved changes</span>
+                </>
+            )}
             <Button
+                aria-label={`Close ${name}`}
                 variant="ghost"
                 size="sm"
                 className="ml-2 h-4 w-4 p-0 hover:bg-destructive/20"
                 onClick={onClose}
             >
-                <X className="h-3 w-3" />
+                <X aria-hidden="true" className="h-3 w-3" />
             </Button>
         </div>
     );
@@ -73,20 +89,19 @@ export default function EditorPanel({
                     {activeContent}
                 </span>
                 {/* Tabs Bar */}
-                <div className="h-9 flex bg-muted/30 border-b border-border overflow-x-auto no-scrollbar">
+                <div role="tablist" aria-label="Open files" className="h-9 flex bg-muted/30 border-b border-border overflow-x-auto no-scrollbar">
                     {openFileIds.map(id => {
                         const file = files?.find((f: any) => f.id === id);
                         if (!file) return null;
                         return (
-                            <div key={id}>
-                                <FileTab
-                                    name={file.name}
-                                    isActive={activeFileId === id}
-                                    isUnsaved={!!unsavedChanges[id]}
-                                    onClick={() => activeFileId !== id && onTabClick(id)}
-                                    onClose={(e) => onTabClose(e, id)}
-                                />
-                            </div>
+                            <FileTab
+                                key={id}
+                                name={file.name}
+                                isActive={activeFileId === id}
+                                isUnsaved={!!unsavedChanges[id]}
+                                onClick={() => activeFileId !== id && onTabClick(id)}
+                                onClose={(e) => onTabClose(e, id)}
+                            />
                         );
                     })}
 
@@ -98,7 +113,7 @@ export default function EditorPanel({
                 </div>
 
                 {/* Monaco Editor */}
-                <div className="flex-1 relative bg-[#1e1e1e]">
+                <div role="tabpanel" aria-label={activeFile?.name ?? "Editor"} className="flex-1 relative bg-[#1e1e1e]">
                     {activeFileId ? (
                         <div style={{ height: '100%' }}>
                         <Editor
@@ -130,7 +145,7 @@ export default function EditorPanel({
                         </div>
                     ) : (
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground/30">
-                        <Code2 className="w-16 h-16 mb-4 opacity-20" />
+                        <Code2 aria-hidden="true" className="w-16 h-16 mb-4 opacity-20" />
                         <p>Select a file to edit</p>
                         </div>
                     )}
