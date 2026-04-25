@@ -451,26 +451,25 @@ export function ExplorerPane({
                   isDropTargetProject
                     ? "bg-blue-500/20 ring-1 ring-blue-500/40"
                     : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
-                }`}>
-                  <div
-                    role="button"
+                  }`}
+                  onClick={() => toggleProject(project.id)}
+                  onDragOver={(e) => {
+                    handleDragOver(e);
+                    setDropTarget({ type: "project", id: project.id });
+                  }}
+                  onDragLeave={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                      setDropTarget(null);
+                    }
+                  }}
+                  onDrop={(e) => handleDropOnProject(e, project.id)}
+                >
+                  <button
                     aria-expanded={isExpanded}
                     aria-label={project.name}
                     tabIndex={0}
                     onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleProject(project.id); } }}
-                    className="flex items-center gap-1 flex-1 cursor-pointer"
-                    onClick={() => toggleProject(project.id)}
-                    onDragOver={(e) => {
-                      handleDragOver(e);
-                      setDropTarget({ type: "project", id: project.id });
-                    }}
-                    onDragLeave={(e) => {
-                      // Only clear if leaving the project element itself
-                      if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                        setDropTarget(null);
-                      }
-                    }}
-                    onDrop={(e) => handleDropOnProject(e, project.id)}
+                    className="flex items-center gap-1 flex-1 min-w-0 bg-transparent border-0 p-0 m-0 text-inherit cursor-pointer"
                   >
                     {isExpanded ? (
                       <ChevronDown aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
