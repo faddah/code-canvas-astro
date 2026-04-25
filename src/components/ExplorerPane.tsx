@@ -471,42 +471,41 @@ export function ExplorerPane({
                     onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleProject(project.id); } }}
                     className="flex items-center gap-1 flex-1 min-w-0 bg-transparent border-0 p-0 m-0 text-inherit cursor-pointer"
                   >
+                  {isExpanded ? (
+                    <ChevronDown aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
+                  ) : (
+                    <ChevronRight aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
+                    )}
                     {isExpanded ? (
-                      <ChevronDown aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
-                      ) : (
-                        <ChevronRight aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
-                      )}
-                      {isExpanded ? (
-                        <FolderOpen aria-hidden="true" className="w-4 h-4 text-yellow-500 shrink-0" />
-                      ) : (
-                        <FolderClosed aria-hidden="true" className="w-4 h-4 text-yellow-500 shrink-0" />
-                      )}
-                      <span className="truncate flex-1 font-medium">{project.name}</span>
-                      <span aria-label={`${projectFiles.length} files`} className="text-[10px] text-muted-foreground/60">{projectFiles.length}</span>
-                    </div>
-                    <Trash2Btn onConfirm={() => onDeleteProject(project.id)} disabled={false} label={`project ${project.name}`} />
-
-                  </div>
-                  {/* Project files (when expanded) */}
-                  {isExpanded && (
-                    <div
-                      className="ml-2 border-l border-border/40 pl-1"
-                      onDragOver={(e) => {
-                        handleDragOver(e);
-                        setDropTarget({ type: "project", id: project.id });
-                      }}
-                      onDrop={(e) => handleDropOnProject(e, project.id)}
-                    >
-                      {projectFiles.length === 0 ? (
-                        <div className="ml-4 py-1 text-[10px] text-muted-foreground/50 italic">
-                          No files — drag files here
-                        </div>
-                      ) : (
-                        projectFiles.map((file) => renderFileItem(file, true))
-                      )}
-                    </div>
-                  )}
+                      <FolderOpen aria-hidden="true" className="w-4 h-4 text-yellow-500 shrink-0" />
+                    ) : (
+                      <FolderClosed aria-hidden="true" className="w-4 h-4 text-yellow-500 shrink-0" />
+                    )}
+                    <span className="truncate flex-1 font-medium">{project.name}</span>
+                  </button>
+                  <span aria-label={`${projectFiles.length} files`} className="text-[10px] text-muted-foreground/60">{projectFiles.length}</span>
+                  <Trash2Btn onConfirm={() => onDeleteProject(project.id)} disabled={false} label={`project ${project.name}`} />
                 </div>
+                {/* Project files (when expanded) */}
+                {isExpanded && (
+                  <div
+                    className="ml-2 border-l border-border/40 pl-1"
+                    onDragOver={(e) => {
+                      handleDragOver(e);
+                      setDropTarget({ type: "project", id: project.id });
+                    }}
+                    onDrop={(e) => handleDropOnProject(e, project.id)}
+                  >
+                    {projectFiles.length === 0 ? (
+                      <div className="ml-4 py-1 text-[10px] text-muted-foreground/50 italic">
+                        No files — drag files here
+                      </div>
+                    ) : (
+                      projectFiles.map((file) => renderFileItem(file, true))
+                    )}
+                  </div>
+                )}
+              </div>
             );
           })}
 
