@@ -171,7 +171,7 @@ test.describe("File drag-and-drop between projects", () => {
     });
 
     test("project auto-expands after drop", async ({ page }) => {
-        const secondProject = page.getByRole("button", { name: "Second Project" }).first();
+        const secondProject = page.locator("[aria-label='Second Project']").first();
         await expect(secondProject).toBeVisible({ timeout: 10_000 });
 
         await dispatchDragStart(page, "solo.py");
