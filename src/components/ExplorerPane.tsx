@@ -447,7 +447,7 @@ export function ExplorerPane({
 
             return (
               <div key={project.id} role="listitem" className="mb-1">
-                <div className={`group flex items-center gap-1 px-2 py-1.5 rounded-md" ${
+                <div className={`group flex items-center gap-1 px-2 py-1.5 rounded-md text-sm cursor-pointer transition-colors ${
                   isDropTargetProject
                     ? "bg-blue-500/20 ring-1 ring-blue-500/40"
                     : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
