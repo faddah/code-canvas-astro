@@ -107,7 +107,7 @@ async function dispatchDragEnd(
             el.dispatchEvent(new DragEvent("dragend", { bubbles: true }));
         }
     }, fileText);
-1}
+}
 
 test.describe("File drag-and-drop between projects", () => {
     test.setTimeout(60_000);
@@ -171,7 +171,7 @@ test.describe("File drag-and-drop between projects", () => {
     });
 
     test("project auto-expands after drop", async ({ page }) => {
-        const secondProject = page.locator("text=Second Project").first();
+        const secondProject = page.getByRole("button", { name: "Second Project" }).first();
         await expect(secondProject).toBeVisible({ timeout: 10_000 });
 
         await dispatchDragStart(page, "solo.py");
@@ -180,12 +180,8 @@ test.describe("File drag-and-drop between projects", () => {
         await dispatchDropOnProject(page, "Second Project");
         await dispatchDragEnd(page, "solo.py");
 
-        // After drop, the project should auto-expand
-        // Check for folder-open icon WITHIN the Second Project row (not the header button)
-        const projectRow = secondProject.locator("..");
-        await expect(
-            projectRow.locator("svg.lucide-folder-open").first(),
-        ).toBeVisible({ timeout: 5_000 });
+        // After drop, the project should auto-expand — folder-open icon appears in the toggle row
+        await expect(secondProject.locator("svg.lucide-folder-open").first(),).toBeVisible({ timeout: 5_000 });
     });
 
     test("dragging a project file to root removes it from the project", async ({
