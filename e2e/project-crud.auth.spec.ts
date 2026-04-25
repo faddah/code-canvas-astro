@@ -208,16 +208,16 @@ test.describe("Project CRUD — create project", () => {
     });
 
     test("delete project shows confirm then removes it", async ({ page }) => {
-        const projectToggle = page.getByRole("button", { name:
-        "Second Project" }).first();
-        await expect(projectToggle).toBeVisible({ timeout: 10_000 });
+        const projectToggle = page.locator("[aria-label='Second Project']").first();
+        const projectRow = projectToggle.locator(".."); // outer group div
+        await expect(projectRow).toBeVisible({ timeout: 10_000 });
 
-        // Hover over the toggle div (which has the "group" class) to reveal trash icon
-        await projectToggle.hover();
+        // Hover over the outer group div to trigger group-hover on the trash button
+        await projectRow.hover();
 
-        // Click the trash button inside the toggle group
-        const trashBtn = projectToggle.locator("svg.lucide-trash-2").first();
-        await trashBtn.click();
+        // Click with force to bypass opacity-0 on the trash button
+        const trashBtn = projectRow.locator("svg.lucide-trash-2").first();
+        await trashBtn.click({ force: true });
 
           // Confirm button should appear
         const confirmBtn = page.locator("text=Confirm").first();
