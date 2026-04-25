@@ -2,6 +2,79 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.5.0](https://github.com/faddah/code-canvas-astro/compare/v2.4.0...v2.5.0) (2026-04-25)
+
+
+### Features — ARIA / a11y instrumentation across every remaining front-facing component
+
+Picks up where v2.4.0 left off (which delivered the test infrastructure + `<LoadingScreen>`) and finishes WCAG 2.0 / 2.1 Level A + AA coverage for the rest of the app.
+
+* **ConsolePanel** — `role="log"`, `aria-live="polite"`, `aria-label="Console output"`, `data-testid="console-line"` + `data-log-kind` on each line for assistive tech and tests ([d5635d3](https://github.com/faddah/code-canvas-astro/commit/d5635d3))
+* **TopNavBar** — `role="banner"` on `<header>`, `role="toolbar" aria-label="File actions"` on the action-button group, `aria-label` on every icon-only button, env-status pill wrapped in `role="status" aria-live="polite"`, all decorative lucide icons `aria-hidden="true"` ([eccdc12](https://github.com/faddah/code-canvas-astro/commit/eccdc12), [42bcdf9](https://github.com/faddah/code-canvas-astro/commit/42bcdf9))
+* **ExplorerPane** — `<aside role="complementary" aria-label="Explorer">` landmark, `role="list"` on the file/project container, `role="listitem"` on every entry, `aria-current="true"` on the active file, `aria-expanded` on project toggles (now hosted on a nested `<button>` — see Refactor below), `aria-label` on every icon-only button (Trash2Btn, Add Package, package remove, etc.), `sr-only` text for the "unsaved changes" indicator, `aria-hidden="true"` on every decorative SVG ([7803fea](https://github.com/faddah/code-canvas-astro/commit/7803fea), [a942488](https://github.com/faddah/code-canvas-astro/commit/a942488), [c033b4c](https://github.com/faddah/code-canvas-astro/commit/c033b4c))
+* **SaveDialog, OpenImportDialog, CompleteProfile, UserProfileModal** — every modal now has a present `<DialogTitle>` + `<DialogDescription>`, every `<Input>` has `<Label htmlFor>` + matching `id`, every validated field is wired with `aria-invalid` + `aria-describedby` pointing to its error paragraph; suppressive `aria-describedby={undefined}` props removed where descriptions exist ([1a065fb](https://github.com/faddah/code-canvas-astro/commit/1a065fb), [14a1ebe](https://github.com/faddah/code-canvas-astro/commit/14a1ebe), [a62c9ab](https://github.com/faddah/code-canvas-astro/commit/a62c9ab), [26de53e](https://github.com/faddah/code-canvas-astro/commit/26de53e))
+* **FileTab** — `role="tab"`, `aria-selected={isActive}`, `tabIndex={0}`, Enter/Space/Delete keyboard handling, `aria-label="Close <filename>"` on close button, `sr-only` text for unsaved indicator ([1fe5cb5](https://github.com/faddah/code-canvas-astro/commit/1fe5cb5), [4d40124](https://github.com/faddah/code-canvas-astro/commit/4d40124))
+* **EditorPanel** — `role="tablist" aria-label="Open files"` on the tab bar, `role="tab"` + `aria-selected` on each tab (wrapper `<div>` removed so tabs are direct children of tablist per ARIA spec), `role="tabpanel" aria-label={activeFile?.name}` on the editor area ([3536b62](https://github.com/faddah/code-canvas-astro/commit/3536b62))
+* **ExecutionPanel** — `aria-label` on both `<ResizableHandle>` drag targets so keyboard / screen-reader users know what each separator resizes ([7534657](https://github.com/faddah/code-canvas-astro/commit/7534657))
+* **ErrorBoundary** — `role="alert"` on the fallback UI so the crash is announced immediately, interrupting any in-flight speech ([7a438e5](https://github.com/faddah/code-canvas-astro/commit/7a438e5))
+* **WebPreview** — `role="region" aria-label="Web Preview"` landmark, `aria-hidden="true"` on the decorative globe icon ([81c4883](https://github.com/faddah/code-canvas-astro/commit/81c4883))
+* **IDE** — `role="main"` on the main content layout `<div>` ([bfd79cd](https://github.com/faddah/code-canvas-astro/commit/bfd79cd))
+* **Layout.astro** — pre-React `#app-loading` div given `role="status"` + `aria-live="polite"` so the brief loading state is surfaced to screen readers before hydration ([3555b19](https://github.com/faddah/code-canvas-astro/commit/3555b19))
+* **404.astro** — replaced the bare `<div>` with a full HTML document (`<html lang="en">` + `<head>` + `<title>` + `<main>` landmark), `aria-hidden` on the decorative AlertCircle icon ([7862394](https://github.com/faddah/code-canvas-astro/commit/7862394))
+
+
+### Refactor — Project toggle: nested `<button>` inside outer drag-drop `<div>`
+
+The first attempt at the project-row toggle put `role="button"` on the outer drag-drop `<div>`. This broke two things:
+
+1. `aria-expanded` is only valid on specific widget roles per the `aria-allowed-attr` rule — it cannot live on a generic `<div>` without `role="button"`, but with `role="button"` it caused other issues (below).
+2. In headless CI browsers, drop events dispatched to a `role="button"` element are silently dropped, so the file-drag-drop e2e tests started sending `projectId: null` instead of the target project's id.
+
+The final shape: outer `<div>` with the `group` CSS class, drag-drop event handlers, and `onClick` — and a nested native `<button>` inside it that carries `aria-expanded`, `aria-label`, `tabIndex`, and the Enter/Space `onKeyDown`. This separates the visual / drop-target container (the div) from the semantic interactive element (the button), and satisfies axe + Playwright + browser drag-drop simultaneously ([ffdeb11](https://github.com/faddah/code-canvas-astro/commit/ffdeb11), [21a57a0](https://github.com/faddah/code-canvas-astro/commit/21a57a0), [2a6757e](https://github.com/faddah/code-canvas-astro/commit/2a6757e), [ae5761c](https://github.com/faddah/code-canvas-astro/commit/ae5761c)).
+
+
+### Bug Fixes
+
+* remove stray `<DropdownMenu>` token from the FolderOpen icon's `className` (`"w-4<DropdownMenu> h-4"` → `"w-4 h-4"`) — pre-existing typo from before the a11y work, caught by Sourcery code review ([5f8f541](https://github.com/faddah/code-canvas-astro/commit/5f8f541))
+* tighten `e2e/save-flow.auth.spec.ts` "validates invalid file extension" locator to `"#save-file-name-error"` — adding `<DialogDescription>` to `SaveDialog` introduced a second element containing "Only .py and .txt files are allowed.", causing Playwright strict-mode violations ([9056f3b](https://github.com/faddah/code-canvas-astro/commit/9056f3b))
+* update `e2e/project-crud.auth.spec.ts` "delete project shows confirm then removes it" — find toggle via `[aria-label='Second Project']`, climb to outer group div for hover, click trash with `{ force: true }` to bypass `opacity-0` ([4d3ccea](https://github.com/faddah/code-canvas-astro/commit/4d3ccea), [62b9fc5](https://github.com/faddah/code-canvas-astro/commit/62b9fc5), [e9ea437](https://github.com/faddah/code-canvas-astro/commit/e9ea437))
+* update `e2e/file-drag-drop.auth.spec.ts` "project auto-expands after drop" — find Second Project via `[aria-label='Second Project']` instead of the now-ambiguous `text=Second Project` selector ([e76e069](https://github.com/faddah/code-canvas-astro/commit/e76e069), [06beda4](https://github.com/faddah/code-canvas-astro/commit/06beda4))
+* update `src/test/components/IDE-interactions.test.tsx` "deleting a project via explorer" — narrow trash locator to `button[aria-label^='Delete project']` since the project row now contains both a toggle button AND a trash button ([555e420](https://github.com/faddah/code-canvas-astro/commit/555e420))
+* `<onClose>` prop on `<FileTab>` widened to accept `React.MouseEvent | React.KeyboardEvent` so Delete-key close works ([4d40124](https://github.com/faddah/code-canvas-astro/commit/4d40124))
+
+
+### Tests
+
+* **3 new axe tests** in `LoadingScreen.test.tsx`, **7 new axe tests** in `TopNavBar.test.tsx`, **16 new axe + role + attribute tests** in `ExplorerPane.test.tsx` — all using `expect(await axeCheck(container)).toHaveNoViolations()` (Sourcery-flagged: the original `await axeCheck(container)` calls did not assert on results) ([a942488](https://github.com/faddah/code-canvas-astro/commit/a942488), [42bcdf9](https://github.com/faddah/code-canvas-astro/commit/42bcdf9), [7803fea](https://github.com/faddah/code-canvas-astro/commit/7803fea))
+* "shows loading state" test in `ExplorerPane.test.tsx` rewritten to use `getByRole("status")` (the previous assertion looked for text that doesn't exist in the component) ([a942488](https://github.com/faddah/code-canvas-astro/commit/a942488))
+* `"project toggle has role button…"` test renamed to `"project toggle has aria-expanded false when collapsed"` and updated to use `screen.getByLabelText("My Project")` (the toggle is now found via its `aria-label`, not its role) ([6ad3674](https://github.com/faddah/code-canvas-astro/commit/6ad3674))
+* full Vitest suite: **608 / 608 passing**; full Playwright e2e suite: **396 / 396 passing** across Chromium, Firefox, and WebKit
+
+
+### CI/CD
+
+* raise GitHub Actions `e2e-tests` job timeout from 15 → 25 minutes; with retries on flaky tests, the previous 15-minute ceiling occasionally killed the job mid-run ([d50ae18](https://github.com/faddah/code-canvas-astro/commit/d50ae18))
+* `playwright.config.ts` — increase `timeout`, `navigationTimeout`, and `actionTimeout` on the setup-chromium / setup-firefox / setup-webkit projects so Clerk authentication has more room in CI; add `env: { PLAYWRIGHT: "true" }` to the `webServer` block ([61bb7d7](https://github.com/faddah/code-canvas-astro/commit/61bb7d7))
+* `astro.config.mjs` — disable the Astro dev toolbar when `process.env.PLAYWRIGHT === "true"` so it doesn't interfere with e2e tests ([ff16425](https://github.com/faddah/code-canvas-astro/commit/ff16425))
+
+
+### Code quality / TypeScript
+
+* add explicit `JSX.Element` return type to `FileTab(...)` and `getFileIcon(name)` ([21ca446](https://github.com/faddah/code-canvas-astro/commit/21ca446), [d2942ca](https://github.com/faddah/code-canvas-astro/commit/d2942ca))
+* drop unused `useRef` import, replace with `type JSX` ([96abb5b](https://github.com/faddah/code-canvas-astro/commit/96abb5b))
+* `TODO` comment in `EditorPanel.tsx` flagging the duplication between the local `FileTab` and `src/components/FileTab.tsx` for follow-up consolidation ([d448e9d](https://github.com/faddah/code-canvas-astro/commit/d448e9d))
+
+
+### Dependencies
+
+* update `@tanstack/react-query` to v^5.99.1 ([f19b402](https://github.com/faddah/code-canvas-astro/commit/f19b402))
+
+
+### Docs
+
+* update `README.md`, `CHANGELOG.md`, and `CHANGELOG-simple.md` for v2.5.0
+
+
 ## [2.4.0](https://github.com/faddah/code-canvas-astro/compare/v2.3.0...v2.4.0) (2026-04-18)
 
 ### Features

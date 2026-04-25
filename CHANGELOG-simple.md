@@ -4,6 +4,86 @@ A plain-language summary of what changed in each version of the app.
 
 ---
 
+## Version 2.5.0 — April 25, 2026
+
+### ARIA / accessibility instrumentation finished — every front-facing component now has WCAG 2.0 / 2.1 Level A + AA semantic markup, keyboard support, and automated axe-core tests
+
+This release picks up where 2.4.0 left off and finishes the accessibility pass started there. 2.4.0 shipped the test infrastructure (axe-core + vitest-axe + @axe-core/playwright) and the first instrumented component (the loading screen). 2.5.0 instruments **every other front-facing component in the app** and lands the whole effort under a green Vitest + Playwright matrix.
+
+#### What's new in the app
+
+- **Console panel** — now announces itself as a live log region (`role="log"` + `aria-live="polite"` + `aria-label="Console output"`), so screen readers read out new lines as Python prints them.
+- **Top nav bar** — proper `<header role="banner">` landmark, the action-button group is now an explicit `role="toolbar"` with a label ("File actions"), every icon-only button has an `aria-label`, the Python-environment status pill is its own polite live region, and every decorative Lucide icon is hidden from screen readers.
+- **Explorer pane** —
+  - The whole sidebar is now a proper `<aside role="complementary" aria-label="Explorer">` landmark.
+  - The file/project tree uses `role="list"` + `role="listitem"` semantics so screen readers count and navigate items correctly.
+  - The active file is marked `aria-current="true"` so assistive tech announces "current page" / "current file" on it.
+  - **Project toggles became real `<button>` elements** (nested inside the row, not the whole row) with `aria-expanded` reflecting open/closed state, full Enter/Space keyboard handling, and an `aria-label` of the project name.
+  - File items are reachable by Tab and openable by Enter or Space.
+  - Every icon-only button (Trash2Btn, Add Package, package-remove, etc.) has a descriptive `aria-label` like `"Delete main.py"` or `"Confirm deleting project My Project"`.
+  - Unsaved-changes indicators now have a hidden text equivalent ("unsaved changes") so screen readers announce the state, not just sighted users seeing a yellow dot.
+- **All four modals** — `SaveDialog`, `OpenImportDialog`, `CompleteProfile`, `UserProfileModal`:
+  - Every modal has a present `<DialogTitle>` AND `<DialogDescription>` (Radix's accessibility contract).
+  - Every form input has a real `<Label htmlFor="…">` paired with a matching `id` on the input — no orphan labels.
+  - Every validated field is wired with `aria-invalid` and `aria-describedby` pointing at its specific error paragraph, so screen readers announce "invalid entry" on focus AND read the actual error message.
+  - The old `aria-describedby={undefined}` workarounds (originally added to silence Radix warnings before descriptions existed) have been removed where descriptions now exist.
+- **File tabs** — proper `role="tablist"` / `role="tab"` / `role="tabpanel"` triad in the editor panel:
+  - The tab bar is a `role="tablist"`.
+  - Each tab has `role="tab"` + `aria-selected` reflecting active state, and is reachable by Tab.
+  - Pressing Enter or Space activates a tab; pressing Delete closes it (matching how browser tab bars work).
+  - The Monaco editor area is a `role="tabpanel"` whose `aria-label` updates with the active filename.
+- **Resizable panel handles** in the editor / preview / console area now have meaningful `aria-label`s ("Resize editor and output panels", "Resize preview and console panels") so keyboard users know what each separator is for.
+- **Error boundary** — when something crashes, the fallback now uses `role="alert"`, which interrupts whatever the screen reader is currently saying. App-crash level news deserves to interrupt.
+- **Web Preview** — wrapped in a proper `role="region" aria-label="Web Preview"` landmark, so screen-reader users can navigate to it as a distinct section.
+- **IDE main layout** — gets `role="main"` so the central content area is reachable as the page's main landmark.
+- **Pre-React loading splash (in `Layout.astro`)** — the brief loading spinner shown before React hydrates now has `role="status"` + `aria-live="polite"`, so a screen-reader user landing on the page hears "Loading Python REPL IDE..." immediately instead of silence.
+- **404 page** — was previously a bare `<div>` fragment with no language, no `<title>`, no `<main>` landmark. Now it's a full HTML document (`<html lang="en">` + `<head>` + `<title>` + `<main>`) with the alert icon properly hidden from screen readers (the heading text already conveys "404 Page Not Found").
+
+#### The big internal restructure: project toggle rows
+
+The tricky one. The first attempt at the project-row toggle put `role="button"` directly on the outer drag-drop `<div>`. Two problems collided:
+
+1. ARIA spec says `aria-expanded` is only valid on specific widget roles — it can't live on a plain `<div>` unless that div has one of those roles.
+2. Headless CI browsers silently drop `drop` events sent to elements with `role="button"`, so when we did add `role="button"` to make `aria-expanded` legal, the drag-drop e2e tests started moving files to the wrong place (project id `null` instead of the target project).
+
+The final shape: the **outer `<div>`** keeps the `group` CSS class and handles drag-drop and clicks, while a **nested native `<button>`** carries `aria-expanded`, `aria-label`, `tabIndex`, and the keyboard handler. Visual / drop-target container vs. semantic interactive element — cleanly separated. axe is happy, Playwright drag-drop works in all three browsers, screen readers announce the correct widget semantics.
+
+#### Test coverage and quality
+
+- **26 new accessibility-specific tests** across `LoadingScreen.test.tsx` (3), `TopNavBar.test.tsx` (7), and `ExplorerPane.test.tsx` (16) — every one running real `axe-core` audits on the rendered DOM and asserting `toHaveNoViolations()`. (An earlier version of these tests called `axeCheck(...)` without asserting on the result — Sourcery rightly caught it; fixed in this release.)
+- The "shows loading state" Vitest test was rewritten to use `getByRole("status")` instead of looking for text that doesn't exist in the component.
+- Several Vitest tests updated to find the project toggle via `screen.getByLabelText("My Project")` now that it's an explicit button with that aria-label.
+- Several Playwright e2e tests had locators tightened — `[aria-label='Second Project']` instead of `text=Second Project` (which now also matches via `aria-label` substring), `#save-file-name-error` instead of error text (which can collide with the new `<DialogDescription>`), and `button[aria-label^='Delete project']` to disambiguate the trash button from the new project-toggle button.
+- **Final result:** 608 / 608 Vitest unit tests passing, 396 / 396 Playwright e2e tests passing across Chromium, Firefox, and WebKit.
+
+#### CI / dev environment fixes that came up along the way
+
+- The GitHub Actions `e2e-tests` job timeout was raised from 15 → 25 minutes; the previous ceiling was occasionally hit when retries on borderline-flaky tests stacked up.
+- Per-engine timeouts in `playwright.config.ts` were increased so Clerk auth has more room in CI (Clerk's HTTPS handshake can be slow under headless load).
+- The Astro dev toolbar is now disabled when `process.env.PLAYWRIGHT === "true"` so it doesn't interfere with e2e tests.
+
+#### Bug fixes (incl. Sourcery code-review findings)
+
+- Removed a stray `<DropdownMenu>` token that had been sitting inside the FolderOpen icon's `className` (`"w-4<DropdownMenu> h-4"`) — pre-existing typo from before the a11y work. Caught by Sourcery, fixed.
+- Widened the `onClose` prop type on `<FileTab>` to accept both `React.MouseEvent` and `React.KeyboardEvent` so Delete-key tab close works.
+- Tightened the e2e save-flow validation locator to `#save-file-name-error` since the new `<DialogDescription>` now contains the same string as the error message would.
+
+#### Code quality
+
+- Explicit `JSX.Element` return types on `FileTab(...)` and `getFileIcon(name)`.
+- Dropped unused `useRef` import in `ExplorerPane.tsx`.
+- Added a `TODO` comment in `EditorPanel.tsx` flagging the duplication between its local `FileTab` and `src/components/FileTab.tsx` for a future consolidation pass.
+
+#### Dependency updates
+
+- `@tanstack/react-query` v5.99.1
+
+#### Docs
+
+- README, CHANGELOG, and CHANGELOG-simple updated for v2.5.0.
+
+---
+
 ## Version 2.4.0 — April 18, 2026
 
 ### Accessibility testing infrastructure, and the first ARIA-instrumented component
