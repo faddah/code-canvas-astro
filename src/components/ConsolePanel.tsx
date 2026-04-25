@@ -51,19 +51,32 @@ export function ConsolePanel({ logs, onClear, isWaitingForInput, onSubmitInput }
         </button>
       </div>
       
-      <div ref={scrollRef} className="flex-1 overflow-auto p-4 font-mono text-sm">
-        {logs.length === 0 && !isWaitingForInput ? (
-          <div className="text-muted-foreground/40 italic select-none">
-            Ready to execute. Output will appear here...
-          </div>
-        ) : (
-          logs.map((log, i) => (
-            <div 
-              key={i} 
-              className={`mb-1 wrap-break-word whitespace-pre-wrap ${
-                log.startsWith("[Error]") ? "text-red-400" : "text-foreground"
-              }`}
-            >
+      <div
+          ref={scrollRef}
+          role="log"
+          aria-live="polite"
+          aria-label="Console output"
+          data-testid="console-output"
+          className="flex-1 overflow-auto p-4 font-mono text-sm"
+        >
+          {logs.length === 0 && !isWaitingForInput ? (
+            <div className="text-muted-foreground/40 italic select-none">
+              Ready to execute. Output will appear here...
+            </div>
+          ) : (
+            logs.map((log, i) => (
+              <div
+                key={i}
+                data-testid="console-line"
+                data-log-kind={log.startsWith("[Error]") 
+                  ? "error"
+                  : "output"}
+                className={`mb-1 wrap-break-word  whitespace-pre-wrap 
+                  ${log.startsWith("[Error]") 
+                    ?  "text-red-400"
+                    : "text-foreground"
+                }`}
+              >
               {log}
             </div>
           ))

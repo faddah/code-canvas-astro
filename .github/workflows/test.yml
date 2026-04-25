@@ -2,7 +2,7 @@ name: Tests
 
 on:
   push:
-    branches: [main]
+    branches: [main, add-aria]
   pull_request:
     branches: [main]
 
@@ -24,7 +24,7 @@ jobs:
   e2e-tests:
     runs-on: ubuntu-latest
     container: mcr.microsoft.com/playwright:v1.59.1-noble
-    timeout-minutes: 15
+    timeout-minutes: 25
     env:
       HOME: /root
       TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}

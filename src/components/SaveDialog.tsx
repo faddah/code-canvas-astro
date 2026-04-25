@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Save } from "lucide-react";
 import type { Project } from "@shared/schema";
@@ -68,18 +70,25 @@ export function SaveDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-describedby={undefined} className="bg-white text-black sm:rounded-xl sm:max-w-md">
+      <DialogContent className="bg-white text-black sm:rounded-xl sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-black font-bold text-xl flex items-center gap-2">
-            <Save className="w-5 h-5" />
+            <Save aria-hidden="true" className="w-5 h-5" />
             Save File
           </DialogTitle>
+            <DialogDescription>
+              Name your file and optionally assign it to a project.
+              Only .py and .txt files are allowed.
+            </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">File Name</label>
+            <Label htmlFor="save-file-name" className="text-sm font-medium text-gray-700 mb-1 block">File Name</Label>
             <Input
+              id="save-file-name"
+              aria-describedby={error ? "save-file-name-error" : undefined}
+              aria-invalid={!!error}
               placeholder="script.py"
               value={name}
               onChange={(e) => {
@@ -90,15 +99,15 @@ export function SaveDialog({
               autoFocus
               className="bg-white text-black font-medium text-base border-2 border-gray-400 h-11 placeholder:text-gray-400 focus-visible:ring-blue-500"
             />
-            {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+            {error && <p id="save-file-name-error" className="text-red-500 text-xs mt-1">{error}</p>}
             <p className="text-gray-500 text-xs mt-1">Allowed: .py, .txt files only</p>
           </div>
 
           {projects.length > 0 && (
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Project (optional)</label>
+              <Label htmlFor="save-project" className="text-sm font-medium text-gray-700 mb-1 block">Project (optional)</Label>
               <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-                <SelectTrigger className="bg-white text-black border-2 border-gray-400 h-11">
+                <SelectTrigger id="save-project" className="bg-white text-black border-2 border-gray-400 h-11">
                   <SelectValue placeholder="No project" />
                 </SelectTrigger>
                 <SelectContent className="bg-white text-black">

@@ -4,13 +4,50 @@ A plain-language summary of what changed in each version of the app.
 
 ---
 
+## Version 2.4.0 — April 18, 2026
+
+### Accessibility testing infrastructure, and the first ARIA-instrumented component
+
+This release starts a new accessibility initiative in the app. Two-part story — a testing foundation so every future component can be verified against WCAG 2.0 / 2.1 Level A + AA rules, and the first component (the loading screen) properly wired up for screen readers.
+
+#### What's new in the app
+
+- **Screen-reader-friendly loading screen** — the `<LoadingScreen>` component now announces itself to assistive technology while it's on screen. The loading message is marked `role="status"` + `aria-live="polite"` so the text is read aloud when it appears or changes; the decorative spinner is marked `aria-hidden` so screen readers don't repeatedly announce an animation nobody can see. This is the first of several planned component-by-component accessibility passes — more to follow in subsequent 2.4.x releases
+
+#### New accessibility testing foundation
+
+- **Unit-level a11y checks** — added `vitest-axe` so any component test can assert `await axeCheck(container)` and fail the build on WCAG 2.0 / 2.1 A + AA violations. `src/test/helpers/a11y.ts` wraps it with the exact rule set we're targeting (the `color-contrast` check is disabled under jsdom because jsdom can't compute styles — we'll catch contrast issues at the e2e layer instead)
+- **End-to-end a11y checks** — added `@axe-core/playwright` so any Playwright test can run an axe audit against the live DOM in a real browser. This is where color-contrast and anything requiring layout / computed styles gets verified
+- **Shared rule engine** — `axe-core` itself is the WCAG rule engine behind both harnesses, so unit tests and e2e tests agree on what "accessible" means
+- **Hands-off global setup** — `src/test/setup.ts` imports the a11y helper so `toHaveNoViolations()` is registered on every Vitest suite with zero per-test ceremony
+- **First instrumented component** — `src/components/LoadingScreen.tsx` was instrumented and gets its own axe audit + ARIA unit assertions in `src/test/components/LoadingScreen.test.tsx`
+
+#### Playwright stability fixes that landed alongside
+
+Getting the e2e suite to 396 / 396 clean across Chromium, Firefox, and WebKit required three targeted fixes that ride along with this release:
+
+- **Hardened Clerk authentication setup** — `e2e/auth.setup.ts` now waits on `window.Clerk.loaded === true` explicitly (with a 60 s timeout and a detailed diagnostic payload on failure) instead of using the Clerk testing helper's `clerk.loaded({ page })`, which gave opaque timeouts. Also raised the whole setup's budget to 90 s. The original 30 s wait was masking a silent cause — see the environment note below
+- **Firefox delete-flow de-flake** — the User Profile "Delete Profile" confirmation dialog is a Radix `AlertDialog` that renders through a portal. The old tests waited on `text=Delete Account`, which races Firefox's portal paint. New code waits on `[role="alertdialog"]` (Radix sets this synchronously on mount) with a 20 s timeout, then scopes subsequent text / button locators inside that dialog
+- **WebKit console-output de-flake** — the console-output test was combining a class-based locator and a `hasText` filter into one assertion, which coupled two timings into a single race. Split into two assertions (wait for the text, *then* assert the red-error class) for better diagnostics and more tolerance of slow paint
+
+#### Environment / setup note
+
+- **Clerk keys** — local development and CI must use Clerk **Development** instance keys (`pk_test_…` / `sk_test_…`). Production keys (`pk_live_…` / `sk_live_…`) are domain-locked to the production host and silently fail on `localhost` — `Clerk.load()` never completes, the page looks signed-out-but-broken, and e2e auth setup times out with no obvious cause. The `.env.test` file and the GitHub Actions secrets both use the Development instance
+
+#### Dependency additions
+
+- Added (devDependencies): `vitest-axe` v0.1.0, `axe-core` v4.11.3, `@axe-core/playwright` v4.11.2
+- No runtime dependency changes
+
+---
+
 ## Version 2.3.0 — April 16, 2026
 
 ### IDE.tsx broken into focused modules, big test-coverage push, and a much faster, more reliable CI pipeline
 
 This release is a large refactor / quality push. The user-facing app behaves the same as 2.2.1 in most places, but the internals are dramatically more modular, the test suite is substantially larger, and the GitHub Actions pipeline now runs the full Vitest unit suite plus the full Playwright e2e suite (Chromium, Firefox, and WebKit) reliably and quickly. Highlights:
 
-#### What's new in the app
+#### What's new in v2.3.0 for the app
 
 - **Better loading experience** — added a dedicated `<LoadingScreen>` component that shows a "Taking too long? Reload" button after a configurable timeout. Backed by a new `useLoadingStateCleanup` hook that tracks how long loading has been going so the screen can react instead of just spinning forever
 - **Profile-completion modal can be dismissed** — the "Complete Your Profile" modal now properly closes when you click Cancel or finish the form, instead of stubbornly re-appearing

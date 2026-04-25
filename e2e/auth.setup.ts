@@ -1,9 +1,10 @@
-import { setupClerkTestingToken, clerk } from "@clerk/testing/playwright";
+import { setupClerkTestingToken } from "@clerk/testing/playwright";
 import { test as setup } from "@playwright/test";
 import fs from "fs";
 import path from "path";
 
 setup("authenticate with Clerk", async ({ page }, testInfo) => {
+    setup.setTimeout(90_000);
     const storageState = `e2e/.auth/${testInfo.project.name}.json`;
     fs.mkdirSync(path.dirname(storageState), { recursive: true });
 
@@ -26,7 +27,26 @@ setup("authenticate with Clerk", async ({ page }, testInfo) => {
     await page.goto("/");
 
     console.log("[setup] step 3: waiting for clerk.loaded");
-    await clerk.loaded({ page });
+    try {
+        await page.waitForFunction(
+            () => (window as unknown as { Clerk?: { loaded?: boolean } }).Clerk?.loaded === true,
+            undefined,
+            { timeout: 60_000 },
+        );
+    } catch (err) {
+        const diag = await page.evaluate(() => {
+            const c = (window as unknown as { Clerk?: { loaded?: boolean; client?: unknown; version?: string } }).Clerk;
+            return {
+                defined: typeof c !== "undefined",
+                loaded: c?.loaded ?? null,
+                hasClient: !!c?.client,
+                version: c?.version ?? null,
+            };
+        });
+        throw new Error(
+            `[setup] Clerk.loaded never became true. Diagnostic: ${JSON.stringify(diag)}. Original: ${(err as Error).message}`,
+        );
+    }
 
     // ─── Create a sign-in ticket via Clerk Backend API (Node side) ────
     // We call fetch directly instead of using @clerk/testing's helper

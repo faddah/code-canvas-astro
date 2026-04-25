@@ -2,10 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [2.3.0](https://github.com/faddah/code-canvas-astro/compare/v2.2.1...v2.3.0) (2026-04-16)
-
+## [2.4.0](https://github.com/faddah/code-canvas-astro/compare/v2.3.0...v2.4.0) (2026-04-18)
 
 ### Features
+
+* add accessibility testing infrastructure — new devDeps `vitest-axe`, `axe-core`, and `@axe-core/playwright` for WCAG 2.0 / 2.1 Level A + AA checks across both Vitest unit tests and Playwright e2e tests ([TBD])
+* add `src/test/helpers/a11y.ts` — `axeCheck()` wrapper around `axe-core` with WCAG 2.0 / 2.1 A + AA rule set; the `color-contrast` check is disabled under jsdom since it can't compute computed styles ([TBD])
+* wire `src/test/setup.ts` to import `@/test/helpers/a11y` so `toHaveNoViolations()` is globally registered on every Vitest suite ([TBD])
+* instrument `<LoadingScreen>` for screen readers — `role="status"` + `aria-live="polite"` on the message so assistive tech announces loading state changes; `aria-hidden="true"` on the decorative spinner so it isn't announced ([TBD])
+
+### Tests
+
+* add `src/test/components/LoadingScreen.test.tsx` a11y coverage — `axeCheck()` runs against the rendered component, plus unit assertions that verify the new ARIA attributes are present ([TBD])
+
+### Bug Fixes
+
+* harden `clerk.loaded` wait in `e2e/auth.setup.ts` — replaced `clerk.loaded({ page })` with an explicit `page.waitForFunction(() => window.Clerk.loaded === true)` + 60 s timeout + diagnostic payload `{ defined, loaded, hasClient, version }` logged on failure; added `setup.setTimeout(90_000)` to give the whole flow room ([TBD])
+* de-flake `e2e/user-profile-modal.auth.spec.ts` delete flow on Firefox — switched from text-based locators (`text=Delete Account`) to the semantic `[role="alertdialog"]` locator with 20 s timeouts across all three delete-flow tests; Radix sets the role attribute synchronously on portal mount while text-content lags one React commit ([TBD])
+* de-flake `e2e/console-output.spec.ts:119` on WebKit — split the combined `.whitespace-pre-wrap.text-red-400` + `hasText: "[Error]"` locator into two decoupled assertions (text visibility first at 30 s, then `toHaveClass(/text-red-400/)`) so slow paint no longer races the conditional class swap ([TBD])
+
+### Docs
+
+* update `README.md` — add Accessibility subsection, add `vitest-axe` + `@axe-core/playwright` + `axe-core` to the Testing stack, bump Current Version to 2.4.0 ([TBD])
+* update `CHANGELOG.md` and `CHANGELOG-simple.md` for v2.4.0 ([TBD])
+
+## [2.3.0](https://github.com/faddah/code-canvas-astro/compare/v2.2.1...v2.3.0) (2026-04-16)
+
+### Features in 2.3.0
 
 * add `<LoadingScreen>` component with a "Taking too long? Reload" button that appears after a configurable timeout — replaces the inline loading spinner in `IDE.tsx` ([929491c](https://github.com/faddah/code-canvas-astro/commit/929491c))
 * add `useLoadingStateCleanup` hook to track loading duration and surface a `loadingTooLong` flag for the new `<LoadingScreen>` ([7c9b461](https://github.com/faddah/code-canvas-astro/commit/7c9b461))
@@ -13,7 +36,6 @@ All notable changes to this project will be documented in this file. See [standa
 * add `<DialogTitle>` inside Command palette `<DialogContent>` for screen-reader accessibility, plus refactored `<Command>` CSS classes ([26da23b](https://github.com/faddah/code-canvas-astro/commit/26da23b))
 * hide Explorer header on small (mobile) viewports for a cleaner mobile layout ([01af89b](https://github.com/faddah/code-canvas-astro/commit/01af89b))
 * truncate long filenames in the Explorer pane so they don't break the layout ([94894d0](https://github.com/faddah/code-canvas-astro/commit/94894d0))
-
 
 ### Refactor — IDE.tsx Modularization
 
@@ -32,8 +54,7 @@ The monolithic `src/components/IDE.tsx` has been broken up into focused, individ
 * extract `<ExecutionPanel>` to `src/components/ExecutionPanel.tsx` ([c15bbff](https://github.com/faddah/code-canvas-astro/commit/c15bbff))
 * extract `<LoadingScreen>` to `src/components/LoadingScreen.tsx` ([929491c](https://github.com/faddah/code-canvas-astro/commit/929491c))
 
-
-### Bug Fixes
+### Bug Fixes in v2.3.0
 
 * refactor `<DialogContent>` props with `aria-describedby={undefined}` to silence Radix dialog warnings during Vitest runs ([4d1f4fd](https://github.com/faddah/code-canvas-astro/commit/4d1f4fd))
 * replace deprecated React `ElementRef` with the modern `ComponentRef` across UI components ([90b7f7a](https://github.com/faddah/code-canvas-astro/commit/90b7f7a), [be6dd1b](https://github.com/faddah/code-canvas-astro/commit/be6dd1b))
@@ -43,8 +64,7 @@ The monolithic `src/components/IDE.tsx` has been broken up into focused, individ
 * `tsconfig.json` — explicit `extends` path to `…/tsconfigs/strict.json` for TypeScript 6.x; add `target: "ESNext"`, `moduleDetection: "force"`, `moduleResolution: "Bundler"` ([aa44c8b](https://github.com/faddah/code-canvas-astro/commit/aa44c8b), [8fee952](https://github.com/faddah/code-canvas-astro/commit/8fee952))
 * exclude `e2e/` from the main TypeScript program; give Playwright its own `e2e/tsconfig.json` ([3c5bfa9](https://github.com/faddah/code-canvas-astro/commit/3c5bfa9), [99badb5](https://github.com/faddah/code-canvas-astro/commit/99badb5), [f612157](https://github.com/faddah/code-canvas-astro/commit/f612157))
 
-
-### Tests
+### Tests in v2.3.0
 
 #### Vitest unit tests for the new modular hooks
 
@@ -102,7 +122,6 @@ The monolithic `src/components/IDE.tsx` has been broken up into focused, individ
 * `e2e/responsive.spec.ts` — Explorer hidden at 375×667, visible at 1280×720 ([01af89b](https://github.com/faddah/code-canvas-astro/commit/01af89b))
 * `e2e/ide-interactions.spec.ts` — IDE Console + Web Preview coverage ([2b3c37b](https://github.com/faddah/code-canvas-astro/commit/2b3c37b))
 
-
 ### CI/CD
 
 * switch e2e job to the official `mcr.microsoft.com/playwright:v1.59.1-noble` container — Node 22 + all three browsers pre-installed; eliminated the ~29-minute `npx playwright install --with-deps` step ([9cabff3](https://github.com/faddah/code-canvas-astro/commit/9cabff3))
@@ -120,7 +139,6 @@ The monolithic `src/components/IDE.tsx` has been broken up into focused, individ
 * add `npm install -g npm@11` step / `npx -y npm@11 ci` to keep CI's npm version aligned with local development ([bc8ca37](https://github.com/faddah/code-canvas-astro/commit/bc8ca37), [9800b76](https://github.com/faddah/code-canvas-astro/commit/9800b76))
 * `.gitignore` additions: `.certs/`, `e2e/.auth/`, log directories ([92f8450](https://github.com/faddah/code-canvas-astro/commit/92f8450), [3648fb2](https://github.com/faddah/code-canvas-astro/commit/3648fb2), [4594d64](https://github.com/faddah/code-canvas-astro/commit/4594d64))
 
-
 ### Dependencies
 
 * upgrade Astro to v^6.1.7 ([8bd0e31](https://github.com/faddah/code-canvas-astro/commit/8bd0e31), [246fd73](https://github.com/faddah/code-canvas-astro/commit/246fd73))
@@ -136,25 +154,21 @@ The monolithic `src/components/IDE.tsx` has been broken up into focused, individ
 * add `cross-fetch` v^4.1.0 as a dependency ([e63adb5](https://github.com/faddah/code-canvas-astro/commit/e63adb5))
 * remove `local-ssl-proxy` (replaced by `e2e/https-proxy.mjs`) ([533345a](https://github.com/faddah/code-canvas-astro/commit/533345a))
 
-
-### Docs
+### Docs for v2.3.0
 
 * update `README.md` for v2.3.0 — Astro 6, TypeScript 6, expanded feature list, accurate project structure, new API endpoint table, Testing + CI sections ([33d379c](https://github.com/faddah/code-canvas-astro/commit/33d379c))
 * add `IDE.tsx-Modularization-Test-Coverage-Plan.md` ([4c4c3d3](https://github.com/faddah/code-canvas-astro/commit/4c4c3d3))
 * add and progressively complete `E2E-Coverage-Gaps-Remaining.md` (14 prioritized e2e coverage tasks, all marked DONE) ([b4030e4](https://github.com/faddah/code-canvas-astro/commit/b4030e4), [6673ecc](https://github.com/faddah/code-canvas-astro/commit/6673ecc))
 
-
 ### [2.2.1](https://github.com/faddah/code-canvas-astro/compare/v2.2.0...v2.2.1) (2026-04-01)
 
-
-### Bug Fixes
+### Bug Fixes in v2.2.1
 
 * pre-load micropip during Pyodide initialization with `pyodide.loadPackage("micropip")` — fixes `ModuleNotFoundError: No module named 'micropip'` when running scripts with third-party packages ([ed2a29d](https://github.com/faddah/code-canvas-astro/commit/ed2a29d))
 
-
 ## [2.2.0](https://github.com/faddah/code-canvas-astro/compare/v2.1.1...v2.2.0) (2026-04-01)
 
-### Features
+### Features in 2.2.0
 
 * add PyPI package management — users can add/remove Python packages per project via the Explorer sidebar ([8e2b55f](https://github.com/faddah/code-canvas-astro/commit/8e2b55f))
 * add `project_packages` database table with Drizzle ORM schema, list/create/delete methods in DatabaseStorage ([084d5bf](https://github.com/faddah/code-canvas-astro/commit/084d5bf))
@@ -166,13 +180,13 @@ The monolithic `src/components/IDE.tsx` has been broken up into focused, individ
 * show install progress messages in console — "Installing numpy, pandas..." and "Installed 2 packages." ([e981f3d](https://github.com/faddah/code-canvas-astro/commit/e981f3d))
 * add Package icon and Add Package dialog in ExplorerPane UI ([f8d56e6](https://github.com/faddah/code-canvas-astro/commit/f8d56e6))
 
-### Bug Fixes
+### Bug Fixes in v2.2.0
 
 * remove `Error.isError()` (ES2026 proposal) causing GitHub Actions CI failures — replaced with empty catch block ([30c3f78](https://github.com/faddah/code-canvas-astro/commit/30c3f78))
 * fix `projectId` referenced before defined in packages index.ts API route ([90c46a0](https://github.com/faddah/code-canvas-astro/commit/90c46a0))
 * expand catch error messaging in packages create.ts for better debugging ([b767872](https://github.com/faddah/code-canvas-astro/commit/b767872))
 
-### Tests
+### Tests in v2.2.0
 
 * add 12 unit tests for `usePackages`, `useAddPackage`, `useRemovePackage` hooks ([2a64618](https://github.com/faddah/code-canvas-astro/commit/2a64618))
 * add 10 unit tests for Project Packages CRUD in DatabaseStorage ([5d8ab50](https://github.com/faddah/code-canvas-astro/commit/5d8ab50))
@@ -182,14 +196,14 @@ The monolithic `src/components/IDE.tsx` has been broken up into focused, individ
 * update ExplorerPane test helper with new package props ([5344376](https://github.com/faddah/code-canvas-astro/commit/5344376))
 * update IDE-interactions test for new `runCode` 3-arg signature ([41b2384](https://github.com/faddah/code-canvas-astro/commit/41b2384))
 
-### CI/CD
+### CI/CD in v2.2.0
 
 * upgrade GitHub Actions — checkout v6, setup-node v6, upload-artifact v7, Node.js 22 ([9b3433e](https://github.com/faddah/code-canvas-astro/commit/9b3433e))
 * increase Playwright worker processes from 1 to 2 for faster CI runs ([90db0bf](https://github.com/faddah/code-canvas-astro/commit/90db0bf))
 * add separate build step before e2e tests, refactor webServer to use `npm run preview` in CI ([fe5d724](https://github.com/faddah/code-canvas-astro/commit/fe5d724))
 * add `actions/cache@v5` for e2e test caching ([4bbaab1](https://github.com/faddah/code-canvas-astro/commit/4bbaab1))
 
-### Dependencies
+### Dependencies in v2.2.0
 
 * update @clerk/astro, @clerk/react, @clerk/testing ([6c952db](https://github.com/faddah/code-canvas-astro/commit/6c952db))
 * update @tanstack/react-query ([6c952db](https://github.com/faddah/code-canvas-astro/commit/6c952db))

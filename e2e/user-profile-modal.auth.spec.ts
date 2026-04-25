@@ -190,7 +190,7 @@ test.describe("UserProfileModal — delete flow", () => {
 
         // Open the modal
         const profileBtn = page.locator("button", { hasText: "@" }).first();
-        await expect(profileBtn).toBeVisible({ timeout: 10_000 });
+        await expect(profileBtn).toBeVisible({ timeout: 20_000 });
         await profileBtn.click();
         await expect(
             page.locator("text=User Profile").first(),
@@ -203,37 +203,37 @@ test.describe("UserProfileModal — delete flow", () => {
         await dismissViteOverlay(page);
         await page.locator('button:has-text("Delete Profile")').click({ force: true });
 
-        await expect(
-            page.locator("text=Delete Account").first(),
-        ).toBeVisible({ timeout: 5_000 });
+        // Wait on the semantic role — Radix sets [role="alertdialog"] synchronously
+        // when the portal mounts. Text-only locators race against Firefox's slower
+        // portal paint.
+        const alertDialog = page.locator('[role="alertdialog"]');
+        await expect(alertDialog).toBeVisible({ timeout: 20_000 });
 
+        await expect(alertDialog.locator("text=Delete Account")).toBeVisible();
         await expect(
-            page
-                .locator("text=Are you certain you wish to completely delete")
-                .first(),
+            alertDialog.locator("text=Are you certain you wish to completely delete"),
         ).toBeVisible();
     });
-
+    
     test("Cancel dismisses the delete confirmation", async ({ page }) => {
         await dismissViteOverlay(page);
         await page.locator('button:has-text("Delete Profile")').click({ force: true });
 
-        await expect(
-            page.locator("text=Delete Account").first(),
-        ).toBeVisible({ timeout: 5_000 });
+        const alertDialog = page.locator('[role="alertdialog"]');
+        await expect(alertDialog).toBeVisible({ timeout: 20_000 });
+        // Wait for Radix to finish its open animation before clicking Cancel.
+        // Firefox's slower portal paint can drop clicks that land mid-mount.
+        await expect(alertDialog).toHaveAttribute("data-state", "open", {
+            timeout: 5_000,
+        });
 
         // Click Cancel in the AlertDialog
-        const alertDialog = page.locator('[role="alertdialog"]');
         await alertDialog.locator('button:has-text("Cancel")').click({ force: true });
 
-        // Confirmation should disappear, but modal stays open
-        await expect(
-            page.locator("text=Delete Account").first(),
-        ).not.toBeVisible({ timeout: 5_000 });
-
-        await expect(
-            page.locator("text=User Profile").first(),
-        ).toBeVisible();
+        // AlertDialog closes; outer User Profile modal stays open.
+        // Bumped to 10s — Firefox can be slow to unmount the Radix portal.
+        await expect(alertDialog).toBeHidden({ timeout: 10_000 });
+        await expect(page.locator("text=User Profile").first()).toBeVisible();
     });
 
     test("Confirm delete calls DELETE /api/user-profile", async ({
@@ -242,9 +242,8 @@ test.describe("UserProfileModal — delete flow", () => {
         await dismissViteOverlay(page);
         await page.locator('button:has-text("Delete Profile")').first().click({ force: true });
 
-        await expect(
-            page.locator("text=Delete Account").first(),
-        ).toBeVisible({ timeout: 5_000 });
+        const alertDialog = page.locator('[role="alertdialog"]');
+        await expect(alertDialog).toBeVisible({ timeout: 20_000 });
 
         // Set up request interception before clicking confirm
         const deletePromise = page.waitForRequest(
@@ -256,7 +255,6 @@ test.describe("UserProfileModal — delete flow", () => {
         // The AlertDialog has TWO buttons: "Cancel" and "Delete Profile"
         // Click the "Delete Profile" action button inside the AlertDialog
         await dismissViteOverlay(page);
-        const alertDialog = page.locator('[role="alertdialog"]');
         await alertDialog
             .locator('button:has-text("Delete Profile")')
             .click({ force: true });

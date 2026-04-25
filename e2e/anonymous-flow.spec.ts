@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { mockStarterFilesAPI, blockPyodide, dismissViteOverlay, waitForIDEShell } from "./helpers";
+import { mockStarterFilesAPI, blockPyodide, dismissViteOverlay, waitForIDEShell, waitForMonaco } from "./helpers";
 
 test.describe("Anonymous User Flow", () => {
   // Firefox needs extra time — IDE hydration + asset loading can exceed 30s
@@ -40,8 +40,8 @@ test.describe("Anonymous User Flow", () => {
     await expect(ready).toBeVisible();
 
     // The Monaco editor should be present
-    const editor = page.locator(".monaco-editor").first();
-    await expect(editor).toBeVisible();
+    const editor = await waitForMonaco(page);
+    await expect(editor).toBe(true);
 
     // Use Monaco's API directly — keyboard simulation is unreliable with Monaco's virtual DOM.
     // @monaco-editor/react v4+ sets window.monaco globally via its loader.
@@ -54,8 +54,13 @@ test.describe("Anonymous User Flow", () => {
     });
     expect(didSet).toBe(true);
 
-    // Give React a tick to process the onChange from Monaco's content change event
-    await page.waitForTimeout(500);
+    // Check Playwright is present in the Monaco editor
+    await expect(page.locator(".view-line", { hasText: "hello from playwright" }).first(),)
+      .toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId("editor-state-content")).toContainText(
+      "hello from playwright",
+      {timeout: 10_000 },
+    );
 
     // Dismiss any vite-error-overlay that may have appeared from transient
     // server errors during the long Pyodide download (dev-server artifact only)
@@ -65,10 +70,13 @@ test.describe("Anonymous User Flow", () => {
     const runButton = page.locator('button:has-text("Run")').first();
     await runButton.click();
 
-    // Verify output appears in the console — scope to .whitespace-pre-wrap to
+    // Verify output appears in the console — scope to `testid="console-line"` to
     // avoid also matching the same text inside the Monaco editor's syntax spans.
     await expect(
-      page.locator(".whitespace-pre-wrap", { hasText: "hello from playwright" }).first()
+      page
+        .getByTestId("console-line")
+        .filter({ hasText: "hello from playwright" })
+        .first()
     ).toBeVisible({ timeout: 15_000 });
   });
 });

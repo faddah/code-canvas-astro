@@ -3,6 +3,7 @@ import { render, screen, fireEvent, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ExplorerPane } from "@/components/ExplorerPane";
 import type { Project } from "@shared/schema";
+import { axeCheck } from "@/test/helpers/a11y";
 
 const mockFiles = [
   { id: 1, name: "main.py", projectId: null, content: "# main" },
@@ -139,7 +140,7 @@ describe("ExplorerPane", () => {
 
   it("shows loading state", () => {
     renderExplorer({ files: [], projects: [], isLoading: true });
-    expect(screen.getByText("Loading your files...")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toBeInTheDocument();
   });
 
   it("shows error state with retry button", () => {
@@ -266,7 +267,7 @@ describe("ExplorerPane", () => {
 
   it("calls onDeleteProject after project trash click + Confirm", () => {
     const { handlers } = renderExplorer();
-    const projectRow = screen.getByText("My Project").closest("div[class*='cursor-pointer']") as HTMLElement;
+    const projectRow = screen.getByText("My Project").closest("[role='listitem']") as HTMLElement;
     const trashBtn = within(projectRow).getAllByRole("button").pop()!;
     fireEvent.click(trashBtn);
 
@@ -604,5 +605,125 @@ describe("ExplorerPane", () => {
   it("does not show project label in Packages header when activeProjectName is null", () => {
     renderExplorer({ activeProjectName: null });
     expect(screen.queryByText(/^—/)).not.toBeInTheDocument();
+  });
+  
+  // ── Accessibility (ARIA) ──
+
+  it("passes axe audit in default signed-in state", async() => {
+    const { container } = renderExplorer();
+    expect(await axeCheck(container)).toHaveNoViolations();
+  });
+
+  it("passes axe audit in loading state", async () => {
+    const { container } = renderExplorer({ files: [], projects: [], isLoading: true });
+    expect(await axeCheck(container)).toHaveNoViolations();
+  });
+
+  it("passes axe audit in error state", async () => {
+    const { container } = renderExplorer({ files: [], projects: [], isError: true });
+    expect(await axeCheck(container)).toHaveNoViolations();
+  });
+
+  it("aside has role complementary and aria-label Explorer", () => {
+    const { container } = renderExplorer();
+    const aside = container.querySelector("aside");
+    expect(aside).toHaveAttribute("role", "complementary");
+    expect(aside).toHaveAttribute("aria-label", "Explorer");
+  });
+
+  it("file list container has role list", () => {
+    const { container } = renderExplorer();
+    expect(container.querySelector("[role='list']")).toBeInTheDocument();
+  });
+
+  it("file items have role listitem", () => {
+    renderExplorer({ projects: [] });
+    const items = screen.getAllByRole("listitem");
+    expect(items.length).toBeGreaterThan(0);
+  });
+
+  it("active file has aria-current true", () => {
+    renderExplorer({ activeFileId: 1, projects: [] });
+    const items = screen.getAllByRole("listitem");
+    const activeItem = items.find((el) => el.getAttribute("aria-current") === "true");
+    expect(activeItem).toBeTruthy();
+    expect(activeItem).toHaveTextContent("main.py");
+  });
+
+  it("inactive files do not have aria-current", () => {
+    renderExplorer({ activeFileId: 1, projects: [] });
+    const items = screen.getAllByRole("listitem");
+    const others = items.filter((el) => el.getAttribute("aria-current") !== "true");
+    expect(others.length).toBeGreaterThan(0);
+  });
+
+  it("unsaved changes shows sr-only text for screen readers", () => {
+    renderExplorer({ unsavedChanges: { 1: "# modified" },  projects: [] });
+    expect(screen.getByText("unsaved changes")).toBeInTheDocument();
+  });
+
+  it("project toggle has aria-expanded false when collapsed",
+  () => {
+    renderExplorer();
+    const toggle = screen.getByLabelText("My Project");
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("aria-expanded becomes true when project is expanded", () => {
+    renderExplorer();
+    const toggle = screen.getByLabelText("My Project");
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("project toggle expands on Enter key", () => {
+    renderExplorer();
+    const toggle = screen.getByLabelText("My Project");
+    fireEvent.keyDown(toggle, { key: "Enter" });
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText("utils.py")).toBeInTheDocument();
+  });
+
+  it("project toggle expands on Space key", () => {
+    renderExplorer();
+    const toggle = screen.getByLabelText("My Project");
+    fireEvent.keyDown(toggle, { key: " " });
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("file item opens on Enter key", () => {
+    const { handlers } = renderExplorer({ projects: [] });
+    const items = screen.getAllByRole("listitem");
+    const mainItem = items.find((el) => el.textContent?.includes("main.py"))!;
+    fireEvent.keyDown(mainItem, { key: "Enter" });
+    expect(handlers.onOpenFile).toHaveBeenCalledWith(1);
+  });
+
+  it("Add Package button has aria-label", () => {
+    renderExplorer();
+    expect(screen.getByRole("button", { name: "Add Package" }))
+      .toBeInTheDocument();
+  });
+
+  it("Trash2Btn Confirm button has descriptive aria-label", () => {
+    renderExplorer({
+      files: [
+        { id: 1, name: "main.py", projectId: null, content: "# main" },
+        { id: 2, name: "other.py", projectId: null, content: "# other" },
+      ],
+      projects: [],
+    });
+    const mainRow = screen.getByText("main.py").closest("[role='listitem']") as HTMLElement;
+    const trashBtn = within(mainRow).getByRole("button", { name: /Delete main\.py/ });
+    fireEvent.click(trashBtn);
+    expect(screen.getByRole("button", { name: /Confirm deleting main\.py/ })).toBeInTheDocument();
+  });
+
+  it("all SVGs have aria-hidden true — every icon in ExplorerPane is decorative", () => {
+    const { container } = renderExplorer();
+    const svgs = container.querySelectorAll("svg");
+    svgs.forEach((svg) => {
+      expect(svg).toHaveAttribute("aria-hidden", "true");
+    });
   });
 });

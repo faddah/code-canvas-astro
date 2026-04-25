@@ -20,7 +20,7 @@ export default function ExecutionPanel({
 }: ExecutionPanelProps): JSX.Element {
     return (
         <>
-            <ResizableHandle className="w-1.5 bg-border hover:bg-primary/50 transition-colors cursor-col-resize" />
+            <ResizableHandle aria-label="Resize editor and output panels" className="w-1.5 bg-border hover:bg-primary/50 transition-colors cursor-col-resize" />
 
             {/* Right Panel Group (Preview + Console) */}
             <ResizablePanel defaultSize={50} minSize={30}>
@@ -31,7 +31,7 @@ export default function ExecutionPanel({
                         <WebPreview htmlContent={htmlOutput} />
                     </ResizablePanel>
 
-                    <ResizableHandle className="h-0.75! w-full! bg-[#CCCCCC] hover:bg-primary/50 transition-colors cursor-row-resize" />
+                    <ResizableHandle aria-label="Resize preview and console panels" className="h-0.75! w-full! bg-[#CCCCCC] hover:bg-primary/50 transition-colors cursor-row-resize" />
 
                     {/* Console */}
                     <ResizablePanel defaultSize={40} minSize={20}>

@@ -1,4 +1,5 @@
 import "@testing-library/jest-dom/vitest";
+import "@/test/helpers/a11y";
 import { vi, beforeEach, afterEach } from "vitest";
 
 // Store original console methods so spies can delegate when needed

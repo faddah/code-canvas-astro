@@ -4,6 +4,7 @@ import {
     blockPyodide,
     waitForIDEShell,
     waitForFiles,
+    waitForMonaco,
 } from "./helpers";
 
 test.describe("IDE — Console panel", () => {
@@ -50,9 +51,7 @@ test.describe("IDE — Editor content verification", () => {
         await mainPy.click();
 
         // Wait for Monaco to load
-        await expect(page.locator(".monaco-editor").first()).toBeVisible({
-        timeout: 45_000,
-        });
+        await expect(await waitForMonaco(page)).toBe(true);
 
         // Verify Monaco contains the file's content from our mock data
         // Monaco renders text inside .view-line spans
@@ -67,9 +66,7 @@ test.describe("IDE — Editor content verification", () => {
 
         // Open main.py
         await fileEntries.nth(0).click();
-        await expect(page.locator(".monaco-editor").first()).toBeVisible({
-        timeout: 45_000,
-        });
+        await expect(await waitForMonaco(page)).toBe(true);
 
         // Verify main.py content is shown
         await expect(

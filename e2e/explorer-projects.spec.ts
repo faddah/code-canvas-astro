@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { mockStarterFilesAPI, waitForIDEShell } from "./helpers";
+import { mockStarterFilesAPI, waitForIDEShell, waitForMonaco } from "./helpers";
 
 test.describe("Explorer Pane Structure", () => {
   // Firefox needs extra time — IDE hydration + asset loading can exceed 30s
@@ -40,8 +40,8 @@ test.describe("Explorer Pane Structure", () => {
 
     // Monaco editor should become visible with content
     // Firefox can be slow — Monaco loads web workers and language grammars asynchronously
-    const editor = page.locator(".monaco-editor").first();
-    await expect(editor).toBeVisible({ timeout: 45_000 });
+  const editor = await waitForMonaco(page);
+  await expect(editor).toBe(true);
   });
 
   test("active file has highlighted styling", async ({ page }) => {

@@ -671,7 +671,9 @@ describe("IDE interactions (signed-in)", () => {
 
     // Find the project header and its delete (trash) button
     const projectHeader = screen.getByText("Old Project").closest("div");
-    const trashBtn = projectHeader?.querySelector("button");
+    const trashBtn = projectHeader?.querySelector(
+      "button[aria-label^='Delete project']"
+    ) as HTMLButtonElement | null;
     if (trashBtn) {
       fireEvent.click(trashBtn);
 

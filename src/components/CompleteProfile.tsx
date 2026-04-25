@@ -131,7 +131,6 @@ export function CompleteProfile({ onComplete, onCancel }: CompleteProfileProps) 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onCancel(); }}>
       <DialogContent
-        aria-describedby={undefined}
         className="sm:max-w-md bg-white text-black rounded-xl"
       >
         <DialogHeader>
@@ -145,7 +144,7 @@ export function CompleteProfile({ onComplete, onCancel }: CompleteProfileProps) 
           <div className="space-y-2">
             <Label htmlFor="country" className="text-black">Country</Label>
             <Select value={selectedCountry} onValueChange={handleCountryChange}>
-              <SelectTrigger className="bg-white text-black border-gray-300">
+              <SelectTrigger id="country" className="bg-white text-black border-gray-300">
                 <SelectValue placeholder="Select country" />
               </SelectTrigger>
               <SelectContent className="bg-white text-black">
@@ -169,13 +168,15 @@ export function CompleteProfile({ onComplete, onCancel }: CompleteProfileProps) 
               </span>
               <Input
                 id="phone"
+                aria-invalid={!!errors.phone}
+                aria-describedby={errors.phone ? "phone-error" : undefined}
                 placeholder="555-123-4567"
                 className="bg-white text-black border-gray-300"
                 {...register('phone')}
               />
             </div>
             {errors.phone && (
-              <p className="text-sm text-red-600">{errors.phone.message}</p>
+              <p id="phone-error" className="text-sm text-red-600">{errors.phone.message}</p>
             )}
           </div>
 
@@ -183,12 +184,14 @@ export function CompleteProfile({ onComplete, onCancel }: CompleteProfileProps) 
             <Label htmlFor="city" className="text-black">City</Label>
             <Input
               id="city"
+              aria-invalid={!!errors.city}
+              aria-describedby={errors.city ? "city-error" : undefined}
               placeholder="City"
               className="bg-white text-black border-gray-300"
               {...register('city')}
             />
             {errors.city && (
-              <p className="text-sm text-red-600">{errors.city.message}</p>
+              <p id="city-error" className="text-sm text-red-600">{errors.city.message}</p>
             )}
           </div>
 
@@ -196,12 +199,14 @@ export function CompleteProfile({ onComplete, onCancel }: CompleteProfileProps) 
             <Label htmlFor="state" className="text-black">State / Province</Label>
             <Input
               id="state"
+              aria-invalid={!!errors.state}
+              aria-describedby={errors.state ? "state-error" : undefined}
               placeholder="State or Province"
               className="bg-white text-black border-gray-300"
               {...register('state')}
             />
             {errors.state && (
-              <p className="text-sm text-red-600">{errors.state.message}</p>
+              <p id="state-error" className="text-sm text-red-600">{errors.state.message}</p>
             )}
           </div>
 
@@ -209,12 +214,14 @@ export function CompleteProfile({ onComplete, onCancel }: CompleteProfileProps) 
             <Label htmlFor="postalCode" className="text-black">Postal Code</Label>
             <Input
               id="postalCode"
+              aria-invalid={!!errors.postalCode}
+              aria-describedby={errors.postalCode ? "postalCode-error" : undefined}
               placeholder="Postal Code"
               className="bg-white text-black border-gray-300"
               {...register('postalCode')}
             />
             {errors.postalCode && (
-              <p className="text-sm text-red-600">{errors.postalCode.message}</p>
+              <p id="postalCode-error" className="text-sm text-red-600">{errors.postalCode.message}</p>
             )}
           </div>
           <DialogFooter className="gap-2 sm:gap-2">

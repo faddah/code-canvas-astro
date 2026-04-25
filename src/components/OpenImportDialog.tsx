@@ -8,6 +8,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FolderOpen, FileUp, X } from "lucide-react";
 import type { Project } from "@shared/schema";
@@ -93,10 +94,10 @@ export function OpenImportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-describedby={undefined} className="bg-white text-black sm:rounded-xl sm:max-w-md">
+      <DialogContent className="bg-white text-black sm:rounded-xl sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-black font-bold text-xl flex items-center gap-2">
-            <FolderOpen className="w-5 h-5" />
+            <FolderOpen aria-hidden="true" className="w-5 h-5" />
               Open / Import Files
           </DialogTitle>
           <DialogDescription>
@@ -120,7 +121,7 @@ export function OpenImportDialog({
               onClick={() => fileInputRef.current?.click()}
               className="w-full h-20 border-2 border-dashed border-gray-400 hover:border-blue-500 hover:bg-blue-50 text-gray-600 flex flex-col items-center gap-1"
             >
-              <FileUp className="w-6 h-6" />
+              <FileUp aria-hidden="true" className="w-6 h-6" />
               <span className="text-sm">Click to select .py or .txt files</span>
             </Button>
             {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
@@ -129,7 +130,7 @@ export function OpenImportDialog({
 
           {selectedFiles.length > 0 && (
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700">Selected Files ({selectedFiles.length})</label>
+              <p className="text-sm font-medium text-gray-700">Selected Files ({selectedFiles.length})</p>
               <div className="max-h-32 overflow-y-auto space-y-1 border border-gray-200 rounded-md p-2">
                 {selectedFiles.map((file, i) => (
                   <div
@@ -138,10 +139,11 @@ export function OpenImportDialog({
                   >
                     <span className="truncate flex-1 text-gray-800">{file.name}</span>
                     <button
+                      aria-label={`Remove ${file.name}`}
                       onClick={() => removeFile(i)}
                       className="ml-2 p-0.5 hover:bg-gray-200 rounded"
                     >
-                      <X className="w-3.5 h-3.5 text-gray-500" />
+                      <X aria-hidden="true" className="w-3.5 h-3.5 text-gray-500" />
                     </button>
                   </div>
                 ))}
@@ -151,9 +153,9 @@ export function OpenImportDialog({
 
           {projects.length > 0 && (
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Import into Project (optional)</label>
+              <Label htmlFor="import-project" className="text-sm font-medium text-gray-700 mb-1 block">Import into Project (optional)</Label>
               <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-                <SelectTrigger className="bg-white text-black border-2 border-gray-400 h-11">
+                <SelectTrigger id="import-project" className="bg-white text-black border-2 border-gray-400 h-11">
                   <SelectValue placeholder="No project" />
                 </SelectTrigger>
                 <SelectContent className="bg-white text-black">

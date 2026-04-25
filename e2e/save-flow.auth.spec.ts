@@ -143,7 +143,7 @@ test.describe("Save As — authenticated save flow", () => {
 
         // Error message about allowed extensions
         await expect(
-            page.locator("text=Only .py and .txt files are allowed."),
+            page.locator("#save-file-name-error"),
         ).toBeVisible({ timeout: 5_000 });
     });
 
