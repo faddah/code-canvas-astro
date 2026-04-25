@@ -46,9 +46,7 @@ test.describe("Project CRUD — create project", () => {
         const newProjectBtn = page.locator('button[title="New Project"]');
         await newProjectBtn.click();
 
-        await expect(page.locator("text=Create New Project").first()).toBeVisible({
-        timeout: 5_000,
-        });
+        await expect(page.locator("text=Create New Project").first()).toBeVisible({ timeout: 5_000, });
 
         const createBtn = page.locator('button:has-text("Create")');
         await expect(createBtn).toBeDisabled();
@@ -210,25 +208,25 @@ test.describe("Project CRUD — create project", () => {
     });
 
     test("delete project shows confirm then removes it", async ({ page }) => {
-        const projectRow = page.locator("text=Second Project").first();
-        await expect(projectRow).toBeVisible({ timeout: 10_000 });
+        const projectToggle = page.getByRole("button", { name:
+        "Second Project" }).first();
+        await expect(projectToggle).toBeVisible({ timeout: 10_000 });
 
-        // Hover to reveal trash icon — the trash is inside the project row's parent group
-        const projectGroup = projectRow.locator("..");
-        await projectGroup.hover();
+        // Hover over the toggle div (which has the "group" class) to reveal trash icon
+        await projectToggle.hover();
 
-        // Click the trash button (inside the group)
-        const trashBtn = projectGroup.locator("svg.lucide-trash-2").first();
+        // Click the trash button inside the toggle group
+        const trashBtn = projectToggle.locator("svg.lucide-trash-2").first();
         await trashBtn.click();
 
-        // Confirm button should appear
+          // Confirm button should appear
         const confirmBtn = page.locator("text=Confirm").first();
         await expect(confirmBtn).toBeVisible({ timeout: 3_000 });
         await confirmBtn.click();
     });
-    });
+});
 
-    test.describe("Project CRUD — + menu shows project options", () => {
+test.describe("Project CRUD — + menu shows project options", () => {
     test.setTimeout(60_000);
 
     test.beforeEach(async ({ page }) => {
@@ -248,15 +246,13 @@ test.describe("Project CRUD — create project", () => {
         await plusButton.click();
 
         // Should show "New File" plus per-project options
-        await expect(
-        page.locator('[role="menuitem"]', { hasText: "New File" }).first(),
-        ).toBeVisible({ timeout: 5_000 });
+        await expect(page.locator('[role="menuitem"]', { 
+            hasText: "New File",
+        }).first(),).toBeVisible({ timeout: 5_000 });
 
-        await expect(
-        page.locator('[role="menuitem"]', {
+        await expect(page.locator('[role="menuitem"]', {
             hasText: 'New File in "My Project"',
-        }),
-        ).toBeVisible();
+        }),).toBeVisible();
 
         await expect(
         page.locator('[role="menuitem"]', {
