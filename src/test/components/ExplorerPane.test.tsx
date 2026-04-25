@@ -662,22 +662,23 @@ describe("ExplorerPane", () => {
     expect(screen.getByText("unsaved changes")).toBeInTheDocument();
   });
 
-  it("project toggle has role button and aria-expanded false when collapsed", () => {
+  it("project toggle has aria-expanded false when collapsed",
+  () => {
     renderExplorer();
-    const toggle = screen.getByRole("button", { name: "My Project" });
+    const toggle = screen.getByLabelText("My Project");
     expect(toggle).toHaveAttribute("aria-expanded", "false");
   });
 
   it("aria-expanded becomes true when project is expanded", () => {
     renderExplorer();
-    const toggle = screen.getByRole("button", { name: "My Project" });
+    const toggle = screen.getByLabelText("My Project");
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute("aria-expanded", "true");
   });
 
   it("project toggle expands on Enter key", () => {
     renderExplorer();
-    const toggle = screen.getByRole("button", { name: "My Project" });
+    const toggle = screen.getByLabelText("My Project");
     fireEvent.keyDown(toggle, { key: "Enter" });
     expect(toggle).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByText("utils.py")).toBeInTheDocument();
@@ -685,7 +686,7 @@ describe("ExplorerPane", () => {
 
   it("project toggle expands on Space key", () => {
     renderExplorer();
-    const toggle = screen.getByRole("button", { name: "My Project" });
+    const toggle = screen.getByLabelText("My Project");
     fireEvent.keyDown(toggle, { key: " " });
     expect(toggle).toHaveAttribute("aria-expanded", "true");
   });
