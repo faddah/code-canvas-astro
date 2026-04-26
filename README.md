@@ -2,7 +2,7 @@
 
 ![Python REPL IDE App Screen Shot](https://github.com/faddah/code-canvas-astro/raw/main/public/python-repl-ide-app-screenshot.png)
 
-**Current Version:** 2.4.0
+**Current Version:** 2.5.0
 
 A full-stack web-based IDE for executing Python code with an integrated REPL (Read-Eval-Print Loop). Built on **Astro 6** with server-side rendering, React 19 interactive islands, Clerk authentication, and a **Turso** (libSQL) cloud database. The app provides a modern development environment with a file explorer, Monaco code editor, console panel, live web preview, project management, and package installation.
 
@@ -50,7 +50,9 @@ This project started with inspiration from [Replit's](https://replit.com) "vibe 
 ### Accessibility
 
 - **WCAG 2.0 / 2.1 A + AA automated testing** — every unit test can call `axeCheck()` and every e2e test can run an axe audit against the live DOM
-- **Instrumented components** — ARIA attributes added systematically per component; `<LoadingScreen>` was first (`role="status"` + `aria-live="polite"` on the message, `aria-hidden` on the decorative spinner)
+- **Full ARIA instrumentation** — all front-facing components carry proper ARIA roles, labels, and live regions: `<LoadingScreen>`, `<ConsolePanel>`, `<TopNavBar>`, `<ExplorerPane>`, `<FileTab>`, `<EditorPanel>`, `<ExecutionPanel>`, `<ErrorBoundary>`, `<WebPreview>`, `<IDE>`, `<SaveDialog>`, `<OpenImportDialog>`, `<CompleteProfile>`, `<UserProfileModal>`, `<Layout>`, and `<404>`
+- **Landmark regions** — `role="main"`, `role="banner"`, `role="complementary"`, `role="log"`, `role="alert"`, `role="status"`, `role="region"`, `role="tablist"` / `role="tab"` / `role="tabpanel"` used throughout
+- **Form accessibility** — every `<Input>` has a matching `<Label htmlFor>`, validated fields are wired with `aria-invalid` + `aria-describedby`
 
 ### Deployment
 
@@ -353,7 +355,7 @@ In CI these come from GitHub Actions secrets.
 `.github/workflows/test.yml` runs two jobs on every push and pull request to `main`:
 
 - **`unit-tests`** — Ubuntu runner, Node 22, runs `npm run test:coverage`.
-- **`e2e-tests`** — Runs inside the official `mcr.microsoft.com/playwright:v1.59.1-noble` container (Node 22 + all three browsers pre-installed, no `playwright install` step needed). Generates a self-signed TLS cert, builds the Astro app, starts the preview via `npm run preview:ci` (Astro preview + a custom HTTPS reverse proxy from `e2e/https-proxy.mjs`), and runs the full Playwright suite across Chromium, Firefox, and WebKit. The Playwright HTML report is uploaded as a workflow artifact.
+- **`e2e-tests`** — Runs inside the official `mcr.microsoft.com/playwright:v1.59.1-noble` container (Node 22 + all three browsers pre-installed, no `playwright install` step needed). Generates a self-signed TLS cert, builds the Astro app, starts the preview via `npm run preview:ci` (Astro preview + a custom HTTPS reverse proxy from `e2e/https-proxy.mjs`), and runs the full Playwright suite across Chromium, Firefox, and WebKit. Job timeout is 25 minutes to accommodate retries on flaky auth setup. The Playwright HTML report is uploaded as a workflow artifact. Current suite: **608 / 608 Vitest** unit tests and **396 / 396 Playwright** e2e tests passing.
 
 ## Credits
 
