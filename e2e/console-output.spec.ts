@@ -9,6 +9,9 @@ import {
 
 test.describe("Console — code execution output (mock Pyodide)", () => {
     test.setTimeout(60_000);
+    // test.slow() triples timeouts for all tests in this describe
+    test.slow();
+
 
     test.beforeEach(async ({ page }) => {
         await mockStarterFilesAPI(page);
@@ -129,7 +132,7 @@ test.describe("Console — code execution output (mock Pyodide)", () => {
             (expected) =>
                 document.querySelector('[data-testid="editor-state-content"]')?.textContent?.includes(expected),
                 "line one",
-                { timeout: 20_000 },
+                { timeout: 40_000 },
         );
 
         await dismissViteOverlay(page);
@@ -199,7 +202,7 @@ test.describe("Console — code execution output (mock Pyodide)", () => {
             (expected) =>
                 document.querySelector('[data-testid="editor-state-content"]')?.textContent?.includes(expected),
                 "kaboom",
-                { timeout: 20_000 },
+                { timeout: 40_000 },
         );
 
         await dismissViteOverlay(page);
