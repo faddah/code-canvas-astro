@@ -4,7 +4,8 @@ import fs from "fs";
 import path from "path";
 
 setup("authenticate with Clerk", async ({ page }, testInfo) => {
-    setup.setTimeout(90_000);
+    // This setup can be slow due to multiple network requests and waiting for the SDK to load.   
+    setup.slow(); 
     const storageState = `e2e/.auth/${testInfo.project.name}.json`;
     fs.mkdirSync(path.dirname(storageState), { recursive: true });
 
