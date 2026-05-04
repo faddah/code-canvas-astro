@@ -38,6 +38,30 @@ describe("usePyodide", () => {
     expect(mockPyodide.setStderr).toHaveBeenCalled();
   });
 
+  // Test to verify matplotlib cleanup is run before user code on every runCode call
+  it("runCode calls matplotlib cleanup before user code", async () => {
+    const { result } = renderHook(() => usePyodide());
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+
+    await act(async () => {
+      await result.current.runCode('print("hello")', [
+        { name: "main.py", content: 'print("hello")' },
+      ]);
+    });
+
+    // The cleanup code should have been run before the user code
+    const cleanupCallIndex = mockPyodide.runPythonAsync.mock.calls.findIndex(
+      ([code]) => code.includes("import matplotlib.pyplot as _plt")
+    );
+    const userCodeCallIndex = mockPyodide.runPythonAsync.mock.calls.findIndex(
+      ([code]) => code === 'print("hello")'
+    );
+    expect(cleanupCallIndex).toBeGreaterThan(-1);
+    expect(userCodeCallIndex).toBeGreaterThan(-1);
+    expect(cleanupCallIndex).toBeLessThan(userCodeCallIndex);
+  });
+
   it("runCode writes files to FS and calls runPythonAsync", async () => {
     const { result } = renderHook(() => usePyodide());
 
@@ -150,6 +174,23 @@ describe("usePyodide", () => {
 
     expect(result.current.output).toEqual([]);
     expect(result.current.htmlOutput).toBeNull();
+  });
+
+  it("clearConsole wipes the matplotlib DOM target when present", async () => {
+    const { result } = renderHook(() => usePyodide());
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+
+    // Simulate WebPreview setting document.pyodideMplTarget
+    const mplDiv = document.createElement("div");
+    mplDiv.innerHTML = "<canvas></canvas>";
+    (document as any).pyodideMplTarget = mplDiv;
+
+    act(() => {
+      result.current.clearConsole();
+    });
+
+    expect(mplDiv.innerHTML).toBe("");
+    delete (document as any).pyodideMplTarget;
   });
 
   // ─── JSPI Detection: Chrome (inline console input) vs Safari/Firefox (prompt fallback) ───
