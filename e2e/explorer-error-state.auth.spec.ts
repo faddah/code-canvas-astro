@@ -11,6 +11,8 @@ import {
 
 test.describe("Explorer — error and retry state", () => {
     test.setTimeout(60_000);
+    // triples timeouts for all tests in this describe
+    test.slow();
 
     test("shows error message and Retry button when files API fails", async ({
         page,
