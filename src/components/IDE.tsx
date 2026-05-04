@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useProjectData } from "@/hooks/use-project-data";
 import { usePackageData } from "@/hooks/use-package-data";
 import { useUserProfile } from "@/hooks/use-user-profile";
