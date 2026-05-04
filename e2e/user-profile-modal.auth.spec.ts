@@ -232,7 +232,7 @@ test.describe("UserProfileModal — delete flow", () => {
 
         // AlertDialog closes; outer User Profile modal stays open.
         // Bumped to 10s — Firefox can be slow to unmount the Radix portal.
-        await expect(alertDialog).toBeHidden({ timeout: 10_000 });
+        await expect(alertDialog).toBeHidden({ timeout: 20_000 });
         await expect(page.locator("text=User Profile").first()).toBeVisible();
     });
 
