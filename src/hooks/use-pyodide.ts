@@ -153,6 +153,9 @@ export function usePyodide() {
   const clearConsole = () => {
     setOutput([]);
     setHtmlOutput(null);
+    if ((document as any).pyodideMplTarget) {
+      (document as any).pyodideMplTarget.innerHTML = '';
+    }
   };
 
   const requestInput = (prompt: string): Promise<string> => {
@@ -195,7 +198,14 @@ export function usePyodide() {
           pyodideRef.current.FS.writeFile(file.name, file.content);
         }
 
-        // 3. Run the code
+        // 3. Close any open matplotlib figures from previous runs
+        await pyodideRef.current.runPythonAsync(`
+          try:
+              import matplotlib.pyplot as _plt
+              _plt.close('all')
+          except Exception:
+              pass
+      `);
         await pyodideRef.current.runPythonAsync(code);
       } catch (err: any) {
         appendOutput(err.toString(), true);
