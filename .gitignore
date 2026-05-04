@@ -75,3 +75,4 @@ cpu_ram_monitor.py
 .certs/
 logs_**/*
 logs_**/**/*
+pyrepl-sign.pages
