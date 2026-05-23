@@ -76,3 +76,5 @@ cpu_ram_monitor.py
 logs_**/*
 logs_**/**/*
 pyrepl-sign.pages
+*storybook.log
+storybook-static
